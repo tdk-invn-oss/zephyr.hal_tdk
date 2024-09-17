@@ -29,4 +29,29 @@ if(CONFIG_ZEPHYR_HAL_TDK_MODULE)
 
   endif()
 
+
+  if(CONFIG_USE_EMD_ICP201XX)
+    zephyr_include_directories(
+      common/Invn
+      icp201xx 
+    )
+
+    zephyr_library_sources(
+      icp201xx/Icp201xx.c
+      icp201xx/Icp201xxDriver.c
+      icp201xx/Icp201xxSerif.c
+    )
+  endif()
+
+  if(CONFIG_USE_EMD_ICP101XX)
+    zephyr_include_directories(
+      common/Invn 
+      icp101xx 
+    )
+
+    zephyr_library_sources(
+      icp101xx/Icp101xx.c
+    )
+  endif()
+
 endif()
