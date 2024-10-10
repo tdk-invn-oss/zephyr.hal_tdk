@@ -64,12 +64,21 @@ typedef struct inv_icp101xx {
 	uint32_t min_delay_us;
 	uint8_t pressure_en;
 	uint8_t temperature_en;
+#ifdef ICP101XX_DISABLE_FLOATING_POINT
+	int16_t sensor_constants[4]; // OTP
+	int32_t p_Pa_calib[3];
+	int32_t LUT_lower;
+	int32_t LUT_upper;
+	int32_t quadr_factor;
+	int32_t offst_factor;  
+#else
 	float sensor_constants[4]; // OTP
 	float p_Pa_calib[3];
 	float LUT_lower;
 	float LUT_upper;
 	float quadr_factor;
 	float offst_factor;
+#endif
 	enum icp101xx_meas measurement_mode;
 }inv_icp101xx_t;
 
@@ -91,10 +100,14 @@ int INV_EXPORT inv_icp101xx_init(struct inv_icp101xx * s);
 /** @brief Check and retrieve for new data
  *  @param[out] pressure pressure data in Pascal
  *  @param[out] temperature temperature data in Degree Celsius
+ *              If ICP101XX_DISABLE_FLOATING_POINT is defined this value is a fixed point q4
  *  @return     0 on success, negative value on error
  */
+#ifdef ICP101XX_DISABLE_FLOATING_POINT
+int INV_EXPORT inv_icp101xx_get_data(struct inv_icp101xx * s, int * raw_pressure, int * raw_temperature, int32_t * pressure, int32_t * temperature);
+#else
 int INV_EXPORT inv_icp101xx_get_data(struct inv_icp101xx * s, int * raw_pressure, int * raw_temperature, float * pressure, float * temperature);
-
+#endif
 /** @brief Enables / disables the invpres sensor for both pressure and temperature
  * @param[in] enable			0=off, 1=on
  * @return 0 in case of success, negative value on error

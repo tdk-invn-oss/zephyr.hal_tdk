@@ -18,11 +18,16 @@ static int send_measurement_command(struct inv_icp101xx * s);
 static unsigned char compute_crc(uint8_t *frame);
 static unsigned char check_crc(uint8_t *frame);
 static void init_base(struct inv_icp101xx * s, short *otp);
+#ifdef ICP101XX_DISABLE_FLOATING_POINT
+static void calculate_conversion_constants(struct inv_icp101xx * s, int32_t *p_Pa, int64_t *p_LUT, int64_t *out);
+static int process_data(struct inv_icp101xx * s, int32_t p_LSB, int32_t T_LSB, int32_t * pressure, int32_t * temperature_q4);
+#else
 static void calculate_conversion_constants(struct inv_icp101xx * s, float *p_Pa, float *p_LUT, float *out);
+static int process_data(struct inv_icp101xx * s, int p_LSB, int T_LSB, float * pressure, float * temperature);
+#endif
 static int read_id_from_i2c(struct inv_icp101xx * s, uint8_t * whoami);
 static int read_otp_from_i2c(struct inv_icp101xx * s, short *out);
 static int read_raw_pressure_temp_from_i2c(struct inv_icp101xx * s, int *pressure, int *temp);
-static int process_data(struct inv_icp101xx * s, int p_LSB, int T_LSB, float * pressure, float * temperature);
 
 /**
  * @brief      Compute CRC
@@ -69,6 +74,18 @@ static void init_base(struct inv_icp101xx * s, short *otp) {
 	
 	int i;
 
+#ifdef ICP101XX_DISABLE_FLOATING_POINT
+	for(i = 0; i < 4; i++)
+		s->sensor_constants[i] = otp[i];
+
+	s->p_Pa_calib[0] = 45000;
+	s->p_Pa_calib[1] = 80000;
+	s->p_Pa_calib[2] = 105000;
+	s->LUT_lower = 3670016;
+	s->LUT_upper = 12058624;
+	s->quadr_factor = 16777216;
+	s->offst_factor = 2048;
+#else
 	for(i = 0; i < 4; i++)
 		s->sensor_constants[i] = (float)otp[i];
 
@@ -79,14 +96,20 @@ static void init_base(struct inv_icp101xx * s, short *otp) {
 	s->LUT_upper = 11.5 * (1<<20);
 	s->quadr_factor = 1 / 16777216.0;
 	s->offst_factor = 2048.0;
+#endif
 }
 
 // p_Pa -- List of 3 values corresponding to applied pressure in Pa
 // p_LUT -- List of 3 values corresponding to the measured p_LUT values at the applied pressures.
+#ifdef ICP101XX_DISABLE_FLOATING_POINT
+static void calculate_conversion_constants(struct inv_icp101xx * s, int32_t *p_Pa, int64_t *p_LUT, int64_t *out) {
+	
+	int64_t A,B,C;
+#else
 static void calculate_conversion_constants(struct inv_icp101xx * s, float *p_Pa, float *p_LUT, float *out) {
 	
 	float A,B,C;
-
+#endif
 	C = (p_LUT[0] * p_LUT[1] * (p_Pa[0] - p_Pa[1]) +
 		p_LUT[1] * p_LUT[2] * (p_Pa[1] - p_Pa[2]) +
 		p_LUT[2] * p_LUT[0] * (p_Pa[2] - p_Pa[0])) /
@@ -106,7 +129,20 @@ static void calculate_conversion_constants(struct inv_icp101xx * s, float *p_Pa,
  *  @param[in] T_LSB Raw temperature data from sensor
  *  @param[out] pressure pressure data in Pascal
  *  @param[out] temperature temperature data in Degree Celsius
+ *              If ICP101XX_DISABLE_FLOATING_POINT is defined, temperature_q4 is expressed in floating point q4
  */
+#ifdef ICP101XX_DISABLE_FLOATING_POINT
+static int process_data(struct inv_icp101xx * s, int32_t p_LSB, int32_t T_LSB, int32_t * pressure, int32_t * temperature_q4) {
+	
+	int32_t t;
+	int64_t in[3];
+	int64_t out[3];
+	int64_t A,B,C;
+
+	in[0] = s->LUT_lower + (((s->sensor_constants[0] * t * t)) / s->quadr_factor);
+	in[1] = (s->offst_factor * s->sensor_constants[3]) + (((s->sensor_constants[1] * t * t)) / s->quadr_factor);
+	in[2] = s->LUT_upper + (((s->sensor_constants[2] * t * t)) / s->quadr_factor);
+#else
 static int process_data(struct inv_icp101xx * s, int p_LSB, int T_LSB, float * pressure, float * temperature) {
 	
 	float t;
@@ -119,9 +155,12 @@ static int process_data(struct inv_icp101xx * s, int p_LSB, int T_LSB, float * p
 	s1 = s->LUT_lower + (float)(s->sensor_constants[0] * t * t) * s->quadr_factor;
 	s2 = s->offst_factor * s->sensor_constants[3] + (float)(s->sensor_constants[1] * t * t) * s->quadr_factor;
 	s3 = s->LUT_upper + (float)(s->sensor_constants[2] * t * t) * s->quadr_factor;
+
 	in[0] = s1;
 	in[1] = s2;
 	in[2] = s3;
+#endif
+
 
 	calculate_conversion_constants(s, s->p_Pa_calib, in, out);
 	A = out[0];
@@ -129,8 +168,11 @@ static int process_data(struct inv_icp101xx * s, int p_LSB, int T_LSB, float * p
 	C = out[2];
 
 	*pressure = A + B / (C + p_LSB);
+#ifdef ICP101XX_DISABLE_FLOATING_POINT
+	*temperature_q4 = -45 * 16 + ((175* (T_LSB*16))/65536) ;
+#else
 	*temperature = -45.f + 175.f/65536.f * T_LSB;
-
+#endif
 	return 0;
 }
 
@@ -318,11 +360,19 @@ int inv_icp101xx_init(struct inv_icp101xx * s) {
 	return 0;
 }
 
+#ifdef ICP101XX_DISABLE_FLOATING_POINT
+int inv_icp101xx_get_data(struct inv_icp101xx * s, int * raw_pressure, int * raw_temperature, int32_t * pressure, int32_t * temperature) {
+#else
 int inv_icp101xx_get_data(struct inv_icp101xx * s, int * raw_pressure, int * raw_temperature, float * pressure, float * temperature) {
+#endif
 	
 	int rc = 0;
 	int rawP, rawT;
+#ifdef ICP101XX_DISABLE_FLOATING_POINT
+	int32_t pressure_Pa, temperature_C;
+#else
 	float pressure_Pa, temperature_C;
+#endif
 
 	if ( (s->pressure_en) || (s->temperature_en) ) {		
 		
