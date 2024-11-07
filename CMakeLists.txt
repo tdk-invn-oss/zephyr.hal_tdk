@@ -56,4 +56,14 @@ if(CONFIG_ZEPHYR_HAL_TDK_MODULE)
     )
   endif()
 
+  if(CONFIG_USE_EMD_ICT1531X)
+    zephyr_include_directories(
+      common
+      ict1531x 
+    )
+
+    zephyr_library_sources(
+      ict1531x/Ict1531x.c
+    )
+  endif()
 endif()

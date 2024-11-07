@@ -12,6 +12,10 @@ And MEMs Barometric Pressure sensor drivers for:
 * ICP-101xx
 * ICP-201xx
 
+And Magnetometer sensor drivers for;
+
+* ICT-1531x
+
 Find more information and product details here: 
 https://invensense.tdk.com/products/motion-tracking/6-axis/
 https://invensense.tdk.com/smartpressure/
