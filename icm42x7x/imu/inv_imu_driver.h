@@ -22,7 +22,11 @@ extern "C" {
 #include "imu/inv_imu_transport.h"
 
 /** Max FSR values for accel */
+#if INV_IMU_HFSR_SUPPORTED
+#define ACCEL_CONFIG0_FS_SEL_MAX ACCEL_CONFIG0_FS_SEL_32g
+#else
 #define ACCEL_CONFIG0_FS_SEL_MAX ACCEL_CONFIG0_FS_SEL_16g
+#endif
 /** Max user offset value for accel (mg) */
 #define ACCEL_OFFUSER_MAX_MG 1000
 /** Accel start-up time */
@@ -30,7 +34,11 @@ extern "C" {
 
 #if INV_IMU_IS_GYRO_SUPPORTED
 /** Max FSR values for gyro */
+#if INV_IMU_HFSR_SUPPORTED
+#define GYRO_CONFIG0_FS_SEL_MAX GYRO_CONFIG0_FS_SEL_4000dps
+#else
 #define GYRO_CONFIG0_FS_SEL_MAX GYRO_CONFIG0_FS_SEL_2000dps
+#endif
 /** Max user offset value for gyro (dps) */
 #define GYRO_OFFUSER_MAX_DPS 64
 /** Gyro start-up time */
@@ -279,6 +287,13 @@ int inv_imu_enable_fsync(inv_imu_device_t *s);
 int inv_imu_disable_fsync(inv_imu_device_t *s);
 #endif
 
+/** @brief Configure SPI slew-rate.
+ *  @param[in] s          Pointer to device.
+ *  @param[in] slew_rate  Requested slew-rate.
+ *  @return               0 on success, negative value on error.
+ */
+int inv_imu_set_spi_slew_rate(inv_imu_device_t *s, const DRIVE_CONFIG3_SPI_SLEW_RATE_t slew_rate);
+
 /** @brief Configure INT1 pin behavior.
  *  @param[in] s     Pointer to device.
  *  @param[in] conf  Structure with the requested configuration.
@@ -437,6 +452,12 @@ int inv_imu_disable_wom(inv_imu_device_t *s);
  */
 int inv_imu_start_dmp(inv_imu_device_t *s);
 
+/** @brief Resume DMP operations.
+ *  @param[in] s  Pointer to device.
+ *  @return       0 on success, negative value on error.
+ */
+int inv_imu_resume_dmp(struct inv_imu_device *s);
+
 /** @brief Reset DMP for APEX algorithms and self-test.
  *  @param[in] s           Pointer to device.
  *  @param[in] sram_reset  Reset mode for the SRAM.
@@ -490,6 +511,17 @@ static inline void format_s16_data(uint8_t endianness, const uint8_t *in, int16_
 	*out = (int16_t)(endianness == INTF_CONFIG0_DATA_BIG_ENDIAN ? (in[0] << 8) | in[1] :
                                                                   (in[1] << 8) | in[0]);
 }
+
+#if INV_IMU_HFSR_SUPPORTED
+/** @brief  Write 'size' bytes pointed by 'data' in SRAM at offset given in parameters.
+ *  @param[in] data    pointer to data to be written in SRAM
+ *  @param[in] offset  offset in bytes from SRAM start address where data should be written
+ *  @param[in] size    number of bytes to write
+ *  @return            0 in case of success, negative value on error.
+ */
+int inv_imu_write_sram(struct inv_imu_device *s, const uint8_t *data, uint32_t offset,
+                       uint32_t size);
+#endif
 
 #ifdef __cplusplus
 }

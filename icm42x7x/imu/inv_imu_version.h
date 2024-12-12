@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-#define INV_IMU_VERSION_STRING "3.0.0-dev2"
+#define INV_IMU_VERSION_STRING "3.0.0"
 
 #ifdef __cplusplus
 }
