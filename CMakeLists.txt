@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 if(CONFIG_ZEPHYR_HAL_TDK_MODULE)
-  
-  if(CONFIG_USE_EMD_ICM42670)
+
+  if(CONFIG_USE_EMD_ICM42670 OR CONFIG_USE_EMD_ICM42370)
 
   zephyr_library()
   zephyr_include_directories(
