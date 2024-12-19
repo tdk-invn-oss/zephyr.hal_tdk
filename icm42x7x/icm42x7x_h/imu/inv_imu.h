@@ -28,6 +28,7 @@ extern "C" {
 
 #define INV_IMU_REV                     INV_IMU_REV_A
 #define INV_IMU_IS_GYRO_SUPPORTED       1
+#define INV_IMU_HFSR_SUPPORTED          0
 
 #ifdef __cplusplus
 }

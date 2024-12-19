@@ -11,12 +11,22 @@
 #include <stddef.h> /* NULL */
 #include <string.h> /* memset */
 
+#if INV_IMU_HFSR_SUPPORTED
+/* Address of DMP_CONFIG1 register */
+#define DMP_CONFIG1_MREG1  0x2c
+/* SRAM first bank ID */
+#define SRAM_START_BANK    0x50
+#endif
+
 /* Static functions declaration */
 static int select_rcosc(inv_imu_device_t *s);
 static int select_wuosc(inv_imu_device_t *s);
 static int configure_serial_interface(inv_imu_device_t *s);
 static int init_hardware_from_ui(inv_imu_device_t *s);
-static int resume_dmp(inv_imu_device_t *s);
+#if INV_IMU_HFSR_SUPPORTED
+static int read_and_check_sram(struct inv_imu_device *self, const uint8_t *data, uint32_t offset,
+                               uint32_t size);
+#endif
 
 int inv_imu_init(inv_imu_device_t *s, const struct inv_imu_serif *serif,
                  void (*sensor_event_cb)(inv_imu_sensor_event_t *event))
@@ -594,6 +604,19 @@ int inv_imu_disable_fsync(inv_imu_device_t *s)
 	return status;
 }
 #endif /* INV_IMU_IS_GYRO_SUPPORTED */
+
+int inv_imu_set_spi_slew_rate(inv_imu_device_t *s, const DRIVE_CONFIG3_SPI_SLEW_RATE_t slew_rate)
+{
+	int     status = 0;
+	uint8_t value;
+
+	status |= inv_imu_read_reg(s, DRIVE_CONFIG3, 1, &value);
+	value &= ~DRIVE_CONFIG3_SPI_SLEW_RATE_MASK;
+	value |= slew_rate;
+	status |= inv_imu_write_reg(s, DRIVE_CONFIG3, 1, &value);
+
+	return status;
+}
 
 int inv_imu_set_pin_config_int1(inv_imu_device_t *s, const inv_imu_int1_pin_config_t *conf)
 {
@@ -1331,10 +1354,51 @@ int inv_imu_start_dmp(inv_imu_device_t *s)
 		if (status)
 			return status;
 		s->dmp_is_on = 1;
+
+#if INV_IMU_HFSR_SUPPORTED
+		{
+			uint8_t data;
+			static uint8_t ram_img[] = {
+				#include "dmp3Default_xian_hfsr_rom_patch.txt"
+			};
+
+			/* HFSR parts requires to prescale accel data using a patch in SRAM */
+			status |= inv_imu_write_sram(s, ram_img, 320, sizeof(ram_img));
+
+			/* Set DMP start point to beginning of the patch i.e. SRAM start + offset = 320 */
+			data = (320 / 32);
+			status |= inv_imu_write_reg(s, DMP_CONFIG1_MREG1, 1, &data);
+		}
+#endif
 	}
 
 	// Initialize DMP
-	status |= resume_dmp(s);
+	status |= inv_imu_resume_dmp(s);
+
+	return status;
+}
+
+int inv_imu_resume_dmp(struct inv_imu_device *s)
+{
+	int      status = 0;
+	uint8_t  value;
+	uint64_t start;
+
+	status |= inv_imu_read_reg(s, APEX_CONFIG0, 1, &value);
+	value &= ~APEX_CONFIG0_DMP_INIT_EN_MASK;
+	value |= (uint8_t)APEX_CONFIG0_DMP_INIT_EN;
+	status |= inv_imu_write_reg(s, APEX_CONFIG0, 1, &value);
+
+	/* wait to make sure dmp_init_en = 0 */
+	start = inv_imu_get_time_us();
+	do {
+		inv_imu_read_reg(s, APEX_CONFIG0, 1, &value);
+		inv_imu_sleep_us(100);
+
+		if ((value & APEX_CONFIG0_DMP_INIT_EN_MASK) == 0)
+			break;
+
+	} while (inv_imu_get_time_us() - start < 50000);
 
 	return status;
 }
@@ -1418,6 +1482,54 @@ const char *inv_imu_get_version(void)
 {
 	return INV_IMU_VERSION_STRING;
 }
+
+#if INV_IMU_HFSR_SUPPORTED
+int inv_imu_write_sram(struct inv_imu_device *s, const uint8_t *data, uint32_t offset,
+                       uint32_t size)
+{
+	int     rc = 0;
+	uint8_t memory_bank;
+	uint8_t dmp_memory_address;
+
+	if (size + offset > 1280U)
+		return INV_ERROR_SIZE;
+
+	/* make sure mclk is on */
+	rc |= inv_imu_switch_on_mclk(s);
+
+	/* Write memory pointed by data into DMP memory */
+	memory_bank        = (uint8_t)(SRAM_START_BANK + (offset / 256));
+	dmp_memory_address = (uint8_t)(offset % 256);
+	rc |= inv_imu_write_reg(s, BLK_SEL_W, 1, &memory_bank);
+	inv_imu_sleep_us(10);
+	rc |= inv_imu_write_reg(s, MADDR_W, 1, &dmp_memory_address);
+	inv_imu_sleep_us(10);
+
+	for (uint32_t i = offset; i < size + offset; i++) {
+		if (0 == (i % 256)) {
+			memory_bank        = (uint8_t)(SRAM_START_BANK + (i / 256));
+			dmp_memory_address = 0;
+			rc |= inv_imu_write_reg(s, BLK_SEL_W, 1, &memory_bank);
+			inv_imu_sleep_us(10);
+			rc |= inv_imu_write_reg(s, MADDR_W, 1, &dmp_memory_address);
+			inv_imu_sleep_us(10);
+		}
+
+		rc |= inv_imu_write_reg(s, M_W, 1, &data[i - offset]);
+		inv_imu_sleep_us(10);
+	}
+
+	memory_bank = 0;
+	rc |= inv_imu_write_reg(s, BLK_SEL_W, 1, &memory_bank);
+
+	/* cancel mclk request */
+	rc |= inv_imu_switch_off_mclk(s);
+
+	rc |= read_and_check_sram(s, data, offset, size);
+
+	return rc;
+}
+#endif
 
 /*
  * Static functions definition
@@ -1512,27 +1624,52 @@ static int init_hardware_from_ui(inv_imu_device_t *s)
 	return status;
 }
 
-static int resume_dmp(inv_imu_device_t *s)
+#if INV_IMU_HFSR_SUPPORTED
+static int read_and_check_sram(struct inv_imu_device *s, const uint8_t *data, uint32_t offset,
+                               uint32_t size)
 {
-	int      status = 0;
-	uint8_t  value;
-	uint64_t start;
+	int     rc = 0;
+	uint8_t memory_bank;
+	uint8_t dmp_memory_address;
 
-	status |= inv_imu_read_reg(s, APEX_CONFIG0, 1, &value);
-	value &= ~APEX_CONFIG0_DMP_INIT_EN_MASK;
-	value |= (uint8_t)APEX_CONFIG0_DMP_INIT_EN;
-	status |= inv_imu_write_reg(s, APEX_CONFIG0, 1, &value);
+	/* make sure mclk is on */
+	rc |= inv_imu_switch_on_mclk(s);
 
-	/* wait to make sure dmp_init_en = 0 */
-	start = inv_imu_get_time_us();
-	do {
-		inv_imu_read_reg(s, APEX_CONFIG0, 1, &value);
-		inv_imu_sleep_us(100);
+	/* Read DMP memory and check it against memory pointed by input parameter */
+	memory_bank        = (uint8_t)(SRAM_START_BANK + (offset / 256));
+	dmp_memory_address = (uint8_t)(offset % 256);
 
-		if ((value & APEX_CONFIG0_DMP_INIT_EN_MASK) == 0)
+	rc |= inv_imu_write_reg(s, BLK_SEL_R, 1, &memory_bank);
+	inv_imu_sleep_us(10);
+	rc |= inv_imu_write_reg(s, MADDR_R, 1, &dmp_memory_address);
+	inv_imu_sleep_us(10);
+
+	for (uint32_t i = offset; i < size + offset; i++) {
+		uint8_t readByte;
+
+		if (0 == (i % 256)) {
+			memory_bank        = (uint8_t)(SRAM_START_BANK + (i / 256));
+			dmp_memory_address = 0;
+			rc |= inv_imu_write_reg(s, BLK_SEL_R, 1, &memory_bank);
+			inv_imu_sleep_us(10);
+			rc |= inv_imu_write_reg(s, MADDR_R, 1, &dmp_memory_address);
+			inv_imu_sleep_us(10);
+		}
+
+		rc |= inv_imu_read_reg(s, M_R, 1, &readByte);
+		inv_imu_sleep_us(10);
+		if (readByte != data[i - offset]) {
+			rc = -1;
 			break;
+		}
+	}
 
-	} while (inv_imu_get_time_us() - start < 50000);
+	memory_bank = 0;
+	rc |= inv_imu_write_reg(s, BLK_SEL_R, 1, &memory_bank);
 
-	return status;
+	/* cancel mclk request */
+	rc |= inv_imu_switch_off_mclk(s);
+
+	return rc;
 }
+#endif
