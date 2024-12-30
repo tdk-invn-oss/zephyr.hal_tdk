@@ -5,7 +5,7 @@ if(CONFIG_TDK_HAL)
 
   zephyr_library()
 
-  if(CONFIG_USE_EMD_ICM42670)
+  if(CONFIG_USE_EMD_ICM42670 OR CONFIG_USE_EMD_ICM42370)
 
     zephyr_include_directories(
       common
