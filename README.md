@@ -16,3 +16,10 @@ This repository contains 3-Axis MEMS Motion Sensors drivers for:
 
 Find more information and product details here: 
 https://invensense.tdk.com/products/motion-tracking/3-axis/
+
+And MEMs Barometric Pressure sensor drivers for:
+
+* ICP-201xx
+
+Find more information and product details here: 
+https://invensense.tdk.com/smartpressure/

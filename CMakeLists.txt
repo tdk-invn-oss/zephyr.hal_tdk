@@ -21,4 +21,17 @@ if(CONFIG_TDK_HAL)
 
   endif()
 
+  if(CONFIG_USE_EMD_ICP201XX)
+    zephyr_include_directories(
+      common/Invn
+      icp201xx 
+    )
+
+    zephyr_library_sources(
+      icp201xx/Icp201xx.c
+      icp201xx/Icp201xxDriver.c
+      icp201xx/Icp201xxSerif.c
+    )
+  endif()
+
 endif()
