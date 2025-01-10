@@ -378,7 +378,7 @@ int inv_icp201xx_OTP_bootup_cfg(inv_icp201xx_t * s)
 	uint8_t otp_status;
 	uint8_t offset = 0, gain = 0,Hfosc = 0;
 	uint8_t version= 0;
-	volatile uint8_t bootup_status = 0;
+	uint8_t bootup_status = 0;
 	/* 	1)	Power-on the ASIC ( Asic is already powered on )
 	    2)  Do init ( already initialized ) 
 		*/

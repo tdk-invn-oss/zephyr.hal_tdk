@@ -301,7 +301,7 @@ int inv_icp201xx_wr_boot_up_status (inv_icp201xx_serif_t  * s,uint8_t new_value)
 	if(status)
 		return status;
 	
-	reg_value = reg_value & (~BIT_OTP_STATUS2_BOOTUP_STATUS_MASK) | new_value  ;
+	reg_value = (reg_value & (~BIT_OTP_STATUS2_BOOTUP_STATUS_MASK)) | new_value  ;
 	
 	return inv_icp201xx_serif_write_reg(s, MPUREG_OTP_MTP_OTP_STATUS2, 1, &reg_value);;
 }
