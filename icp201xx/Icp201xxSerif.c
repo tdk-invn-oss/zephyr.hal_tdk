@@ -4,23 +4,18 @@
  * SPDX-License-Identifier: BSD 3-Clause
  */
 
-
 /** @defgroup DriverIcp201xxSerif Icp201xx driver serif
  *  @brief Interface for low-level serial (I2C/I3C/SPI) access
  *  @ingroup  DriverIcp201xx
  *  @{
  */
 
-
 #include "InvBool.h"
 #include "InvError.h"
 #include "Icp201xxSerif.h"
 
-
-
-#define ICP201XX_SERIF_SPI_REG_WRITE_CMD   0X33
-#define ICP201XX_SERIF_SPI_REG_READ_CMD    0X3C
-
+#define ICP201XX_SERIF_SPI_REG_WRITE_CMD 0X33
+#define ICP201XX_SERIF_SPI_REG_READ_CMD  0X3C
 
 /** @brief Reads data from a register on mems.
  * @param[in]  s Pointer to the driver serial interface context structure inv_icp201xx_serif_t
@@ -29,31 +24,32 @@
  * @param[out] buf   output data from the register
  * @return     0 in case of success, negative value on error. See enum inv_status
  */
-int inv_icp201xx_serif_read_reg(inv_icp201xx_serif_t * s,uint8_t reg, uint32_t len, uint8_t * buf )
+int inv_icp201xx_serif_read_reg(inv_icp201xx_serif_t *s, uint8_t reg, uint32_t len, uint8_t *buf)
 {
-	if ( 0 == s)
+	if (0 == s) {
 		return INV_ERROR_BAD_ARG;
+	}
 
-	if(len > s->max_read)
+	if (len > s->max_read) {
 		return INV_ERROR_SIZE;
-	
-	if ( s->if_mode == ICP201XX_IF_3_WIRE_SPI || s->if_mode == ICP201XX_IF_4_WIRE_SPI )
-	{
+	}
+
+	if (s->if_mode == ICP201XX_IF_3_WIRE_SPI || s->if_mode == ICP201XX_IF_4_WIRE_SPI) {
 		uint8_t cmd_buf[2] = {0};
 		cmd_buf[0] = ICP201XX_SERIF_SPI_REG_READ_CMD;
 		cmd_buf[1] = reg;
 
-		if(s->write_reg(s->context, 0, cmd_buf, 2) != 0)
+		if (s->write_reg(s->context, 0, cmd_buf, 2) != 0) {
 			return INV_ERROR_TRANSPORT;
+		}
 	}
-	
-	if(s->read_reg(s->context, reg, buf, len) != 0)
-		return INV_ERROR_TRANSPORT;
 
+	if (s->read_reg(s->context, reg, buf, len) != 0) {
+		return INV_ERROR_TRANSPORT;
+	}
 
 	return INV_ERROR_SUCCESS;
 }
-
 
 /** @brief Writes data to a register on mems.
  * @param[in]  s Pointer to the driver serial interface context structure inv_icp201xx_serif_t
@@ -62,29 +58,32 @@ int inv_icp201xx_serif_read_reg(inv_icp201xx_serif_t * s,uint8_t reg, uint32_t l
  * @param[in]  len number of bytes to be written
  * @return     0 in case of success, negative value on error. See enum inv_status
  */
-int inv_icp201xx_serif_write_reg(inv_icp201xx_serif_t * s,uint8_t reg, uint32_t len, const uint8_t * buf)
+int inv_icp201xx_serif_write_reg(inv_icp201xx_serif_t *s, uint8_t reg, uint32_t len,
+				 const uint8_t *buf)
 {
-	if ( 0 == s)
+	if (0 == s) {
 		return INV_ERROR_BAD_ARG;
+	}
 
-	if(len > s->max_write)
+	if (len > s->max_write) {
 		return INV_ERROR_SIZE;
+	}
 
-	if ( s->if_mode == ICP201XX_IF_3_WIRE_SPI || s->if_mode == ICP201XX_IF_4_WIRE_SPI )
-	{
+	if (s->if_mode == ICP201XX_IF_3_WIRE_SPI || s->if_mode == ICP201XX_IF_4_WIRE_SPI) {
 		uint8_t cmd_buf[2] = {0};
 		cmd_buf[0] = ICP201XX_SERIF_SPI_REG_WRITE_CMD;
 		cmd_buf[1] = reg;
 
-		if(s->write_reg(s->context, 0, cmd_buf, 2) != 0)
+		if (s->write_reg(s->context, 0, cmd_buf, 2) != 0) {
 			return INV_ERROR_TRANSPORT;
+		}
 	}
 
-	if(s->write_reg(s->context, reg, buf, len) != 0)
+	if (s->write_reg(s->context, reg, buf, len) != 0) {
 		return INV_ERROR_TRANSPORT;
+	}
 
 	return INV_ERROR_SUCCESS;
 }
-
 
 /** @} */

@@ -25,9 +25,8 @@ extern "C" {
  *  ~100us resolution is sufficient
  *  @param[in] us number of us the calling thread should sleep
  */
- 
-extern void inv_icp201xx_sleep_us(int us);
 
+extern void inv_icp201xx_sleep_us(int us);
 
 #ifdef __cplusplus
 }
