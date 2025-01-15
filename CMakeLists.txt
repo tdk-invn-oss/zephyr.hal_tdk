@@ -34,4 +34,17 @@ if(CONFIG_TDK_HAL)
     )
   endif()
 
+  if(CONFIG_USE_EMD_ICP101XX)
+    zephyr_include_directories(
+      common/Invn 
+      icp101xx 
+    )
+    if (NOT CONFIG_CPU_HAS_FPU STREQUAL "y")
+      zephyr_compile_definitions(ICP101XX_DISABLE_FLOATING_POINT)
+    endif()
+    zephyr_library_sources(
+      icp101xx/Icp101xx.c
+    )
+  endif()
+
 endif()
