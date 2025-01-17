@@ -39,6 +39,10 @@ if(CONFIG_TDK_HAL)
       common/Invn 
       icp101xx 
     )
+
+    # When building native_sim on Zephyr we need to explicitely disable messages
+    zephyr_compile_definitions(-DINV_MSG_DISABLE=1)
+
     if (NOT CONFIG_CPU_HAS_FPU STREQUAL "y")
       zephyr_compile_definitions(ICP101XX_DISABLE_FLOATING_POINT)
     endif()
