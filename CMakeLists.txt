@@ -21,6 +21,22 @@ if(CONFIG_TDK_HAL)
 
   endif()
 
+  if(CONFIG_USE_EMD_ICM45687)
+
+    zephyr_include_directories(
+      common
+      icm456xx
+      icm456xx/icm456xx_h
+    )
+
+    zephyr_library_sources(
+      icm456xx/imu/inv_imu_driver.c
+      icm456xx/imu/inv_imu_transport.c
+    )
+    zephyr_library_sources_ifdef(CONFIG_TDK_APEX icm456xx/imu/inv_imu_edmp.c)
+
+  endif()
+
   if(CONFIG_USE_EMD_ICP201XX)
     zephyr_include_directories(
       common/Invn
