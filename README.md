@@ -6,6 +6,7 @@ This repository contains 6-Axis MEMS Motion Sensors drivers for:
 
 * ICM-42670-P
 * ICM-42670-S
+* ICM-45686
 
 Find more information and product details here: 
 https://invensense.tdk.com/products/motion-tracking/6-axis/
