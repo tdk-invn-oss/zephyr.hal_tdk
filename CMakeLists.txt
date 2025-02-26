@@ -21,7 +21,7 @@ if(CONFIG_TDK_HAL)
 
   endif()
 
-  if(CONFIG_USE_EMD_ICM45687)
+  if(CONFIG_USE_EMD_ICM45686)
 
     zephyr_include_directories(
       common
