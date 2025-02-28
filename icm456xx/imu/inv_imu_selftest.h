@@ -1,18 +1,7 @@
 /*
+ * Copyright (c) 2020 TDK Invensense
  *
- * Copyright (c) [2020] by InvenSense, Inc.
- * 
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 /** @defgroup selftest Self-test
@@ -54,6 +43,9 @@ typedef struct {
 
 	/** Tolerance between factory trim and gyro self-test response */
 	selftest_gyro_threshold_t gyro_limit;
+
+	/** Mechanism for adding patches to self-test operations */
+	uint32_t patch_settings;
 } inv_imu_selftest_parameters_t;
 
 /** Self-test outputs */

@@ -1,18 +1,7 @@
 /*
+ * Copyright (c) 2020 TDK Invensense
  *
- * Copyright (c) [2020] by InvenSense, Inc.
- * 
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 #include "imu/inv_imu_driver_advanced.h"
@@ -72,6 +61,7 @@ int inv_imu_adv_device_reset(inv_imu_device_t *s)
 	/* Set default FIFO configuration */
 	e->fifo_is_used = INV_IMU_DISABLE; /* FIFO disabled by default */
 	e->fifo_comp_en = INV_IMU_DISABLE; /* FIFO compression disabled by default */
+	e->fifo_mode    = FIFO_CONFIG0_FIFO_MODE_BYPASS; /* FIFO in BYPASS by default */
 
 	/* From driver layer */
 	s->fifo_frame_size = 0; /* Init at 0 by default */
@@ -857,10 +847,19 @@ static int parse_uncompressed_fifo_frame(inv_imu_device_t *s, uint8_t *frame)
 int inv_imu_adv_get_data_from_fifo(inv_imu_device_t *s, uint8_t fifo_data[FIFO_MIRRORING_SIZE],
                                    uint16_t *fifo_count)
 {
-	int status = INV_IMU_OK;
+	int                      status = INV_IMU_OK;
+	const inv_imu_adv_var_t *e      = (const inv_imu_adv_var_t *)s->adv_var;
 
 	/* Read FIFO count */
 	status |= inv_imu_get_frame_count(s, fifo_count);
+
+	/*
+	 * AN-000364: When operating in FIFO streaming mode, if FIFO threshold interrupt is triggered
+	 * with M number of FIFO frames accumulated in the FIFO buffer, the host should only read the
+	 * first M-1 number of FIFO frames
+	 */
+	if (e->fifo_mode == FIFO_CONFIG0_FIFO_MODE_STREAM)
+		(*fifo_count)--;
 
 	/* Read FIFO data */
 	status |= inv_imu_read_reg(s, FIFO_DATA, *fifo_count * s->fifo_frame_size, fifo_data);
@@ -1013,7 +1012,8 @@ int inv_imu_adv_get_fifo_config(inv_imu_device_t *s, inv_imu_adv_fifo_config_t *
 	/* FIFO_CONFIG0 */
 	conf->base_conf.fifo_mode = (fifo_config0_fifo_mode_t)cfg.fifo_config0.fifo_mode;
 	if (cfg.fifo_config0.fifo_depth == FIFO_CONFIG0_FIFO_DEPTH_MAX ||
-	    cfg.fifo_config0.fifo_depth == FIFO_CONFIG0_FIFO_DEPTH_APEX) {
+	    cfg.fifo_config0.fifo_depth == FIFO_CONFIG0_FIFO_DEPTH_APEX ||
+	    cfg.fifo_config0.fifo_depth == FIFO_CONFIG0_FIFO_DEPTH_GAF) {
 		/* `fifo_depth` is valid, return it */
 		conf->base_conf.fifo_depth = (fifo_config0_fifo_depth_t)cfg.fifo_config0.fifo_depth;
 	} else {
@@ -1068,6 +1068,12 @@ int inv_imu_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_conf
 	if (conf_cnt > 1)
 		return INV_IMU_ERROR_BAD_ARG;
 
+	/* `fifo_depth` must be a valid value. */
+	if (conf->base_conf.fifo_depth != FIFO_CONFIG0_FIFO_DEPTH_MAX &&
+	    conf->base_conf.fifo_depth != FIFO_CONFIG0_FIFO_DEPTH_APEX &&
+	    conf->base_conf.fifo_depth != FIFO_CONFIG0_FIFO_DEPTH_GAF)
+		return INV_IMU_ERROR_BAD_ARG;
+
 	status |= inv_imu_read_reg(s, FIFO_CONFIG0, 6, (uint8_t *)&cfg);
 	status |= inv_imu_read_reg(s, ODR_DECIMATE_CONFIG, 1, (uint8_t *)&odr_decimate_config);
 
@@ -1077,7 +1083,7 @@ int inv_imu_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_conf
 		uint32_t    accel_odr = UINT32_MAX;
 		uint32_t    gyro_odr  = UINT32_MAX;
 
-		/* Retrieve fastest ODR */
+		/* Retreive fatest ODR */
 		status |= inv_imu_read_reg(s, PWR_MGMT0, 1, (uint8_t *)&pwr_mgmt0);
 
 		if (pwr_mgmt0.accel_mode != PWR_MGMT0_ACCEL_MODE_OFF) {
@@ -1149,6 +1155,9 @@ int inv_imu_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_conf
 
 	/* Set expected fifo_mode */
 	cfg.fifo_config0.fifo_mode = (uint8_t)conf->base_conf.fifo_mode;
+
+	/* Save FIFO mode so we can read M-1 frames when in streaming mode (AN-000364) */
+	e->fifo_mode = conf->base_conf.fifo_mode;
 
 	if (conf->base_conf.fifo_mode == FIFO_CONFIG0_FIFO_MODE_BYPASS) {
 		/* 
@@ -1331,7 +1340,7 @@ static int configure_serial_interface(inv_imu_device_t *s)
 		break; /* Nothing to do */
 
 	case UI_SPI4:
-		/* Enable SPI 3/4 override and set 4-wire mode */
+		/* Enable SPI 3/4 overide and set 4-wire mode */
 		intf_config1_ovrd.ap_spi_34_mode_ovrd = INV_IMU_ENABLE;
 		intf_config1_ovrd.ap_spi_34_mode_ovrd_val =
 		    INTF_CONFIG1_OVRD_AP_SPI_34_MODE_OVRD_VAL_4_WIRE;
@@ -1339,7 +1348,7 @@ static int configure_serial_interface(inv_imu_device_t *s)
 		break;
 
 	case UI_SPI3:
-		/* Enable SPI 3/4 override and set 3-wire mode */
+		/* Enable SPI 3/4 overide and set 3-wire mode */
 		intf_config1_ovrd.ap_spi_34_mode_ovrd = INV_IMU_ENABLE;
 		intf_config1_ovrd.ap_spi_34_mode_ovrd_val =
 		    INTF_CONFIG1_OVRD_AP_SPI_34_MODE_OVRD_VAL_3_WIRE;

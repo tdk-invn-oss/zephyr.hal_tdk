@@ -1,26 +1,11 @@
 /*
+ * Copyright (c) 2020 TDK Invensense
  *
- * Copyright (c) [2020] by InvenSense, Inc.
- * 
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 #include "imu/inv_imu_driver.h"
 #include "imu/inv_imu_version.h"
-
-#ifndef INV_IMU_POST_RESET_HOOK
-#define INV_IMU_POST_RESET_HOOK(s) INV_IMU_OK
-#endif
 
 void inv_imu_sleep_us(inv_imu_device_t *s, uint32_t us)
 {
@@ -58,8 +43,6 @@ int inv_imu_soft_reset(inv_imu_device_t *s)
 	if (int1_status0.int1_status_reset_done != 1)
 		return INV_IMU_ERROR; /* Return an error if RESET_DONE is not set */
 
-	status |= INV_IMU_POST_RESET_HOOK(s);
-
 	return status;
 }
 
@@ -68,6 +51,13 @@ int inv_imu_get_who_am_i(inv_imu_device_t *s, uint8_t *who_am_i)
 	int status;
 
 	status = inv_imu_read_reg(s, WHO_AM_I, 1, who_am_i);
+
+	/* AN-000364
+	 * In I2C mode, after chip power-up, the host should perform one retry
+	 * on the very first I2C transaction if it receives a NACK 
+	 */
+	if (s->transport.serif_type == UI_I2C && status)
+		status = inv_imu_read_reg(s, WHO_AM_I, 1, who_am_i);
 
 	return status;
 }
@@ -466,7 +456,6 @@ int inv_imu_set_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
 	intx_configx.int1_config0.int1_status_en_fifo_full    = it->INV_FIFO_FULL;
 	intx_configx.int1_config0.int1_status_en_fifo_ths     = it->INV_FIFO_THS;
 	intx_configx.int1_config0.int1_status_en_drdy         = it->INV_UI_DRDY;
-	intx_configx.int1_config0.int1_status_en_aux1_drdy    = it->INV_OIS1;
 	intx_configx.int1_config0.int1_status_en_ap_fsync     = it->INV_UI_FSYNC;
 	intx_configx.int1_config0.int1_status_en_ap_agc_rdy   = it->INV_AGC_RDY;
 	intx_configx.int1_config0.int1_status_en_aux1_agc_rdy = it->INV_OIS1_AGC_RDY;
@@ -480,7 +469,6 @@ int inv_imu_set_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
 	intx_configx.int1_config1.int1_status_en_i3c_protocol_err = it->INV_I3C_PROT_ERR;
 	intx_configx.int1_config1.int1_status_en_i2cm_done        = it->INV_I2CM_DONE;
 	intx_configx.int1_config1.int1_status_en_apex_event       = it->INV_EDMP_EVENT;
-	intx_configx.int1_config1.resv_1                          = 0;
 
 	status |= inv_imu_write_reg(s, reg, 2, (uint8_t *)&intx_configx);
 
@@ -512,7 +500,6 @@ int inv_imu_get_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
 	it->INV_FIFO_FULL    = intx_configx.int1_config0.int1_status_en_fifo_full;
 	it->INV_FIFO_THS     = intx_configx.int1_config0.int1_status_en_fifo_ths;
 	it->INV_UI_DRDY      = intx_configx.int1_config0.int1_status_en_drdy;
-	it->INV_OIS1         = intx_configx.int1_config0.int1_status_en_aux1_drdy;
 	it->INV_UI_FSYNC     = intx_configx.int1_config0.int1_status_en_ap_fsync;
 	it->INV_AGC_RDY      = intx_configx.int1_config0.int1_status_en_ap_agc_rdy;
 	it->INV_OIS1_AGC_RDY = intx_configx.int1_config0.int1_status_en_aux1_agc_rdy;
@@ -623,20 +610,6 @@ int inv_imu_select_accel_lp_clk(inv_imu_device_t *s, smc_control_0_accel_lp_clk_
 	status |= inv_imu_write_reg(s, SMC_CONTROL_0, 1, (uint8_t *)&smc_control_0);
 
 	return status;
-}
-
-void inv_imu_remap_data(int16_t data[3], const int8_t mmatrix[9])
-{
-	uint8_t i;
-	int16_t data_out[3] = { 0 };
-	for (i = 0; i < 3; i++) {
-		data_out[i] = data[0] * (int16_t)mmatrix[(i * 3) + 0];
-		data_out[i] += data[1] * (int16_t)mmatrix[(i * 3) + 1];
-		data_out[i] += data[2] * (int16_t)mmatrix[(i * 3) + 2];
-	}
-	data[0] = data_out[0];
-	data[1] = data_out[1];
-	data[2] = data_out[2];
 }
 
 const char *inv_imu_get_version(void)

@@ -1,23 +1,11 @@
 /*
+ * Copyright (c) 2020 TDK Invensense
  *
- * Copyright (c) [2020] by InvenSense, Inc.
- * 
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 #include "imu/inv_imu_selftest.h"
 #include "imu/inv_imu_edmp.h"
-#include "imu/inv_imu_edmp_defs.h"
 
 /* Static functions definition */
 static int set_selftest_parameters(inv_imu_device_t *                   s,
@@ -32,11 +20,12 @@ int inv_imu_selftest_init_params(inv_imu_device_t *s, inv_imu_selftest_parameter
 {
 	int rc = INV_IMU_OK;
 
-	st_params->accel_en    = INV_IMU_ENABLE;
-	st_params->gyro_en     = INV_IMU_ENABLE;
-	st_params->avg_time    = SELFTEST_AVG_TIME_320_MS;
-	st_params->accel_limit = SELFTEST_ACCEL_THRESHOLD_50_PERCENT;
-	st_params->gyro_limit  = SELFTEST_GYRO_THRESHOLD_50_PERCENT;
+	st_params->accel_en       = INV_IMU_ENABLE;
+	st_params->gyro_en        = INV_IMU_ENABLE;
+	st_params->avg_time       = SELFTEST_AVG_TIME_320_MS;
+	st_params->accel_limit    = SELFTEST_ACCEL_THRESHOLD_50_PERCENT;
+	st_params->gyro_limit     = SELFTEST_GYRO_THRESHOLD_50_PERCENT;
+	st_params->patch_settings = 0;
 
 	return rc;
 }
@@ -72,29 +61,25 @@ int inv_imu_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *s
 static int set_selftest_parameters(inv_imu_device_t *                   s,
                                    const inv_imu_selftest_parameters_t *st_params)
 {
-	int      rc      = INV_IMU_OK;
-	uint32_t value   = 0;
-	int      init_en = (st_params->accel_en || st_params->gyro_en);
+	int      rc             = INV_IMU_OK;
+	uint32_t tmp_stc_params = 0;
+	int      init_en;
 
 	rc |= inv_imu_adv_power_up_sram(s);
 
-	/* Disable any patching point */
-	for (uint32_t i = EDMP_PATCH_TABLE_START; i < EDMP_PATCH_TABLE_END; i++) {
-		rc |= inv_imu_write_sram(s, i, 1, (uint8_t *)&value);
-	}
-	/* Prepare for self-test execution and not for memset done by EDMP */
-	rc |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_ONDEMAND_STATIC_SERVICE_REQUEST, (uint8_t *)&value);
+	init_en = (st_params->accel_en || st_params->gyro_en);
+	tmp_stc_params |= (init_en ? SELFTESTCAL_INIT_EN : SELFTESTCAL_INIT_DIS);
+	tmp_stc_params |= (st_params->accel_en ? SELFTEST_ACCEL_EN : SELFTEST_ACCEL_DIS);
+	tmp_stc_params |= (st_params->gyro_en ? SELFTEST_GYRO_EN : SELFTEST_GYRO_DIS);
+	tmp_stc_params |= (uint32_t)(st_params->accel_limit & SELFTEST_ACCEL_THRESH_MASK);
+	tmp_stc_params |= (uint32_t)(st_params->gyro_limit & SELFTEST_GYRO_THRESH_MASK);
+	tmp_stc_params |= (uint32_t)(st_params->avg_time & SELFTEST_AVERAGE_TIME_MASK);
+	rc |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_STC_CONFIGPARAMS, (uint8_t *)&tmp_stc_params);
 
-	/* Disable any self-test stop point */
-	rc |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_STC_DEBUG_EN, (uint8_t *)&value);
+	tmp_stc_params = 0; /* disable any selftest stop point */
+	rc |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_STC_DEBUG_EN, (uint8_t *)&tmp_stc_params);
 
-	value = (init_en ? SELFTEST_INIT_EN : SELFTEST_INIT_DIS);
-	value |= (st_params->accel_en ? SELFTEST_ACCEL_EN : SELFTEST_ACCEL_DIS);
-	value |= (st_params->gyro_en ? SELFTEST_GYRO_EN : SELFTEST_GYRO_DIS);
-	value |= (uint32_t)(st_params->accel_limit & SELFTEST_ACCEL_THRESH_MASK);
-	value |= (uint32_t)(st_params->gyro_limit & SELFTEST_GYRO_THRESH_MASK);
-	value |= (uint32_t)(st_params->avg_time & SELFTEST_AVERAGE_TIME_MASK);
-	rc |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_STC_CONFIGPARAMS, (uint8_t *)&value);
+	rc |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_STC_PATCH_EN, (uint8_t *)&(st_params->patch_settings));
 
 	return rc;
 }
@@ -146,7 +131,7 @@ static int get_selftest_output(inv_imu_device_t *s, const inv_imu_selftest_param
 	int      rc = INV_IMU_OK;
 	uint32_t stc_results;
 
-	/* Read self-test results */
+	/* Read STC results */
 	rc |= INV_IMU_READ_EDMP_SRAM(s, EDMP_STC_RESULTS, (uint8_t *)&stc_results);
 
 	if (!st_params->accel_en) {

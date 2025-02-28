@@ -1,18 +1,7 @@
 /*
+ * Copyright (c) 2020 TDK Invensense
  *
- * Copyright (c) [2020] by InvenSense, Inc.
- * 
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 #include "imu/inv_imu_transport.h"
@@ -84,7 +73,7 @@ static int check_out_of_bounds_mreg(uint32_t reg, uint32_t len)
 	uint32_t min_addr = reg;
 	uint32_t max_addr = reg + len - 1;
 
-	/* AN-000364 (2.11)
+	/* AN-000364
 	 * Users must not access the following register map address space to prevent stalling the device.
 	 * - From 0x000023FF to 0x00003FFF
 	 * - From 0x000083FF to 0x00009FFF

@@ -1,18 +1,7 @@
 /*
+ * Copyright (c) 2020 TDK Invensense
  *
- * Copyright (c) [2020] by InvenSense, Inc.
- * 
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 #ifndef _INV_IMU_REGMAP_BE_H_
@@ -212,13 +201,13 @@ typedef struct {
 
 #define EDMP_APEX_EN0                                                           0x29
 typedef struct {
-	uint8_t resv_2                                                                 : 1;
-	uint8_t b2s_en                                                                 : 1;
+	uint8_t smd_en                                                                 : 1;
+	uint8_t r2w_en                                                                 : 1;
 	uint8_t ff_en                                                                  : 1;
-	uint8_t aid_en                                                                 : 1;
-	uint8_t resv_1                                                                 : 1;
-	uint8_t vvd_en                                                                 : 1;
-	uint8_t sif_en                                                                 : 1;
+	uint8_t pedo_en                                                                : 1;
+	uint8_t tilt_en                                                                : 1;
+	uint8_t reserved1                                                              : 1;
+	uint8_t reserved0                                                              : 1;
 	uint8_t tap_en                                                                 : 1;
 } edmp_apex_en0_t;
 
@@ -227,8 +216,8 @@ typedef struct {
 	uint8_t resv_2                                                                 : 1;
 	uint8_t edmp_enable                                                            : 1;
 	uint8_t feature3_en                                                            : 1;
-	uint8_t gaf_en                                                                 : 1;
 	uint8_t resv_1                                                                 : 1;
+	uint8_t basic_smd_en                                                           : 1;
 	uint8_t power_save_en                                                          : 1;
 	uint8_t init_en                                                                : 1;
 	uint8_t soft_hard_iron_corr_en                                                 : 1;
@@ -324,11 +313,11 @@ typedef struct {
 
 #define INT_APEX_CONFIG0                                                        0x39
 typedef struct {
-	uint8_t int_status_mask_pin_b2s_det                                            : 1;
+	uint8_t int_status_mask_pin_r2w_wake_det                                       : 1;
 	uint8_t int_status_mask_pin_ff_det                                             : 1;
-	uint8_t int_status_mask_pin_aid_device_det                                     : 1;
-	uint8_t int_status_mask_pin_aid_human_det                                      : 1;
-	uint8_t int_status_mask_pin_sif_det                                            : 1;
+	uint8_t int_status_mask_pin_step_det                                           : 1;
+	uint8_t int_status_mask_pin_step_cnt_ovfl                                      : 1;
+	uint8_t int_status_mask_pin_tilt_det                                           : 1;
 	uint8_t int_status_mask_pin_low_g_det                                          : 1;
 	uint8_t int_status_mask_pin_high_g_det                                         : 1;
 	uint8_t int_status_mask_pin_tap_detect                                         : 1;
@@ -336,21 +325,22 @@ typedef struct {
 
 #define INT_APEX_CONFIG1                                                        0x3a
 typedef struct {
-	uint8_t resv_2                                                                 : 3;
+	uint8_t resv_2                                                                 : 2;
+	uint8_t int_status_mask_pin_basic_smd                                          : 1;
 	uint8_t int_status_mask_pin_sa_done                                            : 1;
 	uint8_t resv_1                                                                 : 1;
 	uint8_t int_status_mask_pin_selftest_done                                      : 1;
-	uint8_t int_status_mask_pin_vvd_det                                            : 1;
-	uint8_t int_status_mask_pin_b2s_rev_det                                        : 1;
+	uint8_t int_status_mask_pin_smd_det                                            : 1;
+	uint8_t int_status_mask_pin_r2w_sleep_det                                      : 1;
 } int_apex_config1_t;
 
 #define INT_APEX_STATUS0                                                        0x3b
 typedef struct {
-	uint8_t int_status_b2s_det                                                     : 1;
+	uint8_t int_status_r2w_wake_det                                                : 1;
 	uint8_t int_status_ff_det                                                      : 1;
-	uint8_t int_status_aid_device_det                                              : 1;
-	uint8_t int_status_aid_human_det                                               : 1;
-	uint8_t int_status_sif_det                                                     : 1;
+	uint8_t int_status_step_det                                                    : 1;
+	uint8_t int_status_step_cnt_ovfl                                               : 1;
+	uint8_t int_status_tilt_det                                                    : 1;
 	uint8_t int_status_low_g_det                                                   : 1;
 	uint8_t int_status_high_g_det                                                  : 1;
 	uint8_t int_status_tap_det                                                     : 1;
@@ -358,12 +348,13 @@ typedef struct {
 
 #define INT_APEX_STATUS1                                                        0x3c
 typedef struct {
-	uint8_t resv_2                                                                 : 3;
+	uint8_t resv_2                                                                 : 2;
+	uint8_t int_status_basic_smd                                                   : 1;
 	uint8_t int_status_sa_done                                                     : 1;
 	uint8_t resv_1                                                                 : 1;
 	uint8_t int_status_selftest_done                                               : 1;
-	uint8_t int_status_vvd_det                                                     : 1;
-	uint8_t int_status_b2s_rev_det                                                 : 1;
+	uint8_t int_status_smd_det                                                     : 1;
+	uint8_t int_status_r2w_sleep_det                                               : 1;
 } int_apex_status1_t;
 
 #define INTF_CONFIG_OVRD_AUX1                                                   0x42

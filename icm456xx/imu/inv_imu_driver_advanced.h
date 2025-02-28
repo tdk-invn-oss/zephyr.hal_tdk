@@ -1,18 +1,7 @@
 /*
+ * Copyright (c) 2020 TDK Invensense
  *
- * Copyright (c) [2020] by InvenSense, Inc.
- * 
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 /** @defgroup DriverAdv Driver Advanced
@@ -35,7 +24,7 @@ extern "C" {
 #include <string.h>
 
 /** @brief Maximum buffer size mirrored from FIFO */
-#define FIFO_MIRRORING_SIZE 8 * 256 /* 2kB */
+#define FIFO_MIRRORING_SIZE 16 * 258 /* packet size * max_count = 4kB */
 
 /*
  * Driver's structures definitions 
@@ -81,8 +70,9 @@ typedef struct {
 	void (*sensor_event_cb)(inv_imu_sensor_event_t *event);
 
 	/* The following fields will be initialized by inv_imu_adv_init() */
-	uint8_t fifo_is_used; /**< Keeps track of FIFO usage */
-	uint8_t fifo_comp_en; /**< Indicates if FIFO compression is enabled */
+	uint8_t                  fifo_is_used; /**< Keeps track of FIFO usage */
+	uint8_t                  fifo_comp_en; /**< Indicates if FIFO compression is enabled */
+	fifo_config0_fifo_mode_t fifo_mode; /**< Current fifo mode. Required by AN-000364 */
 
 	/* Variables related to FIFO compression */
 	int16_t accel_baseline[3]; /**< Baseline for the accel */
@@ -104,6 +94,16 @@ typedef enum {
 	INV_SENSOR_GYRO,
 	INV_SENSOR_FSYNC_EVENT,
 	INV_SENSOR_TEMPERATURE,
+	INV_SENSOR_EDMP_PEDOMETER_EVENT,
+	INV_SENSOR_EDMP_PEDOMETER_COUNT,
+	INV_SENSOR_EDMP_TILT,
+	INV_SENSOR_EDMP_FF,
+	INV_SENSOR_EDMP_LOWG,
+	INV_SENSOR_EDMP_HIGHG,
+	INV_SENSOR_EDMP_SMD,
+	INV_SENSOR_EDMP_TAP,
+	INV_SENSOR_EDMP_R2W_WAKE,
+	INV_SENSOR_EDMP_R2W_SLEEP,
 	INV_SENSOR_ES0,
 	INV_SENSOR_ES1,
 	INV_SENSOR_MAX
@@ -216,7 +216,7 @@ int inv_imu_adv_set_int2_pin_usage(inv_imu_device_t *                           
 int inv_imu_adv_configure_fsync_ap_tag(inv_imu_device_t *           s,
                                        fsync_config0_ap_fsync_sel_t sensor_tag);
 
-/** @brief Enable fsync tagging functionality.
+/** @brief Enable fsync tagging functionnality.
  *  In details it:
  *     - enables fsync
  *     - enables timestamp to registers. Once fysnc is enabled fsync counter is pushed to 
@@ -228,7 +228,7 @@ int inv_imu_adv_configure_fsync_ap_tag(inv_imu_device_t *           s,
  */
 int inv_imu_adv_enable_fsync(inv_imu_device_t *s);
 
-/** @brief Disable fsync tagging functionality.
+/** @brief Disable fsync tagging functionnality.
  *  In details it:
  *     - disables fsync
  *     - disables timestamp to registers. Once fysnc is disabled  timestamp is pushed to fifo 
@@ -280,7 +280,7 @@ int inv_imu_adv_get_data_from_fifo(inv_imu_device_t *s, uint8_t fifo_data[FIFO_M
 
 /** @brief Parse packets from FIFO buffer. For each packet function builds a
  *         sensor event containing packet data and validity information. Then it calls 
- *         sensor_event_cb function passed in parameter of inv_imu_init function for each 
+ *         sensor_event_cb funtion passed in parameter of inv_imu_init function for each 
  *         packet.
  *  @param[in] s           Pointer to device.
  *  @param[in] fifo_data   Pointer to FIFO data buffer.

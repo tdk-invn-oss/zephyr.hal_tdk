@@ -1,18 +1,7 @@
 /*
+ * Copyright (c) 2020 TDK Invensense
  *
- * Copyright (c) [2020] by InvenSense, Inc.
- * 
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 /** @defgroup Driver Basic Driver
@@ -40,7 +29,7 @@ extern "C" {
  */
 
 /** @brief Basic driver configuration structure */
-typedef struct inv_imu_device {
+typedef struct {
 	/** @brief Transport structure */
 	inv_imu_transport_t transport;
 
@@ -307,12 +296,6 @@ int inv_imu_get_endianness(inv_imu_device_t *s);
  *  @return             0 on success, negative value on error.
  */
 int inv_imu_select_accel_lp_clk(inv_imu_device_t *s, smc_control_0_accel_lp_clk_sel_t clk_sel);
-
-/** @brief Apply a remap axis matrix on input data
- *  @param[in,out] data     16bit IMU data to be remapped.
- *  @param[in]     mmatrix  Remap matrix to be applied.
- */
-void inv_imu_remap_data(int16_t data[3], const int8_t mmatrix[9]);
 
 /** @brief Return driver version x.y.z-suffix as a char array
  *  @return  Driver version as char array "x.y.z-suffix"

@@ -1,18 +1,7 @@
 /*
+ * Copyright (c) 2020 TDK Invensense
  *
- * Copyright (c) [2020] by InvenSense, Inc.
- * 
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 /** @defgroup Transport Transport
@@ -53,7 +42,7 @@ typedef int (*inv_imu_write_reg_t)(uint8_t reg, const uint8_t *buf, uint32_t len
 #define UI_SPI3 2 /**< identifies 3-wire SPI interface. */
 
 /** @brief Serif type definition.
- *  @deprecated Kept for backwards compatibility. Replaced with `uint32_t` type
+ *  @deprecated Kept for retrocompatibility. Replaced with `uint32_t` type
  *              in `inv_imu_transport_t` struct.
  */
 typedef uint32_t inv_imu_serif_type_t;

@@ -1,18 +1,7 @@
 /*
+ * Copyright (c) 2020 TDK Invensense
  *
- * Copyright (c) [2020] by InvenSense, Inc.
- * 
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 #ifndef _INV_IMU_DEFS_H_
@@ -39,13 +28,11 @@ extern "C" {
 /* #include "imu/inv_imu_regmap_be.h" */
 
 /* Error/Success codes */
-#define INV_IMU_OK              0 /**< Success */
-#define INV_IMU_ERROR           -1 /**< Unspecified error */
-#define INV_IMU_ERROR_TRANSPORT -3 /**< Error occurred at transport level */
-#define INV_IMU_ERROR_TIMEOUT   -4 /**< Action did not complete in the expected time window */
-#define INV_IMU_ERROR_BAD_ARG   -11 /**< Invalid argument provided */
-#define INV_IMU_ERROR_EDMP_RAM_KO                                                                  \
-	-125 /**< EDMP RAM error (typically a RAM value read twice but unconsistent) */
+#define INV_IMU_OK                   0 /**< Success */
+#define INV_IMU_ERROR                -1 /**< Unspecified error */
+#define INV_IMU_ERROR_TRANSPORT      -3 /**< Error occurred at transport level */
+#define INV_IMU_ERROR_TIMEOUT        -4 /**< Action did not complete in the expected time window */
+#define INV_IMU_ERROR_BAD_ARG        -11 /**< Invalid argument provided */
 #define INV_IMU_ERROR_EDMP_ODR       -126 /**< EDMP ODR decimator reconfiguration is needed */
 #define INV_IMU_ERROR_EDMP_BUF_EMPTY -127 /**< EDMP buffer is empty */
 
@@ -323,9 +310,13 @@ typedef enum {
 
 /* fifo_depth */
 typedef enum {
-	FIFO_CONFIG0_FIFO_DEPTH_MAX =
-	    0x1E, /* Errata AN-000364, 2.12: The maximum FIFO size is 7936 bytes when FIFO frame size is 8 bytes and FIFO is in stop-on-full mode. The maximum FIFO size is 8192 bytes in all other cases */
+	FIFO_CONFIG0_FIFO_DEPTH_MAX = 0x1E, /* Errata AN-000364 */
+#if defined(ICM45632M)
+	FIFO_CONFIG0_FIFO_DEPTH_APEX = 0x0B,
+#else
 	FIFO_CONFIG0_FIFO_DEPTH_APEX = 0x07,
+#endif
+	FIFO_CONFIG0_FIFO_DEPTH_GAF = 0x04,
 } fifo_config0_fifo_depth_t;
 
 /*
@@ -744,14 +735,16 @@ typedef enum {
 #define STC_RESULTS_GYRO_Y_MASK    0x0010
 #define STC_RESULTS_GYRO_Z_MASK    0x0020
 #define STC_RESULTS_ST_STATUS_MASK 0x00C0
+#define STC_RESULTS_ACCEL_SC_MASK  0x0300
+#define STC_RESULTS_GYRO_SC_MASK   0x0C00
 
 /*
  * EDMP_STC_CONFIGPARAMS
  */
 
-#define SELFTEST_INIT_EN_MASK      0x0001
-#define SELFTEST_INIT_EN           0x0001
-#define SELFTEST_INIT_DIS          0x0000
+#define SELFTESTCAL_INIT_EN_MASK   0x0001
+#define SELFTESTCAL_INIT_EN        0x0001
+#define SELFTESTCAL_INIT_DIS       0x0000
 #define SELFTEST_ACCEL_EN_MASK     0x0002
 #define SELFTEST_ACCEL_EN          0x0002
 #define SELFTEST_ACCEL_DIS         0x0000
@@ -792,6 +785,17 @@ typedef enum {
 	SELFTEST_GYRO_THRESHOLD_40_PERCENT = 0xc000,
 	SELFTEST_GYRO_THRESHOLD_50_PERCENT = 0xe000
 } selftest_gyro_threshold_t;
+
+/*
+ * EDMP_STC_PATCH_EN
+ */
+
+typedef enum {
+	SELFTEST_PATCH_EN_ACCEL_PHASE1 = 0x0001,
+	SELFTEST_PATCH_EN_ACCEL_PHASE2 = 0x0002,
+	SELFTEST_PATCH_EN_GYRO1_PHASE1 = 0x0004,
+	SELFTEST_PATCH_EN_GYRO1_PHASE2 = 0x0008
+} stc_patch_params_t;
 
 #ifdef __cplusplus
 }
