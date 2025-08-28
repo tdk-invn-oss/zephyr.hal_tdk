@@ -36,15 +36,16 @@ extern "C" {
 
 #if CONFIG_USE_EMD_ICM45686
   #define INV_IMU_HIGH_FSR_SUPPORTED   1
+  #define INV_IMU_CLKIN_SUPPORTED      1
 #else /* ICM45605 */
   #define INV_IMU_HIGH_FSR_SUPPORTED   0
+  #define INV_IMU_CLKIN_SUPPORTED      0
 #endif
 
 #define INV_IMU_FSYNC_SUPPORTED      1
 #define INV_IMU_USE_BASIC_SMD        0
 #define INV_IMU_INT2_PIN_SUPPORTED   1
 #define INV_IMU_I2C_MASTER_SUPPORTED 1
-#define INV_IMU_CLKIN_SUPPORTED      0
 
 #ifdef __cplusplus
 }
