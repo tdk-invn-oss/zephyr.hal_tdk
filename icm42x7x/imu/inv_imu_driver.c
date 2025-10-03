@@ -1223,7 +1223,7 @@ int inv_imu_configure_fifo(inv_imu_device_t *s, INV_IMU_FIFO_CONFIG_t fifo_confi
 		/* restart and reset FIFO configuration */
 		status |= inv_imu_read_reg(s, FIFO_CONFIG5_MREG1, 1, &data);
 		data &= ~FIFO_CONFIG5_FIFO_ACCEL_EN_MASK;
-		data &= ~FIFO_CONFIG5_FIFO_HIRES_EN_MASK;
+
 #if INV_IMU_IS_GYRO_SUPPORTED
 		data &= ~FIFO_CONFIG5_FIFO_GYRO_EN_MASK;
 		data &= ~FIFO_CONFIG5_FIFO_TMST_FSYNC_EN_MASK;
@@ -1233,6 +1233,8 @@ int inv_imu_configure_fifo(inv_imu_device_t *s, INV_IMU_FIFO_CONFIG_t fifo_confi
 		data |= (uint8_t)FIFO_CONFIG5_ACCEL_EN;
 		data |= (uint8_t)FIFO_CONFIG5_WM_GT_TH_EN;
 		status |= inv_imu_write_reg(s, FIFO_CONFIG5_MREG1, 1, &data);
+		/* Set FIFO packets to 16bit format (disable high resolution) */
+		status |= inv_imu_disable_high_resolution_fifo(s);
 
 		/* Configure FIFO WM so that INT is triggered for each packet */
 		data = 0x1;
