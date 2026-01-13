@@ -4,6 +4,7 @@
 if(CONFIG_TDK_HAL)
 
   zephyr_library()
+  zephyr_include_directories(.)
 
   if(CONFIG_USE_EMD_ICM42670 OR CONFIG_USE_EMD_ICM42370)
 
