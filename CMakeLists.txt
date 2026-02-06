@@ -32,6 +32,7 @@ if(CONFIG_TDK_HAL)
 
     zephyr_library_sources(
       icm456xx/imu/inv_imu_driver.c
+      icm456xx/imu/inv_imu_driver_advanced.c
       icm456xx/imu/inv_imu_transport.c
     )
     zephyr_library_sources_ifdef(CONFIG_TDK_APEX icm456xx/imu/inv_imu_edmp.c)

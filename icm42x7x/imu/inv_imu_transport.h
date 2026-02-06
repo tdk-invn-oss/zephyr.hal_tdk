@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-#include "imu/inv_imu_defs.h"
+#include "icm42x7x/imu/inv_imu_defs.h"
 
 #include "Invn/InvError.h"
 
@@ -37,7 +37,8 @@ typedef uint32_t SERIAL_IF_TYPE_t;
 typedef struct inv_imu_serif {
 	void *context;
 	int (*read_reg)(struct inv_imu_serif *serif, uint8_t reg, uint8_t *buf, uint32_t len);
-	int (*write_reg)(struct inv_imu_serif *serif, uint8_t reg, const uint8_t *buf, uint32_t len);
+	int (*write_reg)(struct inv_imu_serif *serif, uint8_t reg, const uint8_t *buf,
+			 uint32_t len);
 	uint32_t max_read;
 	uint32_t max_write;
 	uint32_t serif_type;
@@ -45,8 +46,7 @@ typedef struct inv_imu_serif {
 
 /** Transport interface definition. */
 typedef struct inv_imu_transport {
-	/** Serial interface object. 
-	 *  @warning Must be the first object in this structure. 
+	/** Serial interface object.	 *  @warning Must be the first object in this structure.
 	 */
 	inv_imu_serif_t serif;
 

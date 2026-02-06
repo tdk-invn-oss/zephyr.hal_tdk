@@ -16,16 +16,16 @@
 
 #include <stdint.h>
 
-#include "imu/inv_imu_driver_advanced.h"
+#include "icm456xx/imu/inv_imu_driver_advanced.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* STC status codes */
-#define INV_IMU_ST_STATUS_SUCCESS 1 /**< Indicates test is successful */
+#define INV_IMU_ST_STATUS_SUCCESS 1  /**< Indicates test is successful */
 #define INV_IMU_ST_STATUS_FAIL    -1 /**< Indicates test is failing */
-#define INV_IMU_ST_STATUS_NOT_RUN 0 /**< Indicates test has not run */
+#define INV_IMU_ST_STATUS_NOT_RUN 0  /**< Indicates test has not run */
 
 /** Self-Test parameters */
 typedef struct {
@@ -89,7 +89,7 @@ int inv_imu_selftest_init_params(inv_imu_device_t *s, inv_imu_selftest_parameter
  *  @return                 0 on success, negative value on error.
  */
 int inv_imu_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
-                     inv_imu_selftest_output_t *st_output);
+		     inv_imu_selftest_output_t *st_output);
 
 #ifdef __cplusplus
 }

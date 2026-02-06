@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD 3-Clause
  */
 
-#include "imu/inv_imu_driver.h"
-#include "imu/inv_imu_extfunc.h"
-#include "imu/inv_imu_version.h"
+#include "icm42x7x/imu/inv_imu_driver.h"
+#include "icm42x7x/imu/inv_imu_extfunc.h"
+#include "icm42x7x/imu/inv_imu_version.h"
 
 #include <stddef.h> /* NULL */
 #include <string.h> /* memset */
@@ -15,7 +15,7 @@
 /* Address of DMP_CONFIG1 register */
 #define DMP_CONFIG1_MREG1 0x2c
 /* SRAM first bank ID */
-#define SRAM_START_BANK 0x50
+#define SRAM_START_BANK   0x50
 #endif
 
 /* Static functions declaration */
@@ -25,19 +25,20 @@ static int configure_serial_interface(inv_imu_device_t *s);
 static int init_hardware_from_ui(inv_imu_device_t *s);
 #if INV_IMU_HFSR_SUPPORTED
 static int read_and_check_sram(struct inv_imu_device *self, const uint8_t *data, uint32_t offset,
-                               uint32_t size);
+			       uint32_t size);
 #endif
 
 int inv_imu_init(inv_imu_device_t *s, const struct inv_imu_serif *serif,
-                 void (*sensor_event_cb)(inv_imu_sensor_event_t *event))
+		 void (*sensor_event_cb)(inv_imu_sensor_event_t *event))
 {
 	int status = 0;
 
 	memset(s, 0, sizeof(*s));
 
 	/* Verify validity of `serif` variable */
-	if (serif == NULL || serif->read_reg == NULL || serif->write_reg == NULL)
+	if (serif == NULL || serif->read_reg == NULL || serif->write_reg == NULL) {
 		return INV_ERROR;
+	}
 
 	s->transport.serif = *serif;
 
@@ -64,19 +65,20 @@ int inv_imu_init(inv_imu_device_t *s, const struct inv_imu_serif *serif,
 
 int inv_imu_device_reset(inv_imu_device_t *s)
 {
-	int     status = INV_ERROR_SUCCESS;
+	int status = INV_ERROR_SUCCESS;
 	uint8_t data;
 	uint8_t drive_config2 = 0;
 	uint8_t drive_config3 = 0;
 
-	/* 
+	/*
 	 * Save slew-rate configuration
 	 * DRIVE_CONFIG2: Configures all pins except 14, configures pin 14 in I2C mode
 	 * DRIVE_CONFIG3: Configures pin 14 in SPI mode
 	 */
 	status |= inv_imu_read_reg(s, DRIVE_CONFIG2, 1, &drive_config2);
-	if (s->transport.serif.serif_type == UI_SPI4 || s->transport.serif.serif_type == UI_SPI3)
+	if (s->transport.serif.serif_type == UI_SPI4 || s->transport.serif.serif_type == UI_SPI3) {
 		status |= inv_imu_read_reg(s, DRIVE_CONFIG3, 1, &drive_config3);
+	}
 
 	/* Ensure BLK_SEL_R and BLK_SEL_W are set to 0 */
 	data = 0;
@@ -92,24 +94,26 @@ int inv_imu_device_reset(inv_imu_device_t *s)
 
 	/* Restore slew-rate configuration */
 	status |= inv_imu_write_reg(s, DRIVE_CONFIG2, 1, &drive_config2);
-	if (s->transport.serif.serif_type == UI_SPI4 || s->transport.serif.serif_type == UI_SPI3)
+	if (s->transport.serif.serif_type == UI_SPI4 || s->transport.serif.serif_type == UI_SPI3) {
 		status |= inv_imu_write_reg(s, DRIVE_CONFIG3, 1, &drive_config3);
+	}
 
 	/* Re-configure serial interface since it was reset */
 	status |= configure_serial_interface(s);
 
 	/* Clear the reset done interrupt */
 	status |= inv_imu_read_reg(s, INT_STATUS, 1, &data);
-	if (data != INT_STATUS_RESET_DONE_INT_MASK)
+	if (data != INT_STATUS_RESET_DONE_INT_MASK) {
 		status |= INV_ERROR_UNEXPECTED;
+	}
 
 	/* Force register cache reload. */
 	status |= inv_imu_init_transport(s);
 
 	/* Reset driver internal states */
-	s->dmp_is_on            = 0;
+	s->dmp_is_on = 0;
 	s->fifo_highres_enabled = 0;
-	s->fifo_is_used         = INV_IMU_FIFO_DISABLED;
+	s->fifo_is_used = INV_IMU_FIFO_DISABLED;
 #if INV_IMU_IS_GYRO_SUPPORTED
 	s->gyro_start_time_us = UINT32_MAX;
 #endif
@@ -128,16 +132,16 @@ int inv_imu_get_who_am_i(inv_imu_device_t *s, uint8_t *who_am_i)
 
 int inv_imu_enable_accel_low_power_mode(inv_imu_device_t *s)
 {
-	int                    status = 0;
+	int status = 0;
 	PWR_MGMT0_ACCEL_MODE_t accel_mode;
 #if INV_IMU_IS_GYRO_SUPPORTED
 	PWR_MGMT0_GYRO_MODE_t gyro_mode;
 #endif
 	ACCEL_CONFIG0_ODR_t acc_odr_bitfield;
-	uint32_t            accel_odr_us = 0;
-	uint8_t             pwr_mgmt0_reg;
-	uint8_t             accel_config0_reg;
-	uint8_t             value;
+	uint32_t accel_odr_us = 0;
+	uint8_t pwr_mgmt0_reg;
+	uint8_t accel_config0_reg;
+	uint8_t value;
 
 	status |= inv_imu_read_reg(s, PWR_MGMT0, 1, &pwr_mgmt0_reg);
 	accel_mode = (PWR_MGMT0_ACCEL_MODE_t)(pwr_mgmt0_reg & PWR_MGMT0_ACCEL_MODE_MASK);
@@ -148,13 +152,15 @@ int inv_imu_enable_accel_low_power_mode(inv_imu_device_t *s)
 	/* Check if the accelerometer is the only one enabled */
 	if ((accel_mode != PWR_MGMT0_ACCEL_MODE_LP)
 #if INV_IMU_IS_GYRO_SUPPORTED
-	    && ((gyro_mode == PWR_MGMT0_GYRO_MODE_OFF) || (gyro_mode == PWR_MGMT0_GYRO_MODE_STANDBY))
+	    &&
+	    ((gyro_mode == PWR_MGMT0_GYRO_MODE_OFF) || (gyro_mode == PWR_MGMT0_GYRO_MODE_STANDBY))
 #endif
 	) {
 		/* Get accelerometer's ODR for next required wait */
 		status |= inv_imu_read_reg(s, ACCEL_CONFIG0, 1, &accel_config0_reg);
-		acc_odr_bitfield = (ACCEL_CONFIG0_ODR_t)(accel_config0_reg & ACCEL_CONFIG0_ACCEL_ODR_MASK);
-		accel_odr_us     = inv_imu_convert_odr_bitfield_to_us(acc_odr_bitfield);
+		acc_odr_bitfield =
+			(ACCEL_CONFIG0_ODR_t)(accel_config0_reg & ACCEL_CONFIG0_ACCEL_ODR_MASK);
+		accel_odr_us = inv_imu_convert_odr_bitfield_to_us(acc_odr_bitfield);
 		/* Select the RC OSC as clock source for the accelerometer */
 		status |= select_rcosc(s);
 	}
@@ -169,24 +175,26 @@ int inv_imu_enable_accel_low_power_mode(inv_imu_device_t *s)
 
 	if ((accel_mode != PWR_MGMT0_ACCEL_MODE_LP)
 #if INV_IMU_IS_GYRO_SUPPORTED
-	    && ((gyro_mode == PWR_MGMT0_GYRO_MODE_OFF) || (gyro_mode == PWR_MGMT0_GYRO_MODE_STANDBY))
+	    &&
+	    ((gyro_mode == PWR_MGMT0_GYRO_MODE_OFF) || (gyro_mode == PWR_MGMT0_GYRO_MODE_STANDBY))
 #endif
 	) {
-		/* 
+		/*
 		 * Wait one accelerometer ODR before switching to the WU OSC.
-		 * if ODR is smaller than 200 us, we already waited for one ODR above. 
+		 * if ODR is smaller than 200 us, we already waited for one ODR above.
 		 */
-		if (accel_odr_us > 200)
+		if (accel_odr_us > 200) {
 			inv_imu_sleep_us(accel_odr_us - 200);
+		}
 		status |= select_wuosc(s);
 	}
 
 	if (accel_mode == PWR_MGMT0_ACCEL_MODE_OFF && s->fifo_is_used) {
 		/*
 		 * First data are wrong after accel enable using IIR filter
-		 * There is no signal that says accel start-up has completed and data are stable 
-		 * using FIR filter. So keep track of the time at start-up to discard the invalid data, 
-		 * about 20 ms after enable.
+		 * There is no signal that says accel start-up has completed and data are stable
+		 * * using FIR filter. So keep track of the time at start-up to discard the invalid
+		 * data,		 * about 20 ms after enable.
 		 */
 		s->accel_start_time_us = inv_imu_get_time_us();
 	}
@@ -201,14 +209,14 @@ int inv_imu_enable_accel_low_power_mode(inv_imu_device_t *s)
 
 int inv_imu_enable_accel_low_noise_mode(inv_imu_device_t *s)
 {
-	int                    status = 0;
+	int status = 0;
 	PWR_MGMT0_ACCEL_MODE_t accel_mode;
 #if INV_IMU_IS_GYRO_SUPPORTED
 	PWR_MGMT0_GYRO_MODE_t gyro_mode;
 #endif
 	ACCEL_CONFIG0_ODR_t acc_odr_bitfield;
-	uint8_t             pwr_mgmt0_reg;
-	uint8_t             accel_config0_reg;
+	uint8_t pwr_mgmt0_reg;
+	uint8_t accel_config0_reg;
 
 	status |= inv_imu_read_reg(s, PWR_MGMT0, 1, &pwr_mgmt0_reg);
 	accel_mode = (PWR_MGMT0_ACCEL_MODE_t)(pwr_mgmt0_reg & PWR_MGMT0_ACCEL_MODE_MASK);
@@ -219,14 +227,16 @@ int inv_imu_enable_accel_low_noise_mode(inv_imu_device_t *s)
 	/* Check if the accelerometer is the only one enabled */
 	if ((accel_mode == PWR_MGMT0_ACCEL_MODE_LP)
 #if INV_IMU_IS_GYRO_SUPPORTED
-	    && ((gyro_mode == PWR_MGMT0_GYRO_MODE_OFF) || (gyro_mode == PWR_MGMT0_GYRO_MODE_STANDBY))
+	    &&
+	    ((gyro_mode == PWR_MGMT0_GYRO_MODE_OFF) || (gyro_mode == PWR_MGMT0_GYRO_MODE_STANDBY))
 #endif
 	) {
 		uint32_t accel_odr_us;
 		/* Get accelerometer's ODR for next required wait */
 		status |= inv_imu_read_reg(s, ACCEL_CONFIG0, 1, &accel_config0_reg);
-		acc_odr_bitfield = (ACCEL_CONFIG0_ODR_t)(accel_config0_reg & ACCEL_CONFIG0_ACCEL_ODR_MASK);
-		accel_odr_us     = inv_imu_convert_odr_bitfield_to_us(acc_odr_bitfield);
+		acc_odr_bitfield =
+			(ACCEL_CONFIG0_ODR_t)(accel_config0_reg & ACCEL_CONFIG0_ACCEL_ODR_MASK);
+		accel_odr_us = inv_imu_convert_odr_bitfield_to_us(acc_odr_bitfield);
 		/* Select the RC OSC as clock source for the accelerometer */
 		status |= select_rcosc(s);
 		/* Wait one accel ODR before switching to low noise mode */
@@ -242,11 +252,11 @@ int inv_imu_enable_accel_low_noise_mode(inv_imu_device_t *s)
 	inv_imu_sleep_us(200);
 
 	if (accel_mode == PWR_MGMT0_ACCEL_MODE_OFF && s->fifo_is_used) {
-		/* 
+		/*
 		 * First data are wrong after accel enable using IIR filter
 		 * There is no signal that says accel start-up has completed and data are stable
-		 * using FIR filter. So keep track of the time at start-up to discard the invalid data, 
-		 * about 20ms after enable.
+		 * using FIR filter. So keep track of the time at start-up to discard the invalid
+		 * data,		 * about 20ms after enable.
 		 */
 		s->accel_start_time_us = inv_imu_get_time_us();
 	}
@@ -256,21 +266,21 @@ int inv_imu_enable_accel_low_noise_mode(inv_imu_device_t *s)
 
 int inv_imu_disable_accel(inv_imu_device_t *s)
 {
-	int      status          = 0;
-	int      stop_fifo_usage = 0;
+	int status = 0;
+	int stop_fifo_usage = 0;
 	uint32_t accel_odr_us;
 #if INV_IMU_IS_GYRO_SUPPORTED
 	PWR_MGMT0_GYRO_MODE_t gyro_mode;
 #endif
 	ACCEL_CONFIG0_ODR_t acc_odr_bitfield;
-	uint8_t             pwr_mgmt0_reg;
-	uint8_t             accel_config0_reg;
-	uint8_t             fifo_cfg_6_reg;
+	uint8_t pwr_mgmt0_reg;
+	uint8_t accel_config0_reg;
+	uint8_t fifo_cfg_6_reg;
 
 	/* Get accelerometer's ODR for next required wait */
 	status |= inv_imu_read_reg(s, ACCEL_CONFIG0, 1, &accel_config0_reg);
 	acc_odr_bitfield = (ACCEL_CONFIG0_ODR_t)(accel_config0_reg & ACCEL_CONFIG0_ACCEL_ODR_MASK);
-	accel_odr_us     = inv_imu_convert_odr_bitfield_to_us(acc_odr_bitfield);
+	accel_odr_us = inv_imu_convert_odr_bitfield_to_us(acc_odr_bitfield);
 
 	status |= inv_imu_read_reg(s, PWR_MGMT0, 1, &pwr_mgmt0_reg);
 #if INV_IMU_IS_GYRO_SUPPORTED
@@ -281,9 +291,9 @@ int inv_imu_disable_accel(inv_imu_device_t *s)
 	    && (gyro_mode == PWR_MGMT0_GYRO_MODE_OFF)
 #endif
 	) {
-		/* 
-		 * Accel is off and gyro is about to be turned off. 
-		 * Flush FIFO so that there is no old data at next enable time
+		/*
+		 * Accel is off and gyro is about to be turned off.		 * Flush FIFO so
+		 * that there is no old data at next enable time
 		 */
 		stop_fifo_usage = 1;
 	}
@@ -295,12 +305,12 @@ int inv_imu_disable_accel(inv_imu_device_t *s)
 	    && (gyro_mode == PWR_MGMT0_GYRO_MODE_OFF)
 #endif
 	) {
-		/* 
-		 * Disable the automatic RCOSC power on to avoid extra power consumption 
-		 * in sleep mode (all sensors and clocks off) 
+		/*
+		 * Disable the automatic RCOSC power on to avoid extra power consumption
+		 * * in sleep mode (all sensors and clocks off)
 		 */
 		fifo_cfg_6_reg |= ((1 & FIFO_CONFIG6_RCOSC_REQ_ON_FIFO_THS_DIS_MASK)
-		                   << FIFO_CONFIG6_RCOSC_REQ_ON_FIFO_THS_DIS_POS);
+				   << FIFO_CONFIG6_RCOSC_REQ_ON_FIFO_THS_DIS_POS);
 		status |= inv_imu_write_reg(s, FIFO_CONFIG6_MREG1, 1, &fifo_cfg_6_reg);
 		inv_imu_sleep_us(accel_odr_us);
 	}
@@ -310,7 +320,8 @@ int inv_imu_disable_accel(inv_imu_device_t *s)
 	status |= inv_imu_write_reg(s, PWR_MGMT0, 1, &pwr_mgmt0_reg);
 
 	if (stop_fifo_usage && s->fifo_is_used) {
-		/* Reset FIFO explicitly so there is no data left in FIFO once all sensors are off */
+		/* Reset FIFO explicitly so there is no data left in FIFO once all sensors are off
+		 */
 		status |= inv_imu_reset_fifo(s);
 	}
 
@@ -319,7 +330,7 @@ int inv_imu_disable_accel(inv_imu_device_t *s)
 
 int inv_imu_set_accel_frequency(inv_imu_device_t *s, const ACCEL_CONFIG0_ODR_t frequency)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t data;
 
 	status |= inv_imu_read_reg(s, ACCEL_CONFIG0, 1, &data);
@@ -333,11 +344,12 @@ int inv_imu_set_accel_frequency(inv_imu_device_t *s, const ACCEL_CONFIG0_ODR_t f
 int inv_imu_set_accel_lp_avg(inv_imu_device_t *s, ACCEL_CONFIG1_ACCEL_FILT_AVG_t acc_avg)
 {
 	uint8_t value;
-	int     status = 0;
+	int status = 0;
 
 	status |= inv_imu_read_reg(s, ACCEL_CONFIG1, 1, &value);
-	if (status)
+	if (status) {
 		return status;
+	}
 
 	value &= ~ACCEL_CONFIG1_ACCEL_UI_AVG_MASK;
 	value |= acc_avg;
@@ -350,11 +362,12 @@ int inv_imu_set_accel_lp_avg(inv_imu_device_t *s, ACCEL_CONFIG1_ACCEL_FILT_AVG_t
 int inv_imu_set_accel_ln_bw(inv_imu_device_t *s, ACCEL_CONFIG1_ACCEL_FILT_BW_t acc_bw)
 {
 	uint8_t value;
-	int     status = 0;
+	int status = 0;
 
 	status |= inv_imu_read_reg(s, ACCEL_CONFIG1, 1, &value);
-	if (status)
+	if (status) {
 		return status;
+	}
 
 	value &= ~ACCEL_CONFIG1_ACCEL_UI_FILT_BW_MASK;
 	value |= acc_bw;
@@ -366,7 +379,7 @@ int inv_imu_set_accel_ln_bw(inv_imu_device_t *s, ACCEL_CONFIG1_ACCEL_FILT_BW_t a
 
 int inv_imu_set_accel_fsr(inv_imu_device_t *s, ACCEL_CONFIG0_FS_SEL_t accel_fsr_g)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t data;
 
 	status |= inv_imu_read_reg(s, ACCEL_CONFIG0, 1, &data);
@@ -379,15 +392,15 @@ int inv_imu_set_accel_fsr(inv_imu_device_t *s, ACCEL_CONFIG0_FS_SEL_t accel_fsr_
 
 int inv_imu_get_accel_fsr(inv_imu_device_t *s, ACCEL_CONFIG0_FS_SEL_t *accel_fsr_g)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t accel_config0_reg;
 
-	if ((s->fifo_highres_enabled) && (s->fifo_is_used == INV_IMU_FIFO_ENABLED))
+	if ((s->fifo_highres_enabled) && (s->fifo_is_used == INV_IMU_FIFO_ENABLED)) {
 		*accel_fsr_g = ACCEL_CONFIG0_FS_SEL_MAX;
-	else {
+	} else {
 		status |= inv_imu_read_reg(s, ACCEL_CONFIG0, 1, &accel_config0_reg);
-		*accel_fsr_g =
-		    (ACCEL_CONFIG0_FS_SEL_t)(accel_config0_reg & ACCEL_CONFIG0_ACCEL_UI_FS_SEL_MASK);
+		*accel_fsr_g = (ACCEL_CONFIG0_FS_SEL_t)(accel_config0_reg &
+							ACCEL_CONFIG0_ACCEL_UI_FS_SEL_MASK);
 	}
 
 	return status;
@@ -396,24 +409,26 @@ int inv_imu_get_accel_fsr(inv_imu_device_t *s, ACCEL_CONFIG0_FS_SEL_t *accel_fsr
 #if INV_IMU_IS_GYRO_SUPPORTED
 int inv_imu_enable_gyro_low_noise_mode(inv_imu_device_t *s)
 {
-	int                    status = 0;
+	int status = 0;
 	PWR_MGMT0_ACCEL_MODE_t accel_mode;
-	PWR_MGMT0_GYRO_MODE_t  gyro_mode;
-	ACCEL_CONFIG0_ODR_t    acc_odr_bitfield;
-	uint8_t                pwr_mgmt0_reg;
-	uint8_t                accel_config0_reg;
+	PWR_MGMT0_GYRO_MODE_t gyro_mode;
+	ACCEL_CONFIG0_ODR_t acc_odr_bitfield;
+	uint8_t pwr_mgmt0_reg;
+	uint8_t accel_config0_reg;
 
 	status |= inv_imu_read_reg(s, PWR_MGMT0, 1, &pwr_mgmt0_reg);
 	accel_mode = (PWR_MGMT0_ACCEL_MODE_t)(pwr_mgmt0_reg & PWR_MGMT0_ACCEL_MODE_MASK);
-	gyro_mode  = (PWR_MGMT0_GYRO_MODE_t)(pwr_mgmt0_reg & PWR_MGMT0_GYRO_MODE_MASK);
+	gyro_mode = (PWR_MGMT0_GYRO_MODE_t)(pwr_mgmt0_reg & PWR_MGMT0_GYRO_MODE_MASK);
 	/* Check if the accelerometer is the only one enabled */
 	if ((accel_mode == PWR_MGMT0_ACCEL_MODE_LP) &&
-	    ((gyro_mode == PWR_MGMT0_GYRO_MODE_OFF) || (gyro_mode == PWR_MGMT0_GYRO_MODE_STANDBY))) {
+	    ((gyro_mode == PWR_MGMT0_GYRO_MODE_OFF) ||
+	     (gyro_mode == PWR_MGMT0_GYRO_MODE_STANDBY))) {
 		uint32_t accel_odr_us;
 		/* Get accelerometer's ODR for next required wait */
 		status |= inv_imu_read_reg(s, ACCEL_CONFIG0, 1, &accel_config0_reg);
-		acc_odr_bitfield = (ACCEL_CONFIG0_ODR_t)(accel_config0_reg & ACCEL_CONFIG0_ACCEL_ODR_MASK);
-		accel_odr_us     = inv_imu_convert_odr_bitfield_to_us(acc_odr_bitfield);
+		acc_odr_bitfield =
+			(ACCEL_CONFIG0_ODR_t)(accel_config0_reg & ACCEL_CONFIG0_ACCEL_ODR_MASK);
+		accel_odr_us = inv_imu_convert_odr_bitfield_to_us(acc_odr_bitfield);
 		/* Select the RC OSC as clock source for the accelerometer */
 		status |= select_rcosc(s);
 		/* Wait one accel ODR before enabling the gyroscope */
@@ -429,11 +444,11 @@ int inv_imu_enable_gyro_low_noise_mode(inv_imu_device_t *s)
 	inv_imu_sleep_us(200);
 
 	if (gyro_mode == PWR_MGMT0_GYRO_MODE_OFF && s->fifo_is_used) {
-		/* 
+		/*
 		 * First data are wrong after gyro enable using IIR filter
 		 * There is no signal that says Gyro start-up has completed and data are stable
-		 * using FIR filter and the Gyro max start-up time is 40ms. So keep track of the time 
-		 * at start-up to discard the invalid data, about 60ms after enable.
+		 * using FIR filter and the Gyro max start-up time is 40ms. So keep track of the
+		 * time		 * at start-up to discard the invalid data, about 60ms after enable.
 		 */
 		s->gyro_start_time_us = inv_imu_get_time_us();
 	}
@@ -443,27 +458,27 @@ int inv_imu_enable_gyro_low_noise_mode(inv_imu_device_t *s)
 
 int inv_imu_disable_gyro(inv_imu_device_t *s)
 {
-	int                    status          = 0;
-	int                    stop_fifo_usage = 0;
-	ACCEL_CONFIG0_ODR_t    acc_odr_bitfield;
-	uint32_t               accel_odr_us;
+	int status = 0;
+	int stop_fifo_usage = 0;
+	ACCEL_CONFIG0_ODR_t acc_odr_bitfield;
+	uint32_t accel_odr_us;
 	PWR_MGMT0_ACCEL_MODE_t accel_mode;
-	uint8_t                pwr_mgmt0_reg;
-	uint8_t                accel_config0_reg;
-	uint8_t                fifo_cfg_6_reg;
+	uint8_t pwr_mgmt0_reg;
+	uint8_t accel_config0_reg;
+	uint8_t fifo_cfg_6_reg;
 
 	/* Get accelerometer's ODR for next required wait */
 	status |= inv_imu_read_reg(s, ACCEL_CONFIG0, 1, &accel_config0_reg);
 	acc_odr_bitfield = (ACCEL_CONFIG0_ODR_t)(accel_config0_reg & ACCEL_CONFIG0_ACCEL_ODR_MASK);
-	accel_odr_us     = inv_imu_convert_odr_bitfield_to_us(acc_odr_bitfield);
+	accel_odr_us = inv_imu_convert_odr_bitfield_to_us(acc_odr_bitfield);
 
 	status |= inv_imu_read_reg(s, PWR_MGMT0, 1, &pwr_mgmt0_reg);
 	accel_mode = (PWR_MGMT0_ACCEL_MODE_t)(pwr_mgmt0_reg & PWR_MGMT0_ACCEL_MODE_MASK);
 
 	if ((accel_mode == PWR_MGMT0_ACCEL_MODE_OFF) && s->fifo_is_used) {
-		/* 
-		 * Accel is off and gyro is about to be turned off. 
-		 * Flush FIFO so that there is no old data at next enable time
+		/*
+		 * Accel is off and gyro is about to be turned off.		 * Flush FIFO so
+		 * that there is no old data at next enable time
 		 */
 		stop_fifo_usage = 1;
 	}
@@ -479,20 +494,21 @@ int inv_imu_disable_gyro(inv_imu_device_t *s)
 	if ((accel_mode == PWR_MGMT0_ACCEL_MODE_OFF) &&
 	    ((fifo_cfg_6_reg & FIFO_CONFIG6_RCOSC_REQ_ON_FIFO_THS_DIS_MASK) == 0)) {
 		GYRO_CONFIG0_ODR_t gyro_odr_bitfield;
-		uint32_t           gyro_odr_us;
-		uint8_t            gyro_config0_reg;
+		uint32_t gyro_odr_us;
+		uint8_t gyro_config0_reg;
 
 		/* Read gyro odr to apply it to the sleep */
 		status |= inv_imu_read_reg(s, GYRO_CONFIG0, 1, &gyro_config0_reg);
-		gyro_odr_bitfield = (GYRO_CONFIG0_ODR_t)(gyro_config0_reg & GYRO_CONFIG0_GYRO_ODR_MASK);
-		gyro_odr_us       = inv_imu_convert_odr_bitfield_to_us(gyro_odr_bitfield);
+		gyro_odr_bitfield =
+			(GYRO_CONFIG0_ODR_t)(gyro_config0_reg & GYRO_CONFIG0_GYRO_ODR_MASK);
+		gyro_odr_us = inv_imu_convert_odr_bitfield_to_us(gyro_odr_bitfield);
 
-		/* 
-		 * Disable the automatic RCOSC power on to avoid extra power consumption 
-		 * in sleep mode (all sensors and clocks off) 
+		/*
+		 * Disable the automatic RCOSC power on to avoid extra power consumption
+		 * * in sleep mode (all sensors and clocks off)
 		 */
 		fifo_cfg_6_reg |= ((1 & FIFO_CONFIG6_RCOSC_REQ_ON_FIFO_THS_DIS_MASK)
-		                   << FIFO_CONFIG6_RCOSC_REQ_ON_FIFO_THS_DIS_POS);
+				   << FIFO_CONFIG6_RCOSC_REQ_ON_FIFO_THS_DIS_POS);
 		status |= inv_imu_write_reg(s, FIFO_CONFIG6_MREG1, 1, &fifo_cfg_6_reg);
 		inv_imu_sleep_us(gyro_odr_us);
 	}
@@ -511,7 +527,8 @@ int inv_imu_disable_gyro(inv_imu_device_t *s)
 	}
 
 	if (stop_fifo_usage && s->fifo_is_used) {
-		/* Reset FIFO explicitly so there is no data left in FIFO once all sensors are off */
+		/* Reset FIFO explicitly so there is no data left in FIFO once all sensors are off
+		 */
 		status |= inv_imu_reset_fifo(s);
 	}
 
@@ -520,7 +537,7 @@ int inv_imu_disable_gyro(inv_imu_device_t *s)
 
 int inv_imu_set_gyro_frequency(inv_imu_device_t *s, const GYRO_CONFIG0_ODR_t frequency)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t data;
 
 	status |= inv_imu_read_reg(s, GYRO_CONFIG0, 1, &data);
@@ -534,11 +551,12 @@ int inv_imu_set_gyro_frequency(inv_imu_device_t *s, const GYRO_CONFIG0_ODR_t fre
 int inv_imu_set_gyro_ln_bw(inv_imu_device_t *s, GYRO_CONFIG1_GYRO_FILT_BW_t gyr_bw)
 {
 	uint8_t value;
-	int     status = 0;
+	int status = 0;
 
 	status |= inv_imu_read_reg(s, GYRO_CONFIG1, 1, &value);
-	if (status)
+	if (status) {
 		return status;
+	}
 
 	value &= ~GYRO_CONFIG1_GYRO_UI_FILT_BW_MASK;
 	value |= gyr_bw;
@@ -550,7 +568,7 @@ int inv_imu_set_gyro_ln_bw(inv_imu_device_t *s, GYRO_CONFIG1_GYRO_FILT_BW_t gyr_
 
 int inv_imu_set_gyro_fsr(inv_imu_device_t *s, GYRO_CONFIG0_FS_SEL_t gyro_fsr_dps)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t data;
 
 	status |= inv_imu_read_reg(s, GYRO_CONFIG0, 1, &data);
@@ -563,15 +581,15 @@ int inv_imu_set_gyro_fsr(inv_imu_device_t *s, GYRO_CONFIG0_FS_SEL_t gyro_fsr_dps
 
 int inv_imu_get_gyro_fsr(inv_imu_device_t *s, GYRO_CONFIG0_FS_SEL_t *gyro_fsr_dps)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t gyro_config0_reg;
 
-	if ((s->fifo_highres_enabled) && (s->fifo_is_used == INV_IMU_FIFO_ENABLED))
+	if ((s->fifo_highres_enabled) && (s->fifo_is_used == INV_IMU_FIFO_ENABLED)) {
 		*gyro_fsr_dps = GYRO_CONFIG0_FS_SEL_MAX;
-	else {
+	} else {
 		status |= inv_imu_read_reg(s, GYRO_CONFIG0, 1, &gyro_config0_reg);
-		*gyro_fsr_dps =
-		    (GYRO_CONFIG0_FS_SEL_t)(gyro_config0_reg & GYRO_CONFIG0_GYRO_UI_FS_SEL_MASK);
+		*gyro_fsr_dps = (GYRO_CONFIG0_FS_SEL_t)(gyro_config0_reg &
+							GYRO_CONFIG0_GYRO_UI_FS_SEL_MASK);
 	}
 
 	return status;
@@ -579,12 +597,12 @@ int inv_imu_get_gyro_fsr(inv_imu_device_t *s, GYRO_CONFIG0_FS_SEL_t *gyro_fsr_dp
 
 int inv_imu_enable_fsync(inv_imu_device_t *s)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t value;
 
 	status |= inv_imu_switch_on_mclk(s);
 
-	//Enable Fsync
+	/*Enable Fsync */
 	status |= inv_imu_read_reg(s, FSYNC_CONFIG_MREG1, 1, &value);
 	value &= ~FSYNC_CONFIG_FSYNC_UI_SEL_MASK;
 	value |= (uint8_t)FSYNC_CONFIG_UI_SEL_TEMP;
@@ -602,12 +620,12 @@ int inv_imu_enable_fsync(inv_imu_device_t *s)
 
 int inv_imu_disable_fsync(inv_imu_device_t *s)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t value;
 
 	status |= inv_imu_switch_on_mclk(s);
 
-	// Disable Fsync
+	/* Disable Fsync */
 	status |= inv_imu_read_reg(s, FSYNC_CONFIG_MREG1, 1, &value);
 	value &= ~FSYNC_CONFIG_FSYNC_UI_SEL_MASK;
 	value |= (uint8_t)FSYNC_CONFIG_UI_SEL_NO;
@@ -626,7 +644,7 @@ int inv_imu_disable_fsync(inv_imu_device_t *s)
 
 int inv_imu_set_spi_slew_rate(inv_imu_device_t *s, const DRIVE_CONFIG3_SPI_SLEW_RATE_t slew_rate)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t value;
 
 	status |= inv_imu_read_reg(s, DRIVE_CONFIG3, 1, &value);
@@ -639,7 +657,7 @@ int inv_imu_set_spi_slew_rate(inv_imu_device_t *s, const DRIVE_CONFIG3_SPI_SLEW_
 
 int inv_imu_set_pin_config_int1(inv_imu_device_t *s, const inv_imu_int1_pin_config_t *conf)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t value;
 
 	status |= inv_imu_read_reg(s, INT_CONFIG, 1, &value);
@@ -656,7 +674,7 @@ int inv_imu_set_pin_config_int1(inv_imu_device_t *s, const inv_imu_int1_pin_conf
 
 int inv_imu_set_pin_config_int2(inv_imu_device_t *s, const inv_imu_int2_pin_config_t *conf)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t value;
 
 	status |= inv_imu_read_reg(s, INT_CONFIG, 1, &value);
@@ -673,100 +691,102 @@ int inv_imu_set_pin_config_int2(inv_imu_device_t *s, const inv_imu_int2_pin_conf
 
 int inv_imu_get_config_int1(inv_imu_device_t *s, inv_imu_interrupt_parameter_t *it)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t data;
 
 	status |= inv_imu_read_reg(s, INT_SOURCE0, 1, &data);
-	it->INV_UI_FSYNC  = (inv_imu_interrupt_value)((data & INT_SOURCE0_FSYNC_INT1_EN_MASK) >>
-                                                 INT_SOURCE0_FSYNC_INT1_EN_POS);
-	it->INV_UI_DRDY   = (inv_imu_interrupt_value)((data & INT_SOURCE0_DRDY_INT1_EN_MASK) >>
-                                                INT_SOURCE0_DRDY_INT1_EN_POS);
-	it->INV_FIFO_THS  = (inv_imu_interrupt_value)((data & INT_SOURCE0_FIFO_THS_INT1_EN_MASK) >>
-                                                 INT_SOURCE0_FIFO_THS_INT1_EN_POS);
+	it->INV_UI_FSYNC = (inv_imu_interrupt_value)((data & INT_SOURCE0_FSYNC_INT1_EN_MASK) >>
+						     INT_SOURCE0_FSYNC_INT1_EN_POS);
+	it->INV_UI_DRDY = (inv_imu_interrupt_value)((data & INT_SOURCE0_DRDY_INT1_EN_MASK) >>
+						    INT_SOURCE0_DRDY_INT1_EN_POS);
+	it->INV_FIFO_THS = (inv_imu_interrupt_value)((data & INT_SOURCE0_FIFO_THS_INT1_EN_MASK) >>
+						     INT_SOURCE0_FIFO_THS_INT1_EN_POS);
 	it->INV_FIFO_FULL = (inv_imu_interrupt_value)((data & INT_SOURCE0_FIFO_FULL_INT1_EN_MASK) >>
-	                                              INT_SOURCE0_FIFO_FULL_INT1_EN_POS);
+						      INT_SOURCE0_FIFO_FULL_INT1_EN_POS);
 
 	status |= inv_imu_read_reg(s, INT_SOURCE1, 1, &data);
-	it->INV_SMD   = (inv_imu_interrupt_value)((data & INT_SOURCE1_SMD_INT1_EN_MASK) >>
-                                            INT_SOURCE1_SMD_INT1_EN_POS);
+	it->INV_SMD = (inv_imu_interrupt_value)((data & INT_SOURCE1_SMD_INT1_EN_MASK) >>
+						INT_SOURCE1_SMD_INT1_EN_POS);
 	it->INV_WOM_X = (inv_imu_interrupt_value)((data & INT_SOURCE1_WOM_X_INT1_EN_MASK) >>
-	                                          INT_SOURCE1_WOM_X_INT1_EN_POS);
+						  INT_SOURCE1_WOM_X_INT1_EN_POS);
 	it->INV_WOM_Y = (inv_imu_interrupt_value)((data & INT_SOURCE1_WOM_Y_INT1_EN_MASK) >>
-	                                          INT_SOURCE1_WOM_Y_INT1_EN_POS);
+						  INT_SOURCE1_WOM_Y_INT1_EN_POS);
 	it->INV_WOM_Z = (inv_imu_interrupt_value)((data & INT_SOURCE1_WOM_Z_INT1_EN_MASK) >>
-	                                          INT_SOURCE1_WOM_Z_INT1_EN_POS);
+						  INT_SOURCE1_WOM_Z_INT1_EN_POS);
 
 	status |= inv_imu_read_reg(s, INT_SOURCE6_MREG1, 1, &data);
-	it->INV_FF            = (inv_imu_interrupt_value)((data & INT_SOURCE6_FF_INT1_EN_MASK) >>
-                                           INT_SOURCE6_FF_INT1_EN_POS);
-	it->INV_LOWG          = (inv_imu_interrupt_value)((data & INT_SOURCE6_LOWG_INT1_EN_MASK) >>
-                                             INT_SOURCE6_LOWG_INT1_EN_POS);
-	it->INV_STEP_DET      = (inv_imu_interrupt_value)((data & INT_SOURCE6_STEP_DET_INT1_EN_MASK) >>
-                                                 INT_SOURCE6_STEP_DET_INT1_EN_POS);
-	it->INV_STEP_CNT_OVFL = (inv_imu_interrupt_value)(
-	    (data & INT_SOURCE6_STEP_CNT_OFL_INT1_EN_MASK) >> INT_SOURCE6_STEP_CNT_OFL_INT1_EN_POS);
+	it->INV_FF = (inv_imu_interrupt_value)((data & INT_SOURCE6_FF_INT1_EN_MASK) >>
+					       INT_SOURCE6_FF_INT1_EN_POS);
+	it->INV_LOWG = (inv_imu_interrupt_value)((data & INT_SOURCE6_LOWG_INT1_EN_MASK) >>
+						 INT_SOURCE6_LOWG_INT1_EN_POS);
+	it->INV_STEP_DET = (inv_imu_interrupt_value)((data & INT_SOURCE6_STEP_DET_INT1_EN_MASK) >>
+						     INT_SOURCE6_STEP_DET_INT1_EN_POS);
+	it->INV_STEP_CNT_OVFL =
+		(inv_imu_interrupt_value)((data & INT_SOURCE6_STEP_CNT_OFL_INT1_EN_MASK) >>
+					  INT_SOURCE6_STEP_CNT_OFL_INT1_EN_POS);
 	it->INV_TILT_DET = (inv_imu_interrupt_value)((data & INT_SOURCE6_TILT_DET_INT1_EN_MASK) >>
-	                                             INT_SOURCE6_TILT_DET_INT1_EN_POS);
+						     INT_SOURCE6_TILT_DET_INT1_EN_POS);
 
 	return status;
 }
 
 int inv_imu_get_config_int2(inv_imu_device_t *s, inv_imu_interrupt_parameter_t *it)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t data;
 
 	status |= inv_imu_read_reg(s, INT_SOURCE3, 1, &data);
-	it->INV_UI_FSYNC  = (inv_imu_interrupt_value)((data & INT_SOURCE3_FSYNC_INT2_EN_MASK) >>
-                                                 INT_SOURCE3_FSYNC_INT2_EN_POS);
-	it->INV_UI_DRDY   = (inv_imu_interrupt_value)((data & INT_SOURCE3_DRDY_INT2_EN_MASK) >>
-                                                INT_SOURCE3_DRDY_INT2_EN_POS);
-	it->INV_FIFO_THS  = (inv_imu_interrupt_value)((data & INT_SOURCE3_FIFO_THS_INT2_EN_MASK) >>
-                                                 INT_SOURCE3_FIFO_THS_INT2_EN_POS);
+	it->INV_UI_FSYNC = (inv_imu_interrupt_value)((data & INT_SOURCE3_FSYNC_INT2_EN_MASK) >>
+						     INT_SOURCE3_FSYNC_INT2_EN_POS);
+	it->INV_UI_DRDY = (inv_imu_interrupt_value)((data & INT_SOURCE3_DRDY_INT2_EN_MASK) >>
+						    INT_SOURCE3_DRDY_INT2_EN_POS);
+	it->INV_FIFO_THS = (inv_imu_interrupt_value)((data & INT_SOURCE3_FIFO_THS_INT2_EN_MASK) >>
+						     INT_SOURCE3_FIFO_THS_INT2_EN_POS);
 	it->INV_FIFO_FULL = (inv_imu_interrupt_value)((data & INT_SOURCE3_FIFO_FULL_INT2_EN_MASK) >>
-	                                              INT_SOURCE3_FIFO_FULL_INT2_EN_POS);
+						      INT_SOURCE3_FIFO_FULL_INT2_EN_POS);
 
 	status |= inv_imu_read_reg(s, INT_SOURCE4, 1, &data);
-	it->INV_SMD   = (inv_imu_interrupt_value)((data & INT_SOURCE4_SMD_INT2_EN_MASK) >>
-                                            INT_SOURCE4_SMD_INT2_EN_POS);
+	it->INV_SMD = (inv_imu_interrupt_value)((data & INT_SOURCE4_SMD_INT2_EN_MASK) >>
+						INT_SOURCE4_SMD_INT2_EN_POS);
 	it->INV_WOM_X = (inv_imu_interrupt_value)((data & INT_SOURCE4_WOM_X_INT2_EN_MASK) >>
-	                                          INT_SOURCE4_WOM_X_INT2_EN_POS);
+						  INT_SOURCE4_WOM_X_INT2_EN_POS);
 	it->INV_WOM_Y = (inv_imu_interrupt_value)((data & INT_SOURCE4_WOM_Y_INT2_EN_MASK) >>
-	                                          INT_SOURCE4_WOM_Y_INT2_EN_POS);
+						  INT_SOURCE4_WOM_Y_INT2_EN_POS);
 	it->INV_WOM_Z = (inv_imu_interrupt_value)((data & INT_SOURCE4_WOM_Z_INT2_EN_MASK) >>
-	                                          INT_SOURCE4_WOM_Z_INT2_EN_POS);
+						  INT_SOURCE4_WOM_Z_INT2_EN_POS);
 
 	status |= inv_imu_read_reg(s, INT_SOURCE7_MREG1, 1, &data);
-	it->INV_FF            = (inv_imu_interrupt_value)((data & INT_SOURCE7_FF_INT2_EN_MASK) >>
-                                           INT_SOURCE7_FF_INT2_EN_POS);
-	it->INV_LOWG          = (inv_imu_interrupt_value)((data & INT_SOURCE7_LOWG_INT2_EN_MASK) >>
-                                             INT_SOURCE7_LOWG_INT2_EN_POS);
-	it->INV_STEP_DET      = (inv_imu_interrupt_value)((data & INT_SOURCE7_STEP_DET_INT2_EN_MASK) >>
-                                                 INT_SOURCE7_STEP_DET_INT2_EN_POS);
-	it->INV_STEP_CNT_OVFL = (inv_imu_interrupt_value)(
-	    (data & INT_SOURCE7_STEP_CNT_OFL_INT2_EN_MASK) >> INT_SOURCE7_STEP_CNT_OFL_INT2_EN_POS);
+	it->INV_FF = (inv_imu_interrupt_value)((data & INT_SOURCE7_FF_INT2_EN_MASK) >>
+					       INT_SOURCE7_FF_INT2_EN_POS);
+	it->INV_LOWG = (inv_imu_interrupt_value)((data & INT_SOURCE7_LOWG_INT2_EN_MASK) >>
+						 INT_SOURCE7_LOWG_INT2_EN_POS);
+	it->INV_STEP_DET = (inv_imu_interrupt_value)((data & INT_SOURCE7_STEP_DET_INT2_EN_MASK) >>
+						     INT_SOURCE7_STEP_DET_INT2_EN_POS);
+	it->INV_STEP_CNT_OVFL =
+		(inv_imu_interrupt_value)((data & INT_SOURCE7_STEP_CNT_OFL_INT2_EN_MASK) >>
+					  INT_SOURCE7_STEP_CNT_OFL_INT2_EN_POS);
 	it->INV_TILT_DET = (inv_imu_interrupt_value)((data & INT_SOURCE7_TILT_DET_INT2_EN_MASK) >>
-	                                             INT_SOURCE7_TILT_DET_INT2_EN_POS);
+						     INT_SOURCE7_TILT_DET_INT2_EN_POS);
 
 	return status;
 }
 
 int inv_imu_set_config_int1(inv_imu_device_t *s, const inv_imu_interrupt_parameter_t *it)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t data[2];
 
 	status |= inv_imu_read_reg(s, INT_SOURCE0, 2, &data[0]);
 
 	data[0] &= ~(INT_SOURCE0_FSYNC_INT1_EN_MASK | INT_SOURCE0_DRDY_INT1_EN_MASK |
-	             INT_SOURCE0_FIFO_THS_INT1_EN_MASK | INT_SOURCE0_FIFO_FULL_INT1_EN_MASK);
+		     INT_SOURCE0_FIFO_THS_INT1_EN_MASK | INT_SOURCE0_FIFO_FULL_INT1_EN_MASK);
 	data[0] |= ((it->INV_UI_FSYNC != 0) << INT_SOURCE0_FSYNC_INT1_EN_POS);
 	data[0] |= ((it->INV_UI_DRDY != 0) << INT_SOURCE0_DRDY_INT1_EN_POS);
 	data[0] |= ((it->INV_FIFO_THS != 0) << INT_SOURCE0_FIFO_THS_INT1_EN_POS);
 	data[0] |= ((it->INV_FIFO_FULL != 0) << INT_SOURCE0_FIFO_FULL_INT1_EN_POS);
 
 	data[1] &= ~(INT_SOURCE1_SMD_INT1_EN_MASK | INT_SOURCE1_WOM_X_INT1_EN_MASK |
-	             INT_SOURCE1_WOM_Y_INT1_EN_MASK | INT_SOURCE1_WOM_Z_INT1_EN_MASK);
+		     INT_SOURCE1_WOM_Y_INT1_EN_MASK | INT_SOURCE1_WOM_Z_INT1_EN_MASK);
 	data[1] |= ((it->INV_SMD != 0) << INT_SOURCE1_SMD_INT1_EN_POS);
 	data[1] |= ((it->INV_WOM_X != 0) << INT_SOURCE1_WOM_X_INT1_EN_POS);
 	data[1] |= ((it->INV_WOM_Y != 0) << INT_SOURCE1_WOM_Y_INT1_EN_POS);
@@ -777,8 +797,8 @@ int inv_imu_set_config_int1(inv_imu_device_t *s, const inv_imu_interrupt_paramet
 	status |= inv_imu_read_reg(s, INT_SOURCE6_MREG1, 1, &data[0]);
 
 	data[0] &= ~(INT_SOURCE6_FF_INT1_EN_MASK | INT_SOURCE6_LOWG_INT1_EN_MASK |
-	             INT_SOURCE6_STEP_DET_INT1_EN_MASK | INT_SOURCE6_STEP_CNT_OFL_INT1_EN_MASK |
-	             INT_SOURCE6_TILT_DET_INT1_EN_MASK);
+		     INT_SOURCE6_STEP_DET_INT1_EN_MASK | INT_SOURCE6_STEP_CNT_OFL_INT1_EN_MASK |
+		     INT_SOURCE6_TILT_DET_INT1_EN_MASK);
 	data[0] |= ((it->INV_FF != 0) << INT_SOURCE6_FF_INT1_EN_POS);
 	data[0] |= ((it->INV_LOWG != 0) << INT_SOURCE6_LOWG_INT1_EN_POS);
 	data[0] |= ((it->INV_STEP_DET != 0) << INT_SOURCE6_STEP_DET_INT1_EN_POS);
@@ -791,20 +811,20 @@ int inv_imu_set_config_int1(inv_imu_device_t *s, const inv_imu_interrupt_paramet
 
 int inv_imu_set_config_int2(inv_imu_device_t *s, const inv_imu_interrupt_parameter_t *it)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t data[2];
 
 	status |= inv_imu_read_reg(s, INT_SOURCE3, 2, &data[0]);
 
 	data[0] &= ~(INT_SOURCE3_FSYNC_INT2_EN_MASK | INT_SOURCE3_DRDY_INT2_EN_MASK |
-	             INT_SOURCE3_FIFO_THS_INT2_EN_MASK | INT_SOURCE3_FIFO_FULL_INT2_EN_MASK);
+		     INT_SOURCE3_FIFO_THS_INT2_EN_MASK | INT_SOURCE3_FIFO_FULL_INT2_EN_MASK);
 	data[0] |= ((it->INV_UI_FSYNC != 0) << INT_SOURCE3_FSYNC_INT2_EN_POS);
 	data[0] |= ((it->INV_UI_DRDY != 0) << INT_SOURCE3_DRDY_INT2_EN_POS);
 	data[0] |= ((it->INV_FIFO_THS != 0) << INT_SOURCE3_FIFO_THS_INT2_EN_POS);
 	data[0] |= ((it->INV_FIFO_FULL != 0) << INT_SOURCE3_FIFO_FULL_INT2_EN_POS);
 
 	data[1] &= ~(INT_SOURCE4_SMD_INT2_EN_MASK | INT_SOURCE4_WOM_X_INT2_EN_MASK |
-	             INT_SOURCE4_WOM_Y_INT2_EN_MASK | INT_SOURCE4_WOM_Z_INT2_EN_MASK);
+		     INT_SOURCE4_WOM_Y_INT2_EN_MASK | INT_SOURCE4_WOM_Z_INT2_EN_MASK);
 	data[1] |= ((it->INV_SMD != 0) << INT_SOURCE4_SMD_INT2_EN_POS);
 	data[1] |= ((it->INV_WOM_X != 0) << INT_SOURCE4_WOM_X_INT2_EN_POS);
 	data[1] |= ((it->INV_WOM_Y != 0) << INT_SOURCE4_WOM_Y_INT2_EN_POS);
@@ -815,8 +835,8 @@ int inv_imu_set_config_int2(inv_imu_device_t *s, const inv_imu_interrupt_paramet
 	status |= inv_imu_read_reg(s, INT_SOURCE7_MREG1, 1, &data[0]);
 
 	data[0] &= ~(INT_SOURCE7_FF_INT2_EN_MASK | INT_SOURCE7_LOWG_INT2_EN_MASK |
-	             INT_SOURCE7_STEP_DET_INT2_EN_MASK | INT_SOURCE7_STEP_CNT_OFL_INT2_EN_MASK |
-	             INT_SOURCE7_TILT_DET_INT2_EN_MASK);
+		     INT_SOURCE7_STEP_DET_INT2_EN_MASK | INT_SOURCE7_STEP_CNT_OFL_INT2_EN_MASK |
+		     INT_SOURCE7_TILT_DET_INT2_EN_MASK);
 	data[0] |= ((it->INV_FF != 0) << INT_SOURCE7_FF_INT2_EN_POS);
 	data[0] |= ((it->INV_LOWG != 0) << INT_SOURCE7_LOWG_INT2_EN_POS);
 	data[0] |= ((it->INV_STEP_DET != 0) << INT_SOURCE7_STEP_DET_INT2_EN_POS);
@@ -830,7 +850,7 @@ int inv_imu_set_config_int2(inv_imu_device_t *s, const inv_imu_interrupt_paramet
 
 int inv_imu_get_data_from_registers(inv_imu_device_t *s)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t int_status;
 	uint8_t accel[ACCEL_DATA_SIZE];
 #if INV_IMU_IS_GYRO_SUPPORTED
@@ -840,8 +860,9 @@ int inv_imu_get_data_from_registers(inv_imu_device_t *s)
 
 	/* Ensure data ready status bit is set */
 	status |= inv_imu_read_reg(s, INT_STATUS_DRDY, 1, &int_status);
-	if (status)
+	if (status) {
 		return status;
+	}
 
 	if (int_status & INT_STATUS_DRDY_DATA_RDY_INT_MASK) {
 		uint8_t temperature[2];
@@ -863,8 +884,9 @@ int inv_imu_get_data_from_registers(inv_imu_device_t *s)
 #endif
 
 		/* call sensor event callback */
-		if (s->sensor_event_cb)
+		if (s->sensor_event_cb) {
 			s->sensor_event_cb(&event);
+		}
 	}
 	/*else: Data Ready was not reached*/
 
@@ -882,14 +904,14 @@ int inv_imu_get_frame_count(inv_imu_device_t *s, uint16_t *frame_count)
 }
 
 int inv_imu_decode_fifo_frame(inv_imu_device_t *s, const uint8_t *frame,
-                              inv_imu_sensor_event_t *event)
+			      inv_imu_sensor_event_t *event)
 {
-	int                  status    = 0;
-	uint16_t             frame_idx = 0;
+	int status = 0;
+	uint16_t frame_idx = 0;
 	const fifo_header_t *header;
 
 	event->sensor_mask = 0;
-	header             = (fifo_header_t *)frame;
+	header = (fifo_header_t *)frame;
 
 	frame_idx += FIFO_HEADER_SIZE;
 
@@ -922,35 +944,37 @@ int inv_imu_decode_fifo_frame(inv_imu_device_t *s, const uint8_t *frame,
 		frame_idx += FIFO_GYRO_DATA_SIZE;
 	}
 #else
-	/* 
-	 * With 20-Bytes packets, 6B are reserved after accel value. 
-	 * Therefore, increment `fifo_idx` accordingly.
+	/*
+	 * With 20-Bytes packets, 6B are reserved after accel value.	 * Therefore, increment
+	 * `fifo_idx` accordingly.
 	 */
-	if (header->bits.twentybits_bit)
+	if (header->bits.twentybits_bit) {
 		frame_idx += FIFO_GYRO_DATA_SIZE;
+	}
 #endif
 
-	/* 
-	 * The coarse temperature (8 or 16B FIFO packet format) 
-	 * range is ± 64 degrees with 0.5°C resolution.
-	 * but the fine temperature range (2 bytes) (20B FIFO packet format) is 
-	 * ± 256 degrees with (1/128)°C resolution
+	/*
+	 * The coarse temperature (8 or 16B FIFO packet format)	 * range is ± 64 degrees with 0.5°C
+	 * resolution. but the fine temperature range (2 bytes) (20B FIFO packet format) is	 * ±
+	 * 256 degrees with (1/128)°C resolution
 	 */
 	if (header->bits.twentybits_bit) {
 		format_s16_data(s->endianness_data, &(frame[0 + frame_idx]), &event->temperature);
 		frame_idx += FIFO_TEMP_DATA_SIZE + FIFO_TEMP_HIGH_RES_SIZE;
 
 		/* new temperature data */
-		if (event->temperature != INVALID_VALUE_FIFO)
+		if (event->temperature != INVALID_VALUE_FIFO) {
 			event->sensor_mask |= (1 << INV_SENSOR_TEMPERATURE);
+		}
 	} else {
 		/* cast to int8_t since FIFO is in 16 bits mode (temperature on 8 bits) */
 		event->temperature = (int8_t)(frame[0 + frame_idx]);
 		frame_idx += FIFO_TEMP_DATA_SIZE;
 
 		/* new temperature data */
-		if (event->temperature != INVALID_VALUE_FIFO_1B)
+		if (event->temperature != INVALID_VALUE_FIFO_1B) {
 			event->sensor_mask |= (1 << INV_SENSOR_TEMPERATURE);
+		}
 	}
 
 	if (header->bits.timestamp_bit
@@ -958,12 +982,14 @@ int inv_imu_decode_fifo_frame(inv_imu_device_t *s, const uint8_t *frame,
 	    || header->bits.fsync_bit
 #endif
 	) {
-		format_u16_data(s->endianness_data, &(frame[0 + frame_idx]), &event->timestamp_fsync);
+		format_u16_data(s->endianness_data, &(frame[0 + frame_idx]),
+				&event->timestamp_fsync);
 		frame_idx += FIFO_TS_FSYNC_SIZE;
 #if INV_IMU_IS_GYRO_SUPPORTED
 		/* new fsync event */
-		if (header->bits.fsync_bit)
+		if (header->bits.fsync_bit) {
 			event->sensor_mask |= (1 << INV_SENSOR_FSYNC_EVENT);
+		}
 #endif
 	}
 
@@ -973,7 +999,8 @@ int inv_imu_decode_fifo_frame(inv_imu_device_t *s, const uint8_t *frame,
 		if (s->accel_start_time_us == UINT32_MAX) {
 			event->sensor_mask |= (1 << INV_SENSOR_ACCEL);
 		} else {
-			if (((inv_imu_get_time_us() - s->accel_start_time_us) >= ACC_STARTUP_TIME_US)
+			if (((inv_imu_get_time_us() - s->accel_start_time_us) >=
+			     ACC_STARTUP_TIME_US)
 #if INV_IMU_IS_GYRO_SUPPORTED
 			    && !header->bits.fsync_bit
 #endif
@@ -984,7 +1011,8 @@ int inv_imu_decode_fifo_frame(inv_imu_device_t *s, const uint8_t *frame,
 			}
 		}
 
-		if ((event->sensor_mask & (1 << INV_SENSOR_ACCEL)) && (header->bits.twentybits_bit)) {
+		if ((event->sensor_mask & (1 << INV_SENSOR_ACCEL)) &&
+		    (header->bits.twentybits_bit)) {
 			event->accel_high_res[0] = (frame[0 + frame_idx] >> 4) & 0xF;
 			event->accel_high_res[1] = (frame[1 + frame_idx] >> 4) & 0xF;
 			event->accel_high_res[2] = (frame[2 + frame_idx] >> 4) & 0xF;
@@ -999,14 +1027,16 @@ int inv_imu_decode_fifo_frame(inv_imu_device_t *s, const uint8_t *frame,
 			event->sensor_mask |= (1 << INV_SENSOR_GYRO);
 		} else {
 			if (!header->bits.fsync_bit &&
-			    ((inv_imu_get_time_us() - s->gyro_start_time_us) >= GYR_STARTUP_TIME_US)) {
+			    ((inv_imu_get_time_us() - s->gyro_start_time_us) >=
+			     GYR_STARTUP_TIME_US)) {
 				/* Discard first data after startup to let output to settle */
 				s->gyro_start_time_us = UINT32_MAX;
 				event->sensor_mask |= (1 << INV_SENSOR_GYRO);
 			}
 		}
 
-		if ((event->sensor_mask & (1 << INV_SENSOR_GYRO)) && (header->bits.twentybits_bit)) {
+		if ((event->sensor_mask & (1 << INV_SENSOR_GYRO)) &&
+		    (header->bits.twentybits_bit)) {
 			event->gyro_high_res[0] = (frame[0 + frame_idx]) & 0xF;
 			event->gyro_high_res[1] = (frame[1 + frame_idx]) & 0xF;
 			event->gyro_high_res[2] = (frame[2 + frame_idx]) & 0xF;
@@ -1019,27 +1049,28 @@ int inv_imu_decode_fifo_frame(inv_imu_device_t *s, const uint8_t *frame,
 
 int inv_imu_get_data_from_fifo(inv_imu_device_t *s)
 {
-	int      status = 0;
-	uint8_t  int_status;
+	int status = 0;
+	uint8_t int_status;
 	uint16_t packet_count = 0;
 	uint16_t packet_size =
-	    s->fifo_highres_enabled ? FIFO_20BYTES_PACKET_SIZE : FIFO_16BYTES_PACKET_SIZE;
+		s->fifo_highres_enabled ? FIFO_20BYTES_PACKET_SIZE : FIFO_16BYTES_PACKET_SIZE;
 	uint16_t fifo_idx = 0;
 
 	/* Ensure data ready status bit is set */
 	status |= inv_imu_read_reg(s, INT_STATUS, 1, &int_status);
 	if (!(int_status & INT_STATUS_FIFO_THS_INT_MASK) &&
-	    !(int_status & INT_STATUS_FIFO_FULL_INT_MASK))
+	    !(int_status & INT_STATUS_FIFO_FULL_INT_MASK)) {
 		return 0; /* Neither FIFO THS nor FIFO_FULL is set, simply return here */
+	}
 
 	/*
 	 * Make sure RCOSC is enabled to guarantee FIFO read.
 	 * For power optimization, this call can be omitted under specific conditions:
 	 *  - If using WM interrupt and you can guarantee entire FIFO will be read at once.
 	 *  - If gyro is enabled or accel is in LN or LP+RCOSC mode.
-	 *  - In accel LP+WUOSC mode, if you wait 100 us after reading FIFO_COUNT and 
-	 *    you can guarantee that the FIFO will be read within 1 ms.
-	 * Please refer to the AN-000324 for more information.
+	 *  - In accel LP+WUOSC mode, if you wait 100 us after reading FIFO_COUNT and	 *    you
+	 * can guarantee that the FIFO will be read within 1 ms. Please refer to the AN-000324 for
+	 * more information.
 	 */
 	status |= inv_imu_switch_on_mclk(s);
 
@@ -1077,14 +1108,16 @@ int inv_imu_get_data_from_fifo(inv_imu_device_t *s)
 		}
 
 		/* call sensor event callback */
-		if (s->sensor_event_cb)
+		if (s->sensor_event_cb) {
 			s->sensor_event_cb(&event);
+		}
 	}
 
 	status |= inv_imu_switch_off_mclk(s);
 
-	if (status < 0)
+	if (status < 0) {
 		return status;
+	}
 
 	return packet_count;
 }
@@ -1092,24 +1125,24 @@ int inv_imu_get_data_from_fifo(inv_imu_device_t *s)
 uint32_t inv_imu_convert_odr_bitfield_to_us(uint32_t odr_bitfield)
 {
 	/*
- odr bitfield - frequency : odr ms
-			0 - N/A
-			1 - N/A
-			2 - N/A
-			3 - N/A
-			4 - N/A
-			5 - 1.6k      : 0.625ms
-  (default) 6 - 800       : 1.25ms
-			7 - 400       : 2.5 ms
-			8 - 200       : 5 ms
-			9 - 100       : 10 ms
-			10 - 50       : 20 ms
-			11 - 25       : 40 ms
-			12 - 12.5     : 80 ms
-			13 - 6.25     : 160 ms
-			14 - 3.125    : 320 ms
-			15 - 1.5625   : 640 ms
-		*/
+	 * odr bitfield - frequency : odr ms
+	 * 0 - N/A
+	 * 1 - N/A
+	 * 2 - N/A
+	 * 3 - N/A
+	 * 4 - N/A
+	 * 5 - 1.6k      : 0.625ms
+	 * (default) 6 - 800       : 1.25ms
+	 * 7 - 400       : 2.5 ms
+	 * 8 - 200       : 5 ms
+	 * 9 - 100       : 10 ms
+	 * 10 - 50       : 20 ms
+	 * 11 - 25       : 40 ms
+	 * 12 - 12.5     : 80 ms
+	 * 13 - 6.25     : 160 ms
+	 * 14 - 3.125    : 320 ms
+	 * 15 - 1.5625   : 640 ms
+	 */
 
 	switch (odr_bitfield) {
 	case ACCEL_CONFIG0_ODR_1600_HZ:
@@ -1138,10 +1171,10 @@ uint32_t inv_imu_convert_odr_bitfield_to_us(uint32_t odr_bitfield)
 	}
 }
 
-int inv_imu_set_timestamp_resolution(inv_imu_device_t *         s,
-                                     const TMST_CONFIG1_RESOL_t timestamp_resol)
+int inv_imu_set_timestamp_resolution(inv_imu_device_t *s,
+				     const TMST_CONFIG1_RESOL_t timestamp_resol)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t data;
 
 	status |= inv_imu_read_reg(s, TMST_CONFIG1_MREG1, 1, &data);
@@ -1154,7 +1187,7 @@ int inv_imu_set_timestamp_resolution(inv_imu_device_t *         s,
 
 int inv_imu_reset_fifo(inv_imu_device_t *s)
 {
-	int     status            = 0;
+	int status = 0;
 	uint8_t fifo_flush_status = (uint8_t)SIGNAL_PATH_RESET_FIFO_FLUSH_EN;
 
 	status |= inv_imu_switch_on_mclk(s);
@@ -1164,7 +1197,7 @@ int inv_imu_reset_fifo(inv_imu_device_t *s)
 
 	/* Wait for FIFO flush (idle bit will go high at appropriate time and unlock flush) */
 	while ((status == 0) && ((fifo_flush_status & SIGNAL_PATH_RESET_FIFO_FLUSH_MASK) ==
-	                         (uint8_t)SIGNAL_PATH_RESET_FIFO_FLUSH_EN)) {
+				 (uint8_t)SIGNAL_PATH_RESET_FIFO_FLUSH_EN)) {
 		status |= inv_imu_read_reg(s, SIGNAL_PATH_RESET, 1, &fifo_flush_status);
 	}
 
@@ -1176,7 +1209,7 @@ int inv_imu_reset_fifo(inv_imu_device_t *s)
 int inv_imu_enable_high_resolution_fifo(inv_imu_device_t *s)
 {
 	uint8_t value;
-	int     status = 0;
+	int status = 0;
 
 	/* set FIFO packets to 20bit format (i.e. high res is enabled) */
 	s->fifo_highres_enabled = 1;
@@ -1192,7 +1225,7 @@ int inv_imu_enable_high_resolution_fifo(inv_imu_device_t *s)
 int inv_imu_disable_high_resolution_fifo(inv_imu_device_t *s)
 {
 	uint8_t value;
-	int     status = 0;
+	int status = 0;
 
 	/* set FIFO packets to 16bit format (i.e. high res is disabled) */
 	s->fifo_highres_enabled = 0;
@@ -1207,7 +1240,7 @@ int inv_imu_disable_high_resolution_fifo(inv_imu_device_t *s)
 
 int inv_imu_configure_fifo(inv_imu_device_t *s, INV_IMU_FIFO_CONFIG_t fifo_config)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t data;
 
 	s->fifo_is_used = fifo_config;
@@ -1216,22 +1249,25 @@ int inv_imu_configure_fifo(inv_imu_device_t *s, INV_IMU_FIFO_CONFIG_t fifo_confi
 
 	switch (fifo_config) {
 	case INV_IMU_FIFO_ENABLED:
-		/* Configure:
-		  - FIFO record mode i.e FIFO count unit is packet 
-		  - FIFO snapshot mode i.e drop the data when the FIFO overflows
-		  - Timestamp is logged in FIFO
-		  - Little Endian fifo_count
-		*/
+		/*
+		 * Configure:
+		 * - FIFO record mode i.e FIFO count unit is packet		 * - FIFO snapshot
+		 * mode i.e drop the data when the FIFO overflows
+		 * - Timestamp is logged in FIFO
+		 * - Little Endian fifo_count
+		 */
 
 		status |= inv_imu_read_reg(s, INTF_CONFIG0, 1, &data);
-		data &= ~(INTF_CONFIG0_FIFO_COUNT_FORMAT_MASK | INTF_CONFIG0_FIFO_COUNT_ENDIAN_MASK);
+		data &= ~(INTF_CONFIG0_FIFO_COUNT_FORMAT_MASK |
+			  INTF_CONFIG0_FIFO_COUNT_ENDIAN_MASK);
 		data |= (uint8_t)INTF_CONFIG0_FIFO_COUNT_REC_RECORD |
-		        (uint8_t)INTF_CONFIG0_FIFO_COUNT_LITTLE_ENDIAN;
+			(uint8_t)INTF_CONFIG0_FIFO_COUNT_LITTLE_ENDIAN;
 		status |= inv_imu_write_reg(s, INTF_CONFIG0, 1, &data);
 
 		status |= inv_imu_read_reg(s, FIFO_CONFIG1, 1, &data);
 		data &= ~(FIFO_CONFIG1_FIFO_MODE_MASK | FIFO_CONFIG1_FIFO_BYPASS_MASK);
-		data |= (uint8_t)FIFO_CONFIG1_FIFO_MODE_SNAPSHOT | (uint8_t)FIFO_CONFIG1_FIFO_BYPASS_OFF;
+		data |= (uint8_t)FIFO_CONFIG1_FIFO_MODE_SNAPSHOT |
+			(uint8_t)FIFO_CONFIG1_FIFO_BYPASS_OFF;
 		status |= inv_imu_write_reg(s, FIFO_CONFIG1, 1, &data);
 
 		status |= inv_imu_read_reg(s, TMST_CONFIG1_MREG1, 1, &data);
@@ -1289,44 +1325,47 @@ int inv_imu_configure_fifo(inv_imu_device_t *s, INV_IMU_FIFO_CONFIG_t fifo_confi
 
 uint32_t inv_imu_get_timestamp_resolution_us(inv_imu_device_t *s)
 {
-	int                  status = 0;
-	uint8_t              tmst_config1_reg;
+	int status = 0;
+	uint8_t tmst_config1_reg;
 	TMST_CONFIG1_RESOL_t tmst_resol;
 
 	status |= inv_imu_read_reg(s, TMST_CONFIG1_MREG1, 1, &tmst_config1_reg);
-	if (status < 0)
+	if (status < 0) {
 		return INV_ERROR;
+	}
 
 	tmst_resol = (TMST_CONFIG1_RESOL_t)(tmst_config1_reg & TMST_CONFIG1_TMST_RES_MASK);
 
-	if (tmst_resol == TMST_CONFIG1_RESOL_16us)
+	if (tmst_resol == TMST_CONFIG1_RESOL_16us) {
 		return 16;
-	else if (tmst_resol == TMST_CONFIG1_RESOL_1us)
+	} else if (tmst_resol == TMST_CONFIG1_RESOL_1us) {
 		return 1;
+	}
 
-	// Should not happen, return 0
+	/* Should not happen, return 0 */
 	return 0;
 }
 
 int inv_imu_configure_wom(inv_imu_device_t *s, const uint8_t wom_x_th, const uint8_t wom_y_th,
-                          const uint8_t wom_z_th, WOM_CONFIG_WOM_INT_MODE_t wom_int,
-                          WOM_CONFIG_WOM_INT_DUR_t wom_dur)
+			  const uint8_t wom_z_th, WOM_CONFIG_WOM_INT_MODE_t wom_int,
+			  WOM_CONFIG_WOM_INT_DUR_t wom_dur)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t data[3];
 	uint8_t value;
 
-	data[0] = wom_x_th; // Set X threshold
-	data[1] = wom_y_th; // Set Y threshold
-	data[2] = wom_z_th; // Set Z threshold
+	data[0] = wom_x_th; /* Set X threshold */
+	data[1] = wom_y_th; /* Set Y threshold */
+	data[2] = wom_z_th; /* Set Z threshold */
 	status |= inv_imu_write_reg(s, ACCEL_WOM_X_THR_MREG1, sizeof(data), &data[0]);
 
-	// Compare current sample with the previous sample and WOM from the 3 axis are ORed or ANDed to produce WOM signal.
+	/* Compare current sample with the previous sample and WOM from the 3 axis are ORed or ANDed
+	 * to produce WOM signal. */
 	status |= inv_imu_read_reg(s, WOM_CONFIG, 1, &value);
 	value &= ~WOM_CONFIG_WOM_INT_MODE_MASK;
 	value |= (uint8_t)WOM_CONFIG_WOM_MODE_CMP_PREV | (uint8_t)wom_int;
 
-	// Configure the number of overthreshold event to wait before producing the WOM signal.
+	/* Configure the number of overthreshold event to wait before producing the WOM signal. */
 	value &= ~WOM_CONFIG_WOM_INT_DUR_MASK;
 	value |= (uint8_t)wom_dur;
 	status |= inv_imu_write_reg(s, WOM_CONFIG, 1, &value);
@@ -1336,7 +1375,7 @@ int inv_imu_configure_wom(inv_imu_device_t *s, const uint8_t wom_x_th, const uin
 
 int inv_imu_enable_wom(inv_imu_device_t *s)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t value;
 
 	/* Enable WOM */
@@ -1350,7 +1389,7 @@ int inv_imu_enable_wom(inv_imu_device_t *s)
 
 int inv_imu_disable_wom(inv_imu_device_t *s)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t value;
 
 	/* Disable WOM */
@@ -1366,17 +1405,18 @@ int inv_imu_start_dmp(inv_imu_device_t *s)
 {
 	int status = 0;
 
-	// On first enabling of DMP, reset internal state
+	/* On first enabling of DMP, reset internal state */
 	if (!s->dmp_is_on) {
-		// Reset SRAM to 0's
+		/* Reset SRAM to 0's */
 		status |= inv_imu_reset_dmp(s, APEX_CONFIG0_DMP_MEM_RESET_APEX_ST_EN);
-		if (status)
+		if (status) {
 			return status;
+		}
 		s->dmp_is_on = 1;
 
 #if INV_IMU_HFSR_SUPPORTED
 		{
-			uint8_t        data;
+			uint8_t data;
 			static uint8_t ram_img[] = {
 #include "dmp3Default_xian_hfsr_rom_patch.txt"
 			};
@@ -1384,14 +1424,15 @@ int inv_imu_start_dmp(inv_imu_device_t *s)
 			/* HFSR parts requires to prescale accel data using a patch in SRAM */
 			status |= inv_imu_write_sram(s, ram_img, 320, sizeof(ram_img));
 
-			/* Set DMP start point to beginning of the patch i.e. SRAM start + offset = 320 */
+			/* Set DMP start point to beginning of the patch i.e. SRAM start + offset =
+			 * 320 */
 			data = (320 / 32);
 			status |= inv_imu_write_reg(s, DMP_CONFIG1_MREG1, 1, &data);
 		}
 #endif
 	}
 
-	// Initialize DMP
+	/* Initialize DMP */
 	status |= inv_imu_resume_dmp(s);
 
 	return status;
@@ -1399,8 +1440,8 @@ int inv_imu_start_dmp(inv_imu_device_t *s)
 
 int inv_imu_resume_dmp(struct inv_imu_device *s)
 {
-	int      status = 0;
-	uint8_t  value;
+	int status = 0;
+	uint8_t value;
 	uint64_t start;
 
 	status |= inv_imu_read_reg(s, APEX_CONFIG0, 1, &value);
@@ -1414,8 +1455,9 @@ int inv_imu_resume_dmp(struct inv_imu_device *s)
 		inv_imu_read_reg(s, APEX_CONFIG0, 1, &value);
 		inv_imu_sleep_us(100);
 
-		if ((value & APEX_CONFIG0_DMP_INIT_EN_MASK) == 0)
+		if ((value & APEX_CONFIG0_DMP_INIT_EN_MASK) == 0) {
 			break;
+		}
 
 	} while (inv_imu_get_time_us() - start < 50000);
 
@@ -1425,14 +1467,14 @@ int inv_imu_resume_dmp(struct inv_imu_device *s)
 int inv_imu_reset_dmp(inv_imu_device_t *s, const APEX_CONFIG0_DMP_MEM_RESET_t sram_reset)
 {
 	const int ref_timeout = 5000; /*50 ms*/
-	int       status      = 0;
-	int       timeout     = ref_timeout;
-	uint8_t   data_dmp_reset;
-	uint8_t   value = 0;
+	int status = 0;
+	int timeout = ref_timeout;
+	uint8_t data_dmp_reset;
+	uint8_t value = 0;
 
 	status |= inv_imu_switch_on_mclk(s);
 
-	// Reset DMP internal memories
+	/* Reset DMP internal memories */
 	status |= inv_imu_read_reg(s, APEX_CONFIG0, 1, &value);
 	value &= ~APEX_CONFIG0_DMP_MEM_RESET_EN_MASK;
 	value |= (sram_reset & APEX_CONFIG0_DMP_MEM_RESET_EN_MASK);
@@ -1440,25 +1482,26 @@ int inv_imu_reset_dmp(inv_imu_device_t *s, const APEX_CONFIG0_DMP_MEM_RESET_t sr
 
 	inv_imu_sleep_us(1000);
 
-	// Make sure reset procedure has finished by reading back mem_reset_en bit
+	/* Make sure reset procedure has finished by reading back mem_reset_en bit */
 	do {
 		inv_imu_sleep_us(10);
 		status |= inv_imu_read_reg(s, APEX_CONFIG0, 1, &data_dmp_reset);
-	} while (
-	    ((data_dmp_reset & APEX_CONFIG0_DMP_MEM_RESET_EN_MASK) != APEX_CONFIG0_DMP_MEM_RESET_DIS) &&
-	    timeout-- && !status);
+	} while (((data_dmp_reset & APEX_CONFIG0_DMP_MEM_RESET_EN_MASK) !=
+		  APEX_CONFIG0_DMP_MEM_RESET_DIS) &&
+		 timeout-- && !status);
 
 	status |= inv_imu_switch_off_mclk(s);
 
-	if (timeout <= 0)
+	if (timeout <= 0) {
 		return INV_ERROR_TIMEOUT;
+	}
 
 	return status;
 }
 
 int inv_imu_set_endianness(inv_imu_device_t *s, INTF_CONFIG0_DATA_ENDIAN_t endianness)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t value;
 
 	status |= inv_imu_read_reg(s, INTF_CONFIG0, 1, &value);
@@ -1466,27 +1509,29 @@ int inv_imu_set_endianness(inv_imu_device_t *s, INTF_CONFIG0_DATA_ENDIAN_t endia
 	value |= (uint8_t)endianness;
 	status |= inv_imu_write_reg(s, INTF_CONFIG0, 1, &value);
 
-	if (!status)
+	if (!status) {
 		s->endianness_data = (uint8_t)endianness;
+	}
 
 	return status;
 }
 
 int inv_imu_get_endianness(inv_imu_device_t *s)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t value;
 
 	status |= inv_imu_read_reg(s, INTF_CONFIG0, 1, &value);
-	if (!status)
+	if (!status) {
 		s->endianness_data = value & INTF_CONFIG0_SENSOR_DATA_ENDIAN_MASK;
+	}
 
 	return status;
 }
 
 int inv_imu_configure_fifo_data_rate(inv_imu_device_t *s, FDR_CONFIG_FDR_SEL_t dec_factor)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t data;
 
 	status |= inv_imu_read_reg(s, FDR_CONFIG_MREG1, 1, &data);
@@ -1504,20 +1549,21 @@ const char *inv_imu_get_version(void)
 
 #if INV_IMU_HFSR_SUPPORTED
 int inv_imu_write_sram(struct inv_imu_device *s, const uint8_t *data, uint32_t offset,
-                       uint32_t size)
+		       uint32_t size)
 {
-	int     rc = 0;
+	int rc = 0;
 	uint8_t memory_bank;
 	uint8_t dmp_memory_address;
 
-	if (size + offset > 1280U)
+	if (size + offset > 1280U) {
 		return INV_ERROR_SIZE;
+	}
 
 	/* make sure mclk is on */
 	rc |= inv_imu_switch_on_mclk(s);
 
 	/* Write memory pointed by data into DMP memory */
-	memory_bank        = (uint8_t)(SRAM_START_BANK + (offset / 256));
+	memory_bank = (uint8_t)(SRAM_START_BANK + (offset / 256));
 	dmp_memory_address = (uint8_t)(offset % 256);
 	rc |= inv_imu_write_reg(s, BLK_SEL_W, 1, &memory_bank);
 	inv_imu_sleep_us(10);
@@ -1526,7 +1572,7 @@ int inv_imu_write_sram(struct inv_imu_device *s, const uint8_t *data, uint32_t o
 
 	for (uint32_t i = offset; i < size + offset; i++) {
 		if (0 == (i % 256)) {
-			memory_bank        = (uint8_t)(SRAM_START_BANK + (i / 256));
+			memory_bank = (uint8_t)(SRAM_START_BANK + (i / 256));
 			dmp_memory_address = 0;
 			rc |= inv_imu_write_reg(s, BLK_SEL_W, 1, &memory_bank);
 			inv_imu_sleep_us(10);
@@ -1555,7 +1601,7 @@ int inv_imu_write_sram(struct inv_imu_device *s, const uint8_t *data, uint32_t o
  */
 static int select_rcosc(inv_imu_device_t *s)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t data;
 
 	status |= inv_imu_read_reg(s, PWR_MGMT0, 1, &data);
@@ -1568,7 +1614,7 @@ static int select_rcosc(inv_imu_device_t *s)
 
 static int select_wuosc(inv_imu_device_t *s)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t data;
 
 	status |= inv_imu_read_reg(s, PWR_MGMT0, 1, &data);
@@ -1582,7 +1628,7 @@ static int select_wuosc(inv_imu_device_t *s)
 static int configure_serial_interface(inv_imu_device_t *s)
 {
 	uint8_t value;
-	int     status = 0;
+	int status = 0;
 
 	/* Ensure BLK_SEL_R and BLK_SEL_W are set to 0 */
 	value = 0;
@@ -1596,12 +1642,15 @@ static int configure_serial_interface(inv_imu_device_t *s)
 		status |= inv_imu_write_reg(s, INTF_CONFIG1, 1, &value);
 	} else {
 		/* Configure SPI */
-		if (s->transport.serif.serif_type == UI_SPI4)
-			value = (uint8_t)DEVICE_CONFIG_SPI_4WIRE | (uint8_t)DEVICE_CONFIG_SPI_MODE_0_3;
-		else if (s->transport.serif.serif_type == UI_SPI3)
-			value = (uint8_t)DEVICE_CONFIG_SPI_3WIRE | (uint8_t)DEVICE_CONFIG_SPI_MODE_0_3;
-		else
+		if (s->transport.serif.serif_type == UI_SPI4) {
+			value = (uint8_t)DEVICE_CONFIG_SPI_4WIRE |
+				(uint8_t)DEVICE_CONFIG_SPI_MODE_0_3;
+		} else if (s->transport.serif.serif_type == UI_SPI3) {
+			value = (uint8_t)DEVICE_CONFIG_SPI_3WIRE |
+				(uint8_t)DEVICE_CONFIG_SPI_MODE_0_3;
+		} else {
 			return INV_ERROR_BAD_ARG; /* Not supported */
+		}
 		status |= inv_imu_write_reg(s, DEVICE_CONFIG, 1, &value);
 
 #if INV_IMU_REV == INV_IMU_REV_A
@@ -1617,7 +1666,7 @@ static int configure_serial_interface(inv_imu_device_t *s)
 
 static int init_hardware_from_ui(inv_imu_device_t *s)
 {
-	int     status = 0;
+	int status = 0;
 	uint8_t value;
 
 #if INV_IMU_IS_GYRO_SUPPORTED
@@ -1631,13 +1680,13 @@ static int init_hardware_from_ui(inv_imu_device_t *s)
 	/* Enable FIFO: use 16-bit format by default (i.e. high res is disabled) */
 	status |= inv_imu_configure_fifo(s, INV_IMU_FIFO_ENABLED);
 
-	/* 
-	 * Disable the automatic RCOSC power on to avoid 
-	 * extra power consumption in sleep mode (all sensors and clocks off) 
+	/*
+	 * Disable the automatic RCOSC power on to avoid	 * extra power consumption in sleep
+	 * mode (all sensors and clocks off)
 	 */
 	status |= inv_imu_read_reg(s, FIFO_CONFIG6_MREG1, 1, &value);
 	value |= ((1 & FIFO_CONFIG6_RCOSC_REQ_ON_FIFO_THS_DIS_MASK)
-	          << FIFO_CONFIG6_RCOSC_REQ_ON_FIFO_THS_DIS_POS);
+		  << FIFO_CONFIG6_RCOSC_REQ_ON_FIFO_THS_DIS_POS);
 	status |= inv_imu_write_reg(s, FIFO_CONFIG6_MREG1, 1, &value);
 
 	return status;
@@ -1645,9 +1694,9 @@ static int init_hardware_from_ui(inv_imu_device_t *s)
 
 #if INV_IMU_HFSR_SUPPORTED
 static int read_and_check_sram(struct inv_imu_device *s, const uint8_t *data, uint32_t offset,
-                               uint32_t size)
+			       uint32_t size)
 {
-	int     rc = 0;
+	int rc = 0;
 	uint8_t memory_bank;
 	uint8_t dmp_memory_address;
 
@@ -1655,7 +1704,7 @@ static int read_and_check_sram(struct inv_imu_device *s, const uint8_t *data, ui
 	rc |= inv_imu_switch_on_mclk(s);
 
 	/* Read DMP memory and check it against memory pointed by input parameter */
-	memory_bank        = (uint8_t)(SRAM_START_BANK + (offset / 256));
+	memory_bank = (uint8_t)(SRAM_START_BANK + (offset / 256));
 	dmp_memory_address = (uint8_t)(offset % 256);
 
 	rc |= inv_imu_write_reg(s, BLK_SEL_R, 1, &memory_bank);
@@ -1667,7 +1716,7 @@ static int read_and_check_sram(struct inv_imu_device *s, const uint8_t *data, ui
 		uint8_t readByte;
 
 		if (0 == (i % 256)) {
-			memory_bank        = (uint8_t)(SRAM_START_BANK + (i / 256));
+			memory_bank = (uint8_t)(SRAM_START_BANK + (i / 256));
 			dmp_memory_address = 0;
 			rc |= inv_imu_write_reg(s, BLK_SEL_R, 1, &memory_bank);
 			inv_imu_sleep_us(10);

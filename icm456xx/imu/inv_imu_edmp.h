@@ -18,8 +18,8 @@
 extern "C" {
 #endif
 
-#include "imu/inv_imu_driver.h"
-#include "imu/inv_imu_edmp_memmap.h"
+#include "icm456xx/imu/inv_imu_driver.h"
+#include "icm456xx/imu/inv_imu_edmp_memmap.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -42,7 +42,11 @@ extern "C" {
 #define INV_IMU_READ_EDMP_SRAM(s, name, val) inv_imu_read_sram(s, (uint32_t)name, name##_SIZE, val)
 
 /** @brief EDMP input interrupt lines definition */
-typedef enum { INV_IMU_EDMP_INT0 = 0, INV_IMU_EDMP_INT1, INV_IMU_EDMP_INT2 } inv_imu_edmp_int_t;
+typedef enum {
+	INV_IMU_EDMP_INT0 = 0,
+	INV_IMU_EDMP_INT1,
+	INV_IMU_EDMP_INT2
+} inv_imu_edmp_int_t;
 
 /** @brief APEX interrupts definition */
 typedef struct {
@@ -91,7 +95,7 @@ typedef struct {
 	uint16_t ped_step_det_th;
 	uint16_t ped_sb_timer_th;
 	uint32_t ped_hi_en_th;
-	uint8_t  ped_sensitivity_mode;
+	uint8_t ped_sensitivity_mode;
 	uint32_t ped_low_en_amp_th;
 
 	/* Tilt */
@@ -130,12 +134,12 @@ typedef struct {
 	uint32_t ff_debounce_duration;
 
 	/* Tap */
-	uint8_t  tap_min_jerk;
+	uint8_t tap_min_jerk;
 	uint16_t tap_tmax;
-	uint8_t  tap_tmin;
-	uint8_t  tap_max_peak_tol;
-	uint8_t  tap_smudge_reject_th;
-	uint8_t  tap_tavg;
+	uint8_t tap_tmin;
+	uint8_t tap_max_peak_tol;
+	uint8_t tap_smudge_reject_th;
+	uint8_t tap_tavg;
 
 	/* CalMag */
 	int32_t soft_iron_sensitivity_matrix[9];
@@ -143,15 +147,15 @@ typedef struct {
 
 	/* Power save */
 	uint32_t power_save_time;
-	uint8_t  power_save_en;
+	uint8_t power_save_en;
 
 } inv_imu_edmp_apex_parameters_t;
 
 /** @brief Pedometer activity class */
 typedef enum {
 	INV_IMU_EDMP_UNKNOWN = 0,
-	INV_IMU_EDMP_WALK    = 1,
-	INV_IMU_EDMP_RUN     = 2,
+	INV_IMU_EDMP_WALK = 1,
+	INV_IMU_EDMP_RUN = 2,
 } inv_imu_edmp_activity_class_t;
 
 /** @brief Pedometer outputs */
@@ -190,10 +194,10 @@ typedef enum {
 
 /** @brief Tap outputs */
 typedef struct {
-	inv_imu_edmp_tap_num_t  num;
+	inv_imu_edmp_tap_num_t num;
 	inv_imu_edmp_tap_axis_t axis;
-	inv_imu_edmp_tap_dir_t  direction;
-	uint8_t                 double_tap_timing;
+	inv_imu_edmp_tap_dir_t direction;
+	uint8_t double_tap_timing;
 } inv_imu_edmp_tap_data_t;
 
 /** @brief Configure EDMP Output Data Rate.
@@ -209,8 +213,8 @@ int inv_imu_edmp_set_frequency(inv_imu_device_t *s, const dmp_ext_sen_odr_cfg_ap
 /** @brief Initialize EDMP APEX algorithms. This function should be called before
  *         calling any other function (except for `inv_imu_edmp_set_frequency`).
  *  @warning This function will power-up the SRAM. For power consumption consideration,
- *           you can manually call `inv_imu_adv_power_down_sram` if you don't need to 
- *           preserve SRAM content.
+ *           you can manually call `inv_imu_adv_power_down_sram` if you don't need to * preserve
+ * SRAM content.
  *  @warning This function will reset all interrupt masks previously set with
  *           `inv_imu_edmp_unmask_int_src` and exit with `EDMP_INT_SRC_ACCEL_DRDY_MASK` unmasked on
  *           `INV_IMU_EDMP_INT0`.
@@ -220,7 +224,7 @@ int inv_imu_edmp_set_frequency(inv_imu_device_t *s, const dmp_ext_sen_odr_cfg_ap
 int inv_imu_edmp_init_apex(inv_imu_device_t *s);
 
 /** @brief Recompute EDMP APEX algorithms internal decimator based on new EDMP output Data Rate
-           configured with `inv_imu_edmp_set_frequency`.
+ * configured with `inv_imu_edmp_set_frequency`.
  *  @warning It is up to application level to save/restore previously configured APEX parameters,
  *           if any, with `inv_imu_edmp_set_apex_parameters`.
  *  @warning EDMP must be disabled before calling this function.
@@ -399,16 +403,16 @@ int inv_imu_edmp_get_tap_data(inv_imu_device_t *s, inv_imu_edmp_tap_data_t *data
  *  @return                 0 on success, negative value on error.
  */
 int inv_imu_edmp_mask_int_src(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_nb,
-                              uint8_t int_mask);
+			      uint8_t int_mask);
 
 /** @brief  Unmask requested interrupt sources for edmp interrupt line passed in parameter.
  *  @param[in] s            Pointer to device.
  *  @param[in] edmp_int_nb  EDMP input interrupt line number that should be configured.
- *  @param[in] int_mask     Interrupt sources to unmask. 
- *  @return                 0 on success, negative value on error.
+ *  @param[in] int_mask     Interrupt sources to unmask. *  @return                 0 on success,
+ * negative value on error.
  */
 int inv_imu_edmp_unmask_int_src(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_nb,
-                                uint8_t int_mask);
+				uint8_t int_mask);
 
 /** @brief  Setup EDMP to execute code in ROM.
  *  @param[in] s  Pointer to device.
