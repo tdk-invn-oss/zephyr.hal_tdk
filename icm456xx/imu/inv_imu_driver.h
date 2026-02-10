@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-#include "icm456xx/imu/inv_imu.h"
+#include "icm456xx/icm456xx_h/imu/inv_imu.h"
 #include "icm456xx/imu/inv_imu_defs.h"
 #include "icm456xx/imu/inv_imu_transport.h"
 
