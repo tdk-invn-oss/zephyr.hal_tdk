@@ -22,22 +22,21 @@ extern "C" {
 
 /** Self-test input parameters */
 typedef struct {
-	ST_CONFIG_NUM_SAMPLES_t st_num_samples; /**< Number of samples used to perform self-test */
+	ST_CONFIG_NUM_SAMPLES_t     st_num_samples; /**< Number of samples used to perform self-test */
 	SELFTEST_ACCEL_GYRO_ST_EN_t st_control; /**< Define which sensor is under self-test */
 } inv_imu_selftest_parameters_t;
 
 /** Self-test routine outputs */
 typedef struct {
 	int8_t accel_status; /**< global accel self-test passed */
-	int8_t ax_status;    /**< AX self-test status */
-	int8_t ay_status;    /**< AY self-test status */
-	int8_t az_status;    /**< AZ self-test status */
+	int8_t ax_status; /**< AX self-test status */
+	int8_t ay_status; /**< AY self-test status */
+	int8_t az_status; /**< AZ self-test status */
 #if INV_IMU_IS_GYRO_SUPPORTED
-	int8_t gyro_status; /**< global gyro self-test status: st_pass (bit0), st_incomplete (bit1)
-			     */
-	int8_t gx_status;   /**< GX self-test status */
-	int8_t gy_status;   /**< GY self-test status */
-	int8_t gz_status;   /**< GZ self-test status */
+	int8_t gyro_status; /**< global gyro self-test status: st_pass (bit0), st_incomplete (bit1) */
+	int8_t gx_status; /**< GX self-test status */
+	int8_t gy_status; /**< GY self-test status */
+	int8_t gz_status; /**< GZ self-test status */
 #endif
 } inv_imu_selftest_output_t;
 
@@ -48,15 +47,15 @@ typedef struct {
  *  @return                0 on success, negative value on error.
  */
 int inv_imu_run_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t st_params,
-			 inv_imu_selftest_output_t *st_output);
+                         inv_imu_selftest_output_t *st_output);
 
 /** @brief Fill the self-test configuration structure with default configuration.
  *  @param[in] s                Pointer to device.
  *  @param[in] selftest_params  Self-test parameters to be initialized.
  *  @return                     0 on success, negative value on error.
  */
-int inv_imu_init_selftest_parameters_struct(inv_imu_device_t *s,
-					    inv_imu_selftest_parameters_t *selftest_params);
+int inv_imu_init_selftest_parameters_struct(inv_imu_device_t *             s,
+                                            inv_imu_selftest_parameters_t *selftest_params);
 
 /** @brief Load self-test data.
  *  @param[in] s  Pointer to device.

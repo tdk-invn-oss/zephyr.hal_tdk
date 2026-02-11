@@ -18,7 +18,6 @@
 extern "C" {
 #endif
 
-#include "icm456xx/icm456xx_h/imu/inv_imu.h"
 #include "icm456xx/imu/inv_imu_defs.h"
 #include "icm456xx/imu/inv_imu_transport.h"
 
@@ -26,7 +25,7 @@ extern "C" {
 #include <string.h>
 
 /*
- * Driver's structures definitions
+ * Driver's structures definitions 
  */
 
 /** @brief Basic driver configuration structure */
@@ -37,8 +36,9 @@ typedef struct {
 	/** @brief The calculated FIFO frame size in Bytes. */
 	uint8_t fifo_frame_size;
 
-	/** @brief Keeps track of data endianness mode	 * 0 : data in Sensor Registers and FIFO are
-	 * in Little Endian format 1 : data in Sensor Registers and FIFO are in Big Endian format
+	/** @brief Keeps track of data endianness mode 
+	 * 0 : data in Sensor Registers and FIFO are in Little Endian format
+	 * 1 : data in Sensor Registers and FIFO are in Big Endian format
 	 */
 	uint8_t endianness_data;
 
@@ -55,22 +55,22 @@ typedef union {
 	fifo_header_t header;
 	struct {
 		fifo_header_t header;
-		int16_t sensor_data[3];
-		int8_t temp_data;
+		int16_t       sensor_data[3];
+		int8_t        temp_data;
 	} byte_8;
 	struct {
 		fifo_header_t header;
-		int16_t accel_data[3];
-		int16_t gyro_data[3];
-		int8_t temp_data;
-		uint16_t timestamp;
+		int16_t       accel_data[3];
+		int16_t       gyro_data[3];
+		int8_t        temp_data;
+		uint16_t      timestamp;
 	} byte_16;
 	struct {
 		fifo_header_t header;
-		int32_t accel_data[3];
-		int32_t gyro_data[3];
-		int16_t temp_data;
-		uint16_t timestamp;
+		int32_t       accel_data[3];
+		int32_t       gyro_data[3];
+		int16_t       temp_data;
+		uint16_t      timestamp;
 	} byte_20;
 } inv_imu_fifo_data_t;
 
@@ -98,21 +98,20 @@ typedef struct {
 
 /** @brief Basic FIFO configuration */
 typedef struct {
-	uint8_t gyro_en;                    /**< Enable Gyro in FIFO */
-	uint8_t accel_en;                   /**< Enable Accel in FIFO */
-	uint8_t hires_en;                   /**< Enable High Resolution mode (20-bits long data) */
-	uint16_t fifo_wm_th;                /**< Watermark threshold value */
-	fifo_config0_fifo_mode_t fifo_mode; /**< Operating mode of the FIFO */
+	uint8_t                   gyro_en; /**< Enable Gyro in FIFO */
+	uint8_t                   accel_en; /**< Enable Accel in FIFO */
+	uint8_t                   hires_en; /**< Enable High Resolution mode (20-bits long data) */
+	uint16_t                  fifo_wm_th; /**< Watermark threshold value */
+	fifo_config0_fifo_mode_t  fifo_mode; /**< Operating mode of the FIFO */
 	fifo_config0_fifo_depth_t fifo_depth; /**< FIFO size */
 } inv_imu_fifo_config_t;
 
 /** @brief Macro to convert 2 bytes in 1 half-word depending on IMU endianness */
 #define FORMAT_16_BITS_DATA(is_big_endian, pIn8, pOut16)                                           \
-	*(pOut16) = ((is_big_endian) == 1) ? ((pIn8)[0] << 8) | (pIn8)[1]                          \
-					   : ((pIn8)[1] << 8) | (pIn8)[0]
+	*(pOut16) = ((is_big_endian) == 1) ? ((pIn8)[0] << 8) | (pIn8)[1] : ((pIn8)[1] << 8) | (pIn8)[0]
 
 /*
- * API definitions
+ * API definitions 
  */
 
 /** @brief Sleep function.
@@ -173,7 +172,7 @@ int inv_imu_set_accel_fsr(inv_imu_device_t *s, accel_config0_accel_ui_fs_sel_t a
  *  @param[in] s         Pointer to device.
  *  @param[in] gyro_fsr  Requested full scale range.
  *  @return              0 on success, negative value on error.
- */
+  */
 int inv_imu_set_gyro_fsr(inv_imu_device_t *s, gyro_config0_gyro_ui_fs_sel_t gyro_fsr);
 
 /** @brief Set accel Low-Power averaging value
@@ -211,7 +210,8 @@ int inv_imu_set_gyro_ln_bw(inv_imu_device_t *s, ipreg_sys1_reg_172_gyro_ui_lpfbw
  */
 int inv_imu_get_register_data(inv_imu_device_t *s, inv_imu_sensor_data_t *data);
 
-/** @brief Configures the FIFO to the specified state. *  @param[in] s            Pointer to device.
+/** @brief Configures the FIFO to the specified state. 
+ *  @param[in] s            Pointer to device.
  *  @param[in] fifo_config  Structure containing the FIFO configuration.
  *  @return                 0 on success, negative value on error.
  */
@@ -251,7 +251,7 @@ int inv_imu_get_fifo_frame(inv_imu_device_t *s, inv_imu_fifo_data_t *data);
  *  @return         0 on success, negative value on error.
  */
 int inv_imu_set_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
-			   const inv_imu_int_state_t *it);
+                           const inv_imu_int_state_t *it);
 
 /** @brief Retrieve interrupts configuration.
  *  @param[in] s    Pointer to device.
@@ -260,7 +260,7 @@ int inv_imu_set_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
  *  @return         0 on success, negative value on error.
  */
 int inv_imu_get_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
-			   inv_imu_int_state_t *it);
+                           inv_imu_int_state_t *it);
 
 /** @brief Configure pin behavior.
  *  @param[in] s     Pointer to device.
@@ -269,7 +269,7 @@ int inv_imu_get_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
  *  @return          0 on success, negative value on error.
  */
 int inv_imu_set_pin_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
-			       const inv_imu_int_pin_config_t *conf);
+                               const inv_imu_int_pin_config_t *conf);
 
 /** @brief Read interrupt 1 status.
  *  @param[in] s    Pointer to device.
@@ -278,18 +278,19 @@ int inv_imu_set_pin_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
  *  @return         0 on success, negative value on error.
  */
 int inv_imu_get_int_status(inv_imu_device_t *s, const inv_imu_int_num_t num,
-			   inv_imu_int_state_t *it);
+                           inv_imu_int_state_t *it);
 
 /** @brief Read the UI endianness and set the inv_device endianness field
- *  @param[in] s  Pointer to device. *  @return       0 on success, negative value on error.
+ *  @param[in] s  Pointer to device. 
+ *  @return       0 on success, negative value on error.
  */
 int inv_imu_get_endianness(inv_imu_device_t *s);
 
 /** @brief Select which clock to use when in Low Power mode.
  *         Use `SMC_CONTROL_0_ACCEL_LP_CLK_RCOSC` for Low Power (LP) mode.
  *         Use `SMC_CONTROL_0_ACCEL_LP_CLK_WUOSC` for Ultra Low Power (ULP) mode.
- *  @note In ULP mode, sensor registers are not available and the host must retrieve *        data
- * from the FIFO.
+ *  @note In ULP mode, sensor registers are not available and the host must retrieve 
+ *        data from the FIFO.
  *  @param[in] s        Pointer to device.
  *  @param[in] clk_sel  Selected clock.
  *  @return             0 on success, negative value on error.

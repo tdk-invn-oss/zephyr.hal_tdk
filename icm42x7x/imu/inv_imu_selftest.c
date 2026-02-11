@@ -7,17 +7,17 @@
 #include "icm42x7x/imu/inv_imu_selftest.h"
 #include "icm42x7x/imu/inv_imu_extfunc.h"
 
-static int configure_selftest_parameters(inv_imu_device_t *s,
-					 const inv_imu_selftest_parameters_t st_params);
+static int configure_selftest_parameters(inv_imu_device_t *                  s,
+                                         const inv_imu_selftest_parameters_t st_params);
 
 int inv_imu_run_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t st_params,
-			 inv_imu_selftest_output_t *st_output)
+                         inv_imu_selftest_output_t *st_output)
 {
-	int status = 0;
+	int     status = 0;
 	uint8_t value;
-	uint8_t data = 0;
-	uint8_t st_done = 0;
-	int polling_timeout_ms = 1000;
+	uint8_t data               = 0;
+	uint8_t st_done            = 0;
+	int     polling_timeout_ms = 1000;
 
 #ifdef ICM42680
 	/* Enable self-test */
@@ -48,10 +48,10 @@ int inv_imu_run_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_
 	/* Set self-test parameters */
 	status |= configure_selftest_parameters(s, st_params);
 
-	/*
+	/* 
 	 * Enable accel and/or gyro self-test.
-	 * If both accel and gyro self-test are enabled,	 * they should be set simultaneously
-	 * in the same write access
+	 * If both accel and gyro self-test are enabled, 
+	 * they should be set simultaneously in the same write access 
 	 */
 	status |= inv_imu_read_reg(s, SELFTEST_MREG1, 1, &value);
 	value &= ~SELFTEST_ACCEL_ST_EN_MASK;
@@ -67,27 +67,25 @@ int inv_imu_run_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_
 		status |= inv_imu_read_reg(s, INT_STATUS, 1, &st_done);
 		st_done &= INT_STATUS_ST_INT_MASK;
 
-		if (0 == --polling_timeout_ms) {
-			return status | -1; /* Return error if timeout is reached */
-		}
+		if (0 == --polling_timeout_ms)
+			return (status | -1); /* Return error if timeout is reached */
 
 	} while (!st_done /* Exit if ST_DONE */
-		 && !status /* Or if error is detected */);
+	         && !status /* Or if error is detected */);
 
 	/* Read self-test results (must start with ST_STATUS2) */
 	status |= inv_imu_read_reg(s, ST_STATUS2_MREG1, 1, &data);
 #if INV_IMU_IS_GYRO_SUPPORTED
-	st_output->gyro_status =
-		(data & ST_STATUS2_GYRO_ST_PASS_MASK) >> ST_STATUS2_GYRO_ST_PASS_POS;
+	st_output->gyro_status = (data & ST_STATUS2_GYRO_ST_PASS_MASK) >> ST_STATUS2_GYRO_ST_PASS_POS;
 	st_output->gyro_status |=
-		((data & ST_STATUS2_ST_INCOMPLETE_MASK) >> ST_STATUS2_ST_INCOMPLETE_POS) << 1;
+	    ((data & ST_STATUS2_ST_INCOMPLETE_MASK) >> ST_STATUS2_ST_INCOMPLETE_POS) << 1;
 	st_output->gx_status = (data & ST_STATUS2_GX_ST_PASS_MASK) >> ST_STATUS2_GX_ST_PASS_POS;
 	st_output->gy_status = (data & ST_STATUS2_GY_ST_PASS_MASK) >> ST_STATUS2_GY_ST_PASS_POS;
 	st_output->gz_status = (data & ST_STATUS2_GZ_ST_PASS_MASK) >> ST_STATUS2_GZ_ST_PASS_POS;
 #endif
 	status |= inv_imu_read_reg(s, ST_STATUS1_MREG1, 1, &data);
 	st_output->accel_status =
-		(data & ST_STATUS1_ACCEL_ST_PASS_MASK) >> ST_STATUS1_ACCEL_ST_PASS_POS;
+	    (data & ST_STATUS1_ACCEL_ST_PASS_MASK) >> ST_STATUS1_ACCEL_ST_PASS_POS;
 	st_output->ax_status = (data & ST_STATUS1_AX_ST_PASS_MASK) >> ST_STATUS1_AX_ST_PASS_POS;
 	st_output->ay_status = (data & ST_STATUS1_AY_ST_PASS_MASK) >> ST_STATUS1_AY_ST_PASS_POS;
 	st_output->az_status = (data & ST_STATUS1_AZ_ST_PASS_MASK) >> ST_STATUS1_AZ_ST_PASS_POS;
@@ -118,8 +116,8 @@ int inv_imu_run_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_
 	return status;
 }
 
-int inv_imu_init_selftest_parameters_struct(inv_imu_device_t *s,
-					    inv_imu_selftest_parameters_t *st_params)
+int inv_imu_init_selftest_parameters_struct(inv_imu_device_t *             s,
+                                            inv_imu_selftest_parameters_t *st_params)
 {
 	(void)s;
 	st_params->st_num_samples = ST_CONFIG_16_SAMPLES;
@@ -133,7 +131,7 @@ int inv_imu_init_selftest_parameters_struct(inv_imu_device_t *s,
 
 int inv_imu_load_selftest_data(inv_imu_device_t *s)
 {
-	int status = 0;
+	int     status = 0;
 	uint8_t value;
 
 	/* Enable RC oscillator */
@@ -171,17 +169,16 @@ int inv_imu_load_selftest_data(inv_imu_device_t *s)
 	return status;
 }
 
-static int configure_selftest_parameters(inv_imu_device_t *s,
-					 const inv_imu_selftest_parameters_t st_params)
+static int configure_selftest_parameters(inv_imu_device_t *                  s,
+                                         const inv_imu_selftest_parameters_t st_params)
 {
-	int status = 0;
+	int     status = 0;
 	uint8_t value;
 
 	/* Self-test configuration cannot be updated if it already running */
 	status |= inv_imu_read_reg(s, SELFTEST_MREG1, 1, &value);
-	if (value & (SELFTEST_ACCEL_ST_EN_MASK | SELFTEST_GYRO_ST_EN_MASK)) {
+	if (value & (SELFTEST_ACCEL_ST_EN_MASK | SELFTEST_GYRO_ST_EN_MASK))
 		return INV_ERROR_UNEXPECTED;
-	}
 
 	status |= inv_imu_read_reg(s, ST_CONFIG_MREG1, 1, &value);
 	value &= ~((uint8_t)ST_CONFIG_ST_NUMBER_SAMPLE_MASK);

@@ -1,10 +1,10 @@
 # Overview
 
-The eMD driver is TDK Invensense's reference code to drive our IMU from a microcontroller-based system. It is coded in C language and organized around modules.
+The eMD driver is TDK Invensense's reference code to drive our IMU from a microcontroller-based system. It is coded in C language and organized around modules. 
 
 ## Common files
 
-All modules rely on the following files.
+All modules rely on the following files. 
 
 Files:
 * `imu/inv_imu_transport.h`: Definition of the abstraction layer used to communicate with the IMU.
@@ -19,7 +19,7 @@ By default, the driver will include the Little Endian variant of the register ma
 /* Include regmap (le = little endian, be = big endian) */
 #include "imu/inv_imu_regmap_le.h"
 /* #include "imu/inv_imu_regmap_be.h" */
-```
+``` 
 
 ## Basic driver
 
@@ -31,11 +31,11 @@ Depends on:
 Files:
 * `imu/inv_imu_driver.h`: Definition of the basic driver API.
 * `imu/inv_imu_driver.c`: Implementation of the basic driver API.
-* `imu/inv_imu_version.h`: Contains the driver's version as a string.
+* `imu/inv_imu_version.h`: Contains the driver's version as a string. 
 
 ## Advanced driver
 
-The **advanced driver** provides functionalities for specific applications, requiring in-depth understanding of the IMU. It also provides API with a higher abstraction level than those exposed in the **basic driver**.
+The **advanced driver** provides functionalities for specific applications, requiring in-depth understanding of the IMU. It also provides API with a higher abstraction level than those exposed in the **basic driver**. 
 
 Depends on:
 * **Basic driver**
