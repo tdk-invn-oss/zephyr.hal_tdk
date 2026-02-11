@@ -181,7 +181,7 @@ static uint8_t *get_register_cache_addr(void *t, const uint32_t reg)
 	struct inv_imu_transport *tr = (struct inv_imu_transport *)t;
 
 	if (tr == NULL) {
-		return uint8_t * 0; /* error */
+		return (uint8_t *)0; /* error */
 	}
 
 	switch (reg) {
@@ -196,7 +196,7 @@ static uint8_t *get_register_cache_addr(void *t, const uint32_t reg)
 	case TMST_CONFIG1_MREG1:
 		return &(tr->register_cache.tmst_config1_reg);
 	default:
-		return uint8_t * 0; /* Not found */
+		return (uint8_t *)0; /* Not found */
 	}
 }
 
