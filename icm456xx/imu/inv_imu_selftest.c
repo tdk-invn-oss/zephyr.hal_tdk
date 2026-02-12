@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD 3-Clause
  */
 
-#include "icm456xx/imu/inv_imu_selftest.h"
+#include "imu/icm456xx_selftest.h"
 #include "icm456xx/imu/inv_imu_edmp.h"
 
 /* Static functions definition */
@@ -16,7 +16,7 @@ static int get_selftest_output(inv_imu_device_t *s, const inv_imu_selftest_param
 
 /* API implementation */
 
-int inv_imu_selftest_init_params(inv_imu_device_t *s, inv_imu_selftest_parameters_t *st_params)
+int icm456xx_selftest_init_params(inv_imu_device_t *s, inv_imu_selftest_parameters_t *st_params)
 {
 	int rc = INV_IMU_OK;
 
@@ -30,7 +30,7 @@ int inv_imu_selftest_init_params(inv_imu_device_t *s, inv_imu_selftest_parameter
 	return rc;
 }
 
-int inv_imu_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
+int icm456xx_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
                      inv_imu_selftest_output_t *st_output)
 {
 	int rc = INV_IMU_OK;
@@ -38,12 +38,12 @@ int inv_imu_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *s
 	if (!(st_params->accel_en || st_params->gyro_en))
 		return INV_IMU_ERROR;
 
-	rc |= inv_imu_adv_device_reset(s);
+	rc |= icm456xx_adv_device_reset(s);
 
-	inv_imu_sleep_us(s, 10000);
+	icm456xx_sleep_us(s, 10000);
 
 	/* Configure start addresses as we reset the device */
-	rc |= inv_imu_edmp_configure(s);
+	rc |= icm456xx_edmp_configure(s);
 
 	rc |= set_selftest_parameters(s, st_params);
 
@@ -51,7 +51,7 @@ int inv_imu_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *s
 
 	rc |= get_selftest_output(s, st_params, st_output);
 
-	rc |= inv_imu_adv_device_reset(s);
+	rc |= icm456xx_adv_device_reset(s);
 
 	return rc;
 }
@@ -65,7 +65,7 @@ static int set_selftest_parameters(inv_imu_device_t *                   s,
 	uint32_t tmp_stc_params = 0;
 	int      init_en;
 
-	rc |= inv_imu_adv_power_up_sram(s);
+	rc |= icm456xx_adv_power_up_sram(s);
 
 	init_en = (st_params->accel_en || st_params->gyro_en);
 	tmp_stc_params |= (init_en ? SELFTESTCAL_INIT_EN : SELFTESTCAL_INIT_DIS);
@@ -91,26 +91,26 @@ static int run_internal_selftest(inv_imu_device_t *s)
 	int_apex_config1_t int_apex_config1;
 	int                timeout_us = 3000000; /* 3 seconds */
 
-	rc |= inv_imu_read_reg(s, REG_HOST_MSG, 1, (uint8_t *)&reg_host_msg);
+	rc |= icm456xx_read_reg(s, REG_HOST_MSG, 1, (uint8_t *)&reg_host_msg);
 	reg_host_msg.testopenable = INV_IMU_ENABLE;
-	rc |= inv_imu_write_reg(s, REG_HOST_MSG, 1, (uint8_t *)&reg_host_msg);
+	rc |= icm456xx_write_reg(s, REG_HOST_MSG, 1, (uint8_t *)&reg_host_msg);
 
 	/* Enable desired interrupt */
-	rc |= inv_imu_read_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
+	rc |= icm456xx_read_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
 	int_apex_config1.int_status_mask_pin_selftest_done = 0;
-	rc |= inv_imu_write_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
+	rc |= icm456xx_write_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
 
 	/* Run EDMP */
-	rc |= inv_imu_edmp_run_ondemand(s, INV_IMU_EDMP_INT2);
+	rc |= icm456xx_edmp_run_ondemand(s, INV_IMU_EDMP_INT2);
 
 	/* Wait for the desired interrupt */
 	while (1) {
 		int_apex_status1_t int_apex_status1;
-		rc |= inv_imu_read_reg(s, INT_APEX_STATUS1, 1, (uint8_t *)&int_apex_status1);
+		rc |= icm456xx_read_reg(s, INT_APEX_STATUS1, 1, (uint8_t *)&int_apex_status1);
 		if (int_apex_status1.int_status_selftest_done)
 			break;
 
-		inv_imu_sleep_us(s, 100);
+		icm456xx_sleep_us(s, 100);
 		timeout_us -= 100;
 
 		if (timeout_us <= 0)
@@ -118,9 +118,9 @@ static int run_internal_selftest(inv_imu_device_t *s)
 	}
 
 	/* Disable interrupt */
-	rc |= inv_imu_read_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
+	rc |= icm456xx_read_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
 	int_apex_config1.int_status_mask_pin_selftest_done = 1;
-	rc |= inv_imu_write_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
+	rc |= icm456xx_write_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
 
 	return rc;
 }

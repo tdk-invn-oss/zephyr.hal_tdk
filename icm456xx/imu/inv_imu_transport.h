@@ -68,7 +68,7 @@ typedef struct {
  *  @param[out] buf  Output data from the register.
  *  @return          0 on success, negative value on error.
  */
-int inv_imu_read_reg(void *t, uint32_t reg, uint32_t len, uint8_t *buf);
+int icm456xx_read_reg(void *t, uint32_t reg, uint32_t len, uint8_t *buf);
 
 /** @brief Writes data to a register on IMU.
  *  @param[in] t    Pointer to transport (as void * so it can be called from any module).
@@ -77,7 +77,7 @@ int inv_imu_read_reg(void *t, uint32_t reg, uint32_t len, uint8_t *buf);
  *  @param[in] buf  Input data to write.
  *  @return         0 on success, negative value on error.
  */
-int inv_imu_write_reg(void *t, uint32_t reg, uint32_t len, const uint8_t *buf);
+int icm456xx_write_reg(void *t, uint32_t reg, uint32_t len, const uint8_t *buf);
 
 /** @brief Reads data from SRAM on IMU.
  *  @param[in] t     Pointer to transport (as void * so it can be called from any module). 
@@ -86,7 +86,7 @@ int inv_imu_write_reg(void *t, uint32_t reg, uint32_t len, const uint8_t *buf);
  *  @param[out] buf  Output data from the register.
  *  @return          0 on success, negative value on error.
  */
-int inv_imu_read_sram(void *t, uint32_t addr, uint32_t len, uint8_t *buf);
+int icm456xx_read_sram(void *t, uint32_t addr, uint32_t len, uint8_t *buf);
 
 /** @brief Writes data to SRAM on IMU.
  *  @param[in] t     Pointer to transport (as void * so it can be called from any module).
@@ -95,7 +95,7 @@ int inv_imu_read_sram(void *t, uint32_t addr, uint32_t len, uint8_t *buf);
  *  @param[in] buf   Input data to write.
  *  @return          0 on success, negative value on error.
  */
-int inv_imu_write_sram(void *t, uint32_t addr, uint32_t len, const uint8_t *buf);
+int icm456xx_write_sram(void *t, uint32_t addr, uint32_t len, const uint8_t *buf);
 
 #ifdef __cplusplus
 }

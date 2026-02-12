@@ -9,7 +9,7 @@
  *  @{
  */
 
-/** @file inv_imu_selftest.h */
+/** @file icm456xx_selftest.h */
 
 #ifndef _INV_IMU_SELFTEST_H_
 #define _INV_IMU_SELFTEST_H_
@@ -80,7 +80,7 @@ typedef struct {
  *  @param[in] st_params  Structure filled with recommended params.
  *  @return               0 on success, negative value on error.
  */
-int inv_imu_selftest_init_params(inv_imu_device_t *s, inv_imu_selftest_parameters_t *st_params);
+int icm456xx_selftest_init_params(inv_imu_device_t *s, inv_imu_selftest_parameters_t *st_params);
 
 /** @brief Perform hardware self-test for Accel and/or Gyro.
  *  @param[in] s            Pointer to device.
@@ -88,7 +88,7 @@ int inv_imu_selftest_init_params(inv_imu_device_t *s, inv_imu_selftest_parameter
  *  @param[out] st_output   Output from Self-test operation.
  *  @return                 0 on success, negative value on error.
  */
-int inv_imu_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
+int icm456xx_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
                      inv_imu_selftest_output_t *st_output);
 
 #ifdef __cplusplus

@@ -31,7 +31,7 @@ extern "C" {
  *  @return          0 on success, negative value on error.
  */
 #define INV_IMU_WRITE_EDMP_SRAM(s, name, val)                                                      \
-	inv_imu_write_sram(s, (uint32_t)name, name##_SIZE, val)
+	icm456xx_write_sram(s, (uint32_t)name, name##_SIZE, val)
 
 /** @brief Reads in EDMP SRAM
  *  @param[in] s     Pointer to device.
@@ -39,7 +39,7 @@ extern "C" {
  *  @param[in] val   Value to be read.
  *  @return          0 on success, negative value on error.
  */
-#define INV_IMU_READ_EDMP_SRAM(s, name, val) inv_imu_read_sram(s, (uint32_t)name, name##_SIZE, val)
+#define INV_IMU_READ_EDMP_SRAM(s, name, val) icm456xx_read_sram(s, (uint32_t)name, name##_SIZE, val)
 
 /** @brief EDMP input interrupt lines definition */
 typedef enum { INV_IMU_EDMP_INT0 = 0, INV_IMU_EDMP_INT1, INV_IMU_EDMP_INT2 } inv_imu_edmp_int_t;
@@ -198,46 +198,46 @@ typedef struct {
 
 /** @brief Configure EDMP Output Data Rate.
  *  @warning Accel frequency must be higher or equal to EDMP frequency.
- *  @warning If inv_imu_edmp_init_apex() was already called, application should call
- *          `inv_imu_edmp_recompute_apex_decimation()` afterwards if APEX algorithms are to be run.
+ *  @warning If icm456xx_edmp_init_apex() was already called, application should call
+ *          `icm456xx_edmp_recompute_apex_decimation()` afterwards if APEX algorithms are to be run.
  *  @param[in] s         Pointer to device.
  *  @param[in] frequency The requested frequency.
  *  @return              0 on success, negative value on error.
  */
-int inv_imu_edmp_set_frequency(inv_imu_device_t *s, const dmp_ext_sen_odr_cfg_apex_odr_t frequency);
+int icm456xx_edmp_set_frequency(inv_imu_device_t *s, const dmp_ext_sen_odr_cfg_apex_odr_t frequency);
 
 /** @brief Initialize EDMP APEX algorithms. This function should be called before
- *         calling any other function (except for `inv_imu_edmp_set_frequency`).
+ *         calling any other function (except for `icm456xx_edmp_set_frequency`).
  *  @warning This function will power-up the SRAM. For power consumption consideration,
- *           you can manually call `inv_imu_adv_power_down_sram` if you don't need to 
+ *           you can manually call `icm456xx_adv_power_down_sram` if you don't need to 
  *           preserve SRAM content.
  *  @warning This function will reset all interrupt masks previously set with
- *           `inv_imu_edmp_unmask_int_src` and exit with `EDMP_INT_SRC_ACCEL_DRDY_MASK` unmasked on
+ *           `icm456xx_edmp_unmask_int_src` and exit with `EDMP_INT_SRC_ACCEL_DRDY_MASK` unmasked on
  *           `INV_IMU_EDMP_INT0`.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error or if EDMP is enabled.
  */
-int inv_imu_edmp_init_apex(inv_imu_device_t *s);
+int icm456xx_edmp_init_apex(inv_imu_device_t *s);
 
 /** @brief Recompute EDMP APEX algorithms internal decimator based on new EDMP output Data Rate
-           configured with `inv_imu_edmp_set_frequency`.
+           configured with `icm456xx_edmp_set_frequency`.
  *  @warning It is up to application level to save/restore previously configured APEX parameters,
- *           if any, with `inv_imu_edmp_set_apex_parameters`.
+ *           if any, with `icm456xx_edmp_set_apex_parameters`.
  *  @warning EDMP must be disabled before calling this function.
  *  @warning This function will reset all interrupt masks previously set with
- *           `inv_imu_edmp_unmask_int_src` and exit with `EDMP_INT_SRC_ACCEL_DRDY_MASK` unmasked on
+ *           `icm456xx_edmp_unmask_int_src` and exit with `EDMP_INT_SRC_ACCEL_DRDY_MASK` unmasked on
  *           `INV_IMU_EDMP_INT0`.
  *  @param[in] s         Pointer to device.
  *  @return              0 on success, negative value on error or if EDMP is enabled.
  */
-int inv_imu_edmp_recompute_apex_decimation(inv_imu_device_t *s);
+int icm456xx_edmp_recompute_apex_decimation(inv_imu_device_t *s);
 
 /** @brief Returns current EDMP parameters for APEX algorithms.
  *  @param[in] s   Pointer to device.
  *  @param[out] p  The current parameters read from registers.
  *  @return        0 on success, negative value on error.
  */
-int inv_imu_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_t *p);
+int icm456xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_t *p);
 
 /** @brief Configures EDMP parameters for APEX algorithms.
  *  @warning This function should be called only when all EDMP algorithms are disabled.
@@ -245,130 +245,130 @@ int inv_imu_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_para
  *  @param[in] p  The requested input parameters.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_t *p);
+int icm456xx_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_t *p);
 
 /** @brief Retrieve interrupts configuration.
  *  @param[in] s    Pointer to device.
  *  @param[out] it  Configuration of each APEX interrupt.
  *  @return         0 on success, negative value on error.
  */
-int inv_imu_edmp_get_config_int_apex(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it);
+int icm456xx_edmp_get_config_int_apex(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it);
 
 /** @brief Configure APEX interrupt.
  *  @param[in] s   Pointer to device.
  *  @param[in] it  State of each APEX interrupt to configure.
  *  @return        0 on success, negative value on error.
  */
-int inv_imu_edmp_set_config_int_apex(inv_imu_device_t *s, const inv_imu_edmp_int_state_t *it);
+int icm456xx_edmp_set_config_int_apex(inv_imu_device_t *s, const inv_imu_edmp_int_state_t *it);
 
 /** @brief  Enable EDMP.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable(inv_imu_device_t *s);
+int icm456xx_edmp_enable(inv_imu_device_t *s);
 
 /** @brief  Disable EDMP.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable(inv_imu_device_t *s);
+int icm456xx_edmp_disable(inv_imu_device_t *s);
 
 /** @brief  Enable APEX algorithm Pedometer.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success
  *                INV_IMU_ERROR_EDMP_ODR if user should have called
- *                                       `inv_imu_edmp_recompute_apex_decimation()`
+ *                                       `icm456xx_edmp_recompute_apex_decimation()`
  *                other negative value on error.
  */
-int inv_imu_edmp_enable_pedometer(inv_imu_device_t *s);
+int icm456xx_edmp_enable_pedometer(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm Pedometer.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_pedometer(inv_imu_device_t *s);
+int icm456xx_edmp_disable_pedometer(inv_imu_device_t *s);
 
 /** @brief  Enable APEX algorithm Significant Motion Detection.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success
  *                INV_IMU_ERROR_EDMP_ODR if user should have called
- *                                       `inv_imu_edmp_recompute_apex_decimation()`
+ *                                       `icm456xx_edmp_recompute_apex_decimation()`
  *                other negative value on error.
  */
-int inv_imu_edmp_enable_smd(inv_imu_device_t *s);
+int icm456xx_edmp_enable_smd(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm Significant Motion Detection.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_smd(inv_imu_device_t *s);
+int icm456xx_edmp_disable_smd(inv_imu_device_t *s);
 
 /** @brief  Enable APEX algorithm Tilt.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success
  *                INV_IMU_ERROR_EDMP_ODR if user should have called
- *                                       `inv_imu_edmp_recompute_apex_decimation()`
+ *                                       `icm456xx_edmp_recompute_apex_decimation()`
  *                other negative value on error.
  */
-int inv_imu_edmp_enable_tilt(inv_imu_device_t *s);
+int icm456xx_edmp_enable_tilt(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm Tilt.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_tilt(inv_imu_device_t *s);
+int icm456xx_edmp_disable_tilt(inv_imu_device_t *s);
 
 /** @brief  Enable APEX algorithm R2W.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success
  *                INV_IMU_ERROR_EDMP_ODR if user should have called
- *                                       `inv_imu_edmp_recompute_apex_decimation()`
+ *                                       `icm456xx_edmp_recompute_apex_decimation()`
  *                other negative value on error.
  */
-int inv_imu_edmp_enable_r2w(inv_imu_device_t *s);
+int icm456xx_edmp_enable_r2w(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm R2W.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_r2w(inv_imu_device_t *s);
+int icm456xx_edmp_disable_r2w(inv_imu_device_t *s);
 
 /** @brief  Enable APEX algorithm Tap.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success
  *                INV_IMU_ERROR_EDMP_ODR if user should have called
- *                                       `inv_imu_edmp_recompute_apex_decimation()`
+ *                                       `icm456xx_edmp_recompute_apex_decimation()`
  *                other negative value on error.
  */
-int inv_imu_edmp_enable_tap(inv_imu_device_t *s);
+int icm456xx_edmp_enable_tap(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm Tap.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_tap(inv_imu_device_t *s);
+int icm456xx_edmp_disable_tap(inv_imu_device_t *s);
 
 /** @brief  Enable APEX algorithm Free Fall.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success
  *                INV_IMU_ERROR_EDMP_ODR if user should have called
- *                                       `inv_imu_edmp_recompute_apex_decimation()`
+ *                                       `icm456xx_edmp_recompute_apex_decimation()`
  *                other negative value on error.
  */
-int inv_imu_edmp_enable_ff(inv_imu_device_t *s);
+int icm456xx_edmp_enable_ff(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm Free Fall.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_ff(inv_imu_device_t *s);
+int icm456xx_edmp_disable_ff(inv_imu_device_t *s);
 
 /** @brief Read APEX interrupt status.
  *  @param[in] s    Pointer to device.
  *  @param[out] it  Status of each APEX interrupt.
  *  @return         0 on success, negative value on error.
  */
-int inv_imu_edmp_get_int_apex_status(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it);
+int icm456xx_edmp_get_int_apex_status(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it);
 
 /** @brief Retrieve pedometer outputs.
  *  @param[in] s      Pointer to device.
@@ -376,21 +376,21 @@ int inv_imu_edmp_get_int_apex_status(inv_imu_device_t *s, inv_imu_edmp_int_state
  *  @return           0 on success, negative value on error.
  *  @retval           INV_IMU_ERROR_EDMP_BUF_EMPTY if step count buffer is empty.
  */
-int inv_imu_edmp_get_pedometer_data(inv_imu_device_t *s, inv_imu_edmp_pedometer_data_t *data);
+int icm456xx_edmp_get_pedometer_data(inv_imu_device_t *s, inv_imu_edmp_pedometer_data_t *data);
 
 /** @brief Retrieve APEX free fall outputs and format them.
  *  @param[in] s                   Pointer to device.
  *  @param[out] freefall_duration  Duration in number of sample.
  *  @return                        0 on success, negative value on error.
  */
-int inv_imu_edmp_get_ff_data(inv_imu_device_t *s, uint16_t *freefall_duration);
+int icm456xx_edmp_get_ff_data(inv_imu_device_t *s, uint16_t *freefall_duration);
 
 /** @brief Retrieve tap outputs.
  *  @param[in] s      Pointer to device.
  *  @param[out] data  Tap number and direction.
  *  @return           0 on success, negative value on error.
  */
-int inv_imu_edmp_get_tap_data(inv_imu_device_t *s, inv_imu_edmp_tap_data_t *data);
+int icm456xx_edmp_get_tap_data(inv_imu_device_t *s, inv_imu_edmp_tap_data_t *data);
 
 /** @brief  Mask requested interrupt sources for edmp interrupt line passed in parameter.
  *  @param[in] s            Pointer to device.
@@ -398,7 +398,7 @@ int inv_imu_edmp_get_tap_data(inv_imu_device_t *s, inv_imu_edmp_tap_data_t *data
  *  @param[in] int_mask     Interrupt sources to mask.
  *  @return                 0 on success, negative value on error.
  */
-int inv_imu_edmp_mask_int_src(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_nb,
+int icm456xx_edmp_mask_int_src(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_nb,
                               uint8_t int_mask);
 
 /** @brief  Unmask requested interrupt sources for edmp interrupt line passed in parameter.
@@ -407,27 +407,27 @@ int inv_imu_edmp_mask_int_src(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_n
  *  @param[in] int_mask     Interrupt sources to unmask. 
  *  @return                 0 on success, negative value on error.
  */
-int inv_imu_edmp_unmask_int_src(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_nb,
+int icm456xx_edmp_unmask_int_src(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_nb,
                                 uint8_t int_mask);
 
 /** @brief  Setup EDMP to execute code in ROM.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_configure(inv_imu_device_t *s);
+int icm456xx_edmp_configure(inv_imu_device_t *s);
 
 /** @brief Run EDMP using the on-demand mechanism.
  *  @param[in] s            Pointer to device.
  *  @param[in] edmp_int_nb  EDMP input interrupt line.
  *  @return                 0 on success, negative value on error.
  */
-int inv_imu_edmp_run_ondemand(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_nb);
+int icm456xx_edmp_run_ondemand(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_nb);
 
 /** @brief Wait until EDMP idle bit is set (means EDMP execution is completed).
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_wait_for_idle(inv_imu_device_t *s);
+int icm456xx_edmp_wait_for_idle(inv_imu_device_t *s);
 
 #ifdef __cplusplus
 }

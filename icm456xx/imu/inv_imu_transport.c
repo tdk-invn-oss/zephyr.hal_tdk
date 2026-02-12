@@ -18,7 +18,7 @@ static int check_out_of_bounds_mreg(uint32_t reg, uint32_t len);
 static int write_mreg(inv_imu_transport_t *t, uint32_t reg, uint32_t len, const uint8_t *buf);
 static int read_mreg(inv_imu_transport_t *t, uint32_t reg, uint32_t len, uint8_t *buf);
 
-int inv_imu_read_reg(void *t, uint32_t reg, uint32_t len, uint8_t *buf)
+int icm456xx_read_reg(void *t, uint32_t reg, uint32_t len, uint8_t *buf)
 {
 	inv_imu_transport_t *tr = (inv_imu_transport_t *)t;
 	if (reg > 0xFF)
@@ -27,7 +27,7 @@ int inv_imu_read_reg(void *t, uint32_t reg, uint32_t len, uint8_t *buf)
 		return read_dreg(tr, reg, len, buf);
 }
 
-int inv_imu_write_reg(void *t, uint32_t reg, uint32_t len, const uint8_t *buf)
+int icm456xx_write_reg(void *t, uint32_t reg, uint32_t len, const uint8_t *buf)
 {
 	inv_imu_transport_t *tr = (inv_imu_transport_t *)t;
 	if (reg > 0xFF)
@@ -36,13 +36,13 @@ int inv_imu_write_reg(void *t, uint32_t reg, uint32_t len, const uint8_t *buf)
 		return write_dreg(tr, reg, len, buf);
 }
 
-int inv_imu_read_sram(void *t, uint32_t addr, uint32_t len, uint8_t *buf)
+int icm456xx_read_sram(void *t, uint32_t addr, uint32_t len, uint8_t *buf)
 {
 	inv_imu_transport_t *tr = (inv_imu_transport_t *)t;
 	return read_mreg(tr, addr, len, buf);
 }
 
-int inv_imu_write_sram(void *t, uint32_t addr, uint32_t len, const uint8_t *buf)
+int icm456xx_write_sram(void *t, uint32_t addr, uint32_t len, const uint8_t *buf)
 {
 	inv_imu_transport_t *tr = (inv_imu_transport_t *)t;
 	return write_mreg(tr, addr, len, buf);

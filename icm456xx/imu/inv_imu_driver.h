@@ -118,131 +118,131 @@ typedef struct {
  *  @param[in] s   Pointer to device.
  *  @param[in] us  Time to sleep in microseconds.
  */
-void inv_imu_sleep_us(inv_imu_device_t *s, uint32_t us);
+void icm456xx_sleep_us(inv_imu_device_t *s, uint32_t us);
 
 /** @brief Performs a soft reset of the device.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_soft_reset(inv_imu_device_t *s);
+int icm456xx_soft_reset(inv_imu_device_t *s);
 
 /** @brief return WHOAMI value
  *  @param[in] s         Pointer to device.
  *  @param[out] who_am_i WHOAMI for device
  *  @return 0 on success, negative value on error
  */
-int inv_imu_get_who_am_i(inv_imu_device_t *s, uint8_t *who_am_i);
+int icm456xx_get_who_am_i(inv_imu_device_t *s, uint8_t *who_am_i);
 
 /** @brief Configure accel mode.
  *  @param[in] s           Pointer to transport structure.
  *  @param[in] accel_mode  The requested mode.
  *  @return                0 on success, negative value on error.
  */
-int inv_imu_set_accel_mode(inv_imu_device_t *s, pwr_mgmt0_accel_mode_t accel_mode);
+int icm456xx_set_accel_mode(inv_imu_device_t *s, pwr_mgmt0_accel_mode_t accel_mode);
 
 /** @brief Configure gyro mode.
  *  @param[in] s          Pointer to transport structure.
  *  @param[in] gyro_mode  The requested mode.
  *  @return               0 on success, negative value on error.
  */
-int inv_imu_set_gyro_mode(inv_imu_device_t *s, pwr_mgmt0_gyro_mode_t gyro_mode);
+int icm456xx_set_gyro_mode(inv_imu_device_t *s, pwr_mgmt0_gyro_mode_t gyro_mode);
 
 /** @brief Configure accel Output Data Rate.
  *  @param[in] s          Pointer to device.
  *  @param[in] frequency  The requested frequency.
  *  @return               0 on success, negative value on error.
  */
-int inv_imu_set_accel_frequency(inv_imu_device_t *s, const accel_config0_accel_odr_t frequency);
+int icm456xx_set_accel_frequency(inv_imu_device_t *s, const accel_config0_accel_odr_t frequency);
 
 /** @brief Configure gyro Output Data Rate.
  *  @param[in] s          Pointer to device.
  *  @param[in] frequency  The requested frequency.
  *  @return               0 on success, negative value on error.
  */
-int inv_imu_set_gyro_frequency(inv_imu_device_t *s, const gyro_config0_gyro_odr_t frequency);
+int icm456xx_set_gyro_frequency(inv_imu_device_t *s, const gyro_config0_gyro_odr_t frequency);
 
 /** @brief Set accel full scale range.
  *  @param[in] s          Pointer to device.
  *  @param[in] accel_fsr  Requested full scale range.
  *  @return               0 on success, negative value on error.
  */
-int inv_imu_set_accel_fsr(inv_imu_device_t *s, accel_config0_accel_ui_fs_sel_t accel_fsr);
+int icm456xx_set_accel_fsr(inv_imu_device_t *s, accel_config0_accel_ui_fs_sel_t accel_fsr);
 
 /** @brief Set gyro full scale range.
  *  @param[in] s         Pointer to device.
  *  @param[in] gyro_fsr  Requested full scale range.
  *  @return              0 on success, negative value on error.
   */
-int inv_imu_set_gyro_fsr(inv_imu_device_t *s, gyro_config0_gyro_ui_fs_sel_t gyro_fsr);
+int icm456xx_set_gyro_fsr(inv_imu_device_t *s, gyro_config0_gyro_ui_fs_sel_t gyro_fsr);
 
 /** @brief Set accel Low-Power averaging value
  *  @param[in] s        Pointer to device.
  *  @param[in] acc_avg  Requested averaging value
  *  @return             0 on success, negative value on error.
  */
-int inv_imu_set_accel_lp_avg(inv_imu_device_t *s, ipreg_sys2_reg_129_accel_lp_avg_sel_t acc_avg);
+int icm456xx_set_accel_lp_avg(inv_imu_device_t *s, ipreg_sys2_reg_129_accel_lp_avg_sel_t acc_avg);
 
 /** @brief Set gyro Low-Power averaging value
  *  @param[in] s        Pointer to device.
  *  @param[in] gyr_avg  Requested averaging value
  *  @return             0 on success, negative value on error.
  */
-int inv_imu_set_gyro_lp_avg(inv_imu_device_t *s, ipreg_sys1_reg_170_gyro_lp_avg_sel_t gyr_avg);
+int icm456xx_set_gyro_lp_avg(inv_imu_device_t *s, ipreg_sys1_reg_170_gyro_lp_avg_sel_t gyr_avg);
 
 /** @brief Set accel Low-Noise bandwidth value
  *  @param[in] s       Pointer to device.
  *  @param[in] acc_bw  Requested bandwidth value
  *  @return            0 on success, negative value on error.
  */
-int inv_imu_set_accel_ln_bw(inv_imu_device_t *s, ipreg_sys2_reg_131_accel_ui_lpfbw_t acc_bw);
+int icm456xx_set_accel_ln_bw(inv_imu_device_t *s, ipreg_sys2_reg_131_accel_ui_lpfbw_t acc_bw);
 
 /** @brief Set gyro Low-Noise bandwidth value
  *  @param[in] s       Pointer to device.
  *  @param[in] gyr_bw  Requested bandwidth value
  *  @return            0 on success, negative value on error.
  */
-int inv_imu_set_gyro_ln_bw(inv_imu_device_t *s, ipreg_sys1_reg_172_gyro_ui_lpfbw_sel_t gyr_bw);
+int icm456xx_set_gyro_ln_bw(inv_imu_device_t *s, ipreg_sys1_reg_172_gyro_ui_lpfbw_sel_t gyr_bw);
 
 /** @brief Get current sensor data from the registers.
  *  @param[in] s      Pointer to device.
  *  @param[out] data  Current accel, gyro and temperature data from the registers.
  *  @return           0 on success, negative value on error.
  */
-int inv_imu_get_register_data(inv_imu_device_t *s, inv_imu_sensor_data_t *data);
+int icm456xx_get_register_data(inv_imu_device_t *s, inv_imu_sensor_data_t *data);
 
 /** @brief Configures the FIFO to the specified state. 
  *  @param[in] s            Pointer to device.
  *  @param[in] fifo_config  Structure containing the FIFO configuration.
  *  @return                 0 on success, negative value on error.
  */
-int inv_imu_set_fifo_config(inv_imu_device_t *s, const inv_imu_fifo_config_t *fifo_config);
+int icm456xx_set_fifo_config(inv_imu_device_t *s, const inv_imu_fifo_config_t *fifo_config);
 
 /** @brief Gets the current FIFO configuration.
  *  @param[in] s            Pointer to device.
  *  @param[in] fifo_config  Structure containing the FIFO configuration.
  *  @return                 0 on success, negative value on error.
  */
-int inv_imu_get_fifo_config(inv_imu_device_t *s, inv_imu_fifo_config_t *fifo_config);
+int icm456xx_get_fifo_config(inv_imu_device_t *s, inv_imu_fifo_config_t *fifo_config);
 
 /** @brief Flush FIFO content.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_flush_fifo(inv_imu_device_t *s);
+int icm456xx_flush_fifo(inv_imu_device_t *s);
 
 /** @brief Get FIFO frame count.
  *  @param[in] s             Pointer to device.
  *  @param[out] frame_count  The number of frames in the FIFO.
  *  @return                  0 on success, negative value on error.
  */
-int inv_imu_get_frame_count(inv_imu_device_t *s, uint16_t *frame_count);
+int icm456xx_get_frame_count(inv_imu_device_t *s, uint16_t *frame_count);
 
 /** @brief Get one frame of FIFO data.
  *  @param[in] s      Pointer to device.
  *  @param[out] data  Accel, gyro and temperature data from the top frame on the FIFO.
  *  @return           0 on success, negative value on error.
  */
-int inv_imu_get_fifo_frame(inv_imu_device_t *s, inv_imu_fifo_data_t *data);
+int icm456xx_get_fifo_frame(inv_imu_device_t *s, inv_imu_fifo_data_t *data);
 
 /** @brief Configure interrupts source.
  *  @param[in] s    Pointer to device.
@@ -250,7 +250,7 @@ int inv_imu_get_fifo_frame(inv_imu_device_t *s, inv_imu_fifo_data_t *data);
  *  @param[in] it   State of each interrupt
  *  @return         0 on success, negative value on error.
  */
-int inv_imu_set_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
+int icm456xx_set_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
                            const inv_imu_int_state_t *it);
 
 /** @brief Retrieve interrupts configuration.
@@ -259,7 +259,7 @@ int inv_imu_set_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
  *  @param[out] it  State of each interrupt
  *  @return         0 on success, negative value on error.
  */
-int inv_imu_get_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
+int icm456xx_get_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
                            inv_imu_int_state_t *it);
 
 /** @brief Configure pin behavior.
@@ -268,7 +268,7 @@ int inv_imu_get_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
  *  @param[in] conf  Structure with the requested configuration.
  *  @return          0 on success, negative value on error.
  */
-int inv_imu_set_pin_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
+int icm456xx_set_pin_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
                                const inv_imu_int_pin_config_t *conf);
 
 /** @brief Read interrupt 1 status.
@@ -277,14 +277,14 @@ int inv_imu_set_pin_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num,
  *  @param[out] it  Status of each interrupt.
  *  @return         0 on success, negative value on error.
  */
-int inv_imu_get_int_status(inv_imu_device_t *s, const inv_imu_int_num_t num,
+int icm456xx_get_int_status(inv_imu_device_t *s, const inv_imu_int_num_t num,
                            inv_imu_int_state_t *it);
 
 /** @brief Read the UI endianness and set the inv_device endianness field
  *  @param[in] s  Pointer to device. 
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_get_endianness(inv_imu_device_t *s);
+int icm456xx_get_endianness(inv_imu_device_t *s);
 
 /** @brief Select which clock to use when in Low Power mode.
  *         Use `SMC_CONTROL_0_ACCEL_LP_CLK_RCOSC` for Low Power (LP) mode.
@@ -295,7 +295,7 @@ int inv_imu_get_endianness(inv_imu_device_t *s);
  *  @param[in] clk_sel  Selected clock.
  *  @return             0 on success, negative value on error.
  */
-int inv_imu_select_accel_lp_clk(inv_imu_device_t *s, smc_control_0_accel_lp_clk_sel_t clk_sel);
+int icm456xx_select_accel_lp_clk(inv_imu_device_t *s, smc_control_0_accel_lp_clk_sel_t clk_sel);
 
 /** @brief Return driver version x.y.z-suffix as a char array
  *  @return  Driver version as char array "x.y.z-suffix"
