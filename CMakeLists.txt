@@ -69,4 +69,15 @@ if(CONFIG_TDK_HAL)
     )
   endif()
 
+  if(CONFIG_USE_EMD_TAD2144)
+    zephyr_include_directories(
+      common/Invn
+      tad214x
+    )
+
+    zephyr_library_sources(
+      tad214x/tad214x.c
+    )
+  endif()
+
 endif()

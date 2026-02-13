@@ -25,3 +25,11 @@ And MEMs Barometric Pressure sensor drivers for:
 
 Find more information and product details here: 
 https://invensense.tdk.com/smartpressure/
+
+And TMR Angle sensor drivers for :
+
+* TAD2144
+
+Find more information and product details here: 
+https://product.tdk.com/en/products/selectionguide/tmr-angle.html
+
