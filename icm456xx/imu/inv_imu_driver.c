@@ -612,7 +612,7 @@ int icm456xx_select_accel_lp_clk(inv_imu_device_t *s, smc_control_0_accel_lp_clk
 	return status;
 }
 
-const char *inv_imu_get_version(void)
+const char *icm456xx_get_version(void)
 {
 	return INV_IMU_VERSION_STRING;
 }

@@ -300,7 +300,7 @@ int icm456xx_select_accel_lp_clk(inv_imu_device_t *s, smc_control_0_accel_lp_clk
 /** @brief Return driver version x.y.z-suffix as a char array
  *  @return  Driver version as char array "x.y.z-suffix"
  */
-const char *inv_imu_get_version(void);
+const char *icm456xx_get_version(void);
 
 #ifdef __cplusplus
 }
