@@ -45,6 +45,8 @@ extern "C" {
 #define INV_IMU_CLKIN_SUPPORTED    0
 #endif
 
+#define INV_IMU_WHOAMI INV_ICM45686_WHOAMI
+
 #define INV_IMU_FSYNC_SUPPORTED      1
 #define INV_IMU_USE_BASIC_SMD        0
 #define INV_IMU_INT2_PIN_SUPPORTED   1
