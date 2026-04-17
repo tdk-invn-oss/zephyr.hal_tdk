@@ -284,20 +284,20 @@ int inv_icp201xx_process_raw_data(inv_icp201xx_t * s,uint8_t packet_cnt, uint8_t
 	{
 		if ( s->fifo_readout_mode == ICP201XX_FIFO_READOUT_MODE_PRES_TEMP)
 		{
-			pressure[i] = (int32_t)((( data[offset+2] & 0x0f) << 16) | (data[offset+1] << 8) | data[offset]) ;
+			pressure[i] = ((int32_t)(data[offset+2] & 0x0f) << 16) | ((int32_t)data[offset+1] << 8) | data[offset] ;
 			offset += 3;
-			temperature[i] = (int32_t)(((data[offset+2] & 0x0f) << 16) | (data[offset+1] << 8) | data[offset]) ;
+			temperature[i] = ((int32_t)(data[offset+2] & 0x0f) << 16) | ((int32_t)data[offset+1] << 8) | data[offset] ;
 			offset += 3;
 		} else if ( s->fifo_readout_mode == ICP201XX_FIFO_READOUT_MODE_TEMP_ONLY) {
-			temperature[i] = (int32_t)(((data[offset+2] & 0x0f) << 16) | (data[offset+1] << 8) | data[offset]) ;
+			temperature[i] = ((int32_t)(data[offset+2] & 0x0f) << 16) | ((int32_t)data[offset+1] << 8) | data[offset] ;
 			offset += 3;
 		} else if( s->fifo_readout_mode == ICP201XX_FIFO_READOUT_MODE_TEMP_PRES) {
-			temperature[i] = (int32_t)(((data[offset+2] & 0x0f) << 16) | (data[offset+1] << 8) | data[offset]) ;
+			temperature[i] = ((int32_t)(data[offset+2] & 0x0f) << 16) | ((int32_t)data[offset+1] << 8) | data[offset] ;
 			offset += 3;
-			pressure[i] = (int32_t)((( data[offset+2] & 0x0f) << 16) | (data[offset+1] << 8) | data[offset]) ;
+			pressure[i] = ((int32_t)(data[offset+2] & 0x0f) << 16) | ((int32_t)data[offset+1] << 8) | data[offset] ;
 			offset += 3;
 		} else if( s->fifo_readout_mode == ICP201XX_FIFO_READOUT_MODE_PRES_ONLY) {
-			pressure[i] = (int32_t)((( data[offset+2] & 0x0f) << 16) | (data[offset+1] << 8) | data[offset]) ;
+			pressure[i] = ((int32_t)(data[offset+2] & 0x0f) << 16) | ((int32_t)data[offset+1] << 8) | data[offset] ;
 			offset += 3;
 		}
 	}
