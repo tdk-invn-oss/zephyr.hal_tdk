@@ -19,6 +19,7 @@ if(CONFIG_TDK_HAL)
       icm42x7x/imu/inv_imu_transport.c
     )
     zephyr_library_sources_ifdef(CONFIG_TDK_APEX icm42x7x/imu/inv_imu_apex.c)
+    zephyr_library_sources_ifdef(CONFIG_TDK_APEX icm42x7x/imu/inv_imu_tap.c)
 
   endif()
 
