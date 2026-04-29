@@ -29,7 +29,7 @@
 extern "C" {
 #endif
 
-#include "imu/inv_imu_driver.h"
+#include "icm42x7x/imu/inv_imu_driver.h"
 
 /* TAP_EN bit location */
 #define APEX_CONFIG1_TAP_EN_POS  APEX_CONFIG1_PED_ENABLE_POS

@@ -20,7 +20,7 @@ extern "C" {
 
 /* Device description ICM42670P */
 #define INV_ICM42670P_STRING_ID "ICM42670P"
-#define INV_ICM42670P_WHOAMI    0x60
+#define INV_ICM42670P_WHOAMI    0x67
 
 /* Device description ICM42670S */
 #define INV_ICM42670S_STRING_ID "ICM42670S"

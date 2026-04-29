@@ -16,7 +16,7 @@
  */
 
 #include "inv_imu_tap.h"
-#include "imu/inv_imu_extfunc.h"
+#include "icm42x7x/imu/inv_imu_extfunc.h"
 
 /* Static function and variables definition */
 static int read_dmp_memory(inv_imu_device_t *s, uint8_t *out, uint32_t bank, uint32_t offset,
