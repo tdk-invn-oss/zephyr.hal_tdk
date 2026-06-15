@@ -80,4 +80,20 @@ if(CONFIG_TDK_HAL)
     )
   endif()
 
+  if(CONFIG_USE_EMD_ICM56622 OR CONFIG_USE_EMD_ICM56686)
+
+    zephyr_include_directories(
+      common
+      icm566xx
+    )
+
+    zephyr_library_sources(
+      icm566xx/imu/inv_imu_driver.c
+      icm566xx/imu/inv_imu_transport.c
+    )
+    zephyr_library_sources_ifdef(CONFIG_TDK_APEX icm566xx/imu/inv_imu_edmp_apex.c)
+    zephyr_library_sources_ifdef(CONFIG_USE_EMD_ICM56686 icm566xx/imu/inv_imu_edmp.c)
+    zephyr_library_sources_ifdef(CONFIG_USE_EMD_ICM56686 icm566xx/imu/inv_imu_driver_advanced.c)
+  endif()
+
 endif()
