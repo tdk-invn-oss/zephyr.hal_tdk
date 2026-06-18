@@ -1,16 +1,7 @@
 /*
+ * Copyright (c) 2017 TDK Invensense
  *
- * Copyright (c) [2017] by InvenSense, Inc.
- * * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 /** @defgroup EDMP EDMP
@@ -282,7 +273,7 @@ typedef struct {
  *  @param[out] p  The current parameters read from registers.
  *  @return        0 on success, negative value on error.
  */
-int inv_imu_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_t *p);
+int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_t *p);
 
 /** @brief Configures EDMP parameters for APEX algorithms.
  *  @warning This function should be called only when all EDMP algorithms are disabled.
@@ -290,223 +281,223 @@ int inv_imu_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_para
  *  @param[in] p  The requested input parameters.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_t *p);
+int icm566xx_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_t *p);
 
 /** @brief Retrieve interrupts configuration.
  *  @param[in] s    Pointer to device.
  *  @param[out] it  Configuration of each APEX interrupt.
  *  @return         0 on success, negative value on error.
  */
-int inv_imu_edmp_get_config_int_apex(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it);
+int icm566xx_edmp_get_config_int_apex(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it);
 
 /** @brief Configure APEX interrupt.
  *  @param[in] s   Pointer to device.
  *  @param[in] it  State of each APEX interrupt to configure.
  *  @return        0 on success, negative value on error.
  */
-int inv_imu_edmp_set_config_int_apex(inv_imu_device_t *s, const inv_imu_edmp_int_state_t *it);
+int icm566xx_edmp_set_config_int_apex(inv_imu_device_t *s, const inv_imu_edmp_int_state_t *it);
 
 /** @brief  Enable APEX algorithm Pedometer.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable_pedometer(inv_imu_device_t *s);
+int icm566xx_edmp_enable_pedometer(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm Pedometer.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_pedometer(inv_imu_device_t *s);
+int icm566xx_edmp_disable_pedometer(inv_imu_device_t *s);
 
 /** @brief  Set ODR for APEX algorithm Pedometer.
  *  @param[in] s  Pointer to device.
  *  @param[in] ped_odr  New value for pedometer ODR
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_set_pedometer_odr(inv_imu_device_t *s, uint16_t ped_odr);
+int icm566xx_edmp_set_pedometer_odr(inv_imu_device_t *s, uint16_t ped_odr);
 
 /** @brief  Enable APEX algorithm Significant Motion Detection.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable_smd(inv_imu_device_t *s);
+int icm566xx_edmp_enable_smd(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm Significant Motion Detection.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_smd(inv_imu_device_t *s);
+int icm566xx_edmp_disable_smd(inv_imu_device_t *s);
 
 /** @brief  Set ODR for APEX algorithm SMD.
  *  @param[in] s  Pointer to device.
  *  @param[in] smd_odr  New value for SMD ODR
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_set_smd_odr(inv_imu_device_t *s, uint16_t smd_odr);
+int icm566xx_edmp_set_smd_odr(inv_imu_device_t *s, uint16_t smd_odr);
 
 /** @brief  Enable APEX algorithm Tilt.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable_tilt(inv_imu_device_t *s);
+int icm566xx_edmp_enable_tilt(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm Tilt.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_tilt(inv_imu_device_t *s);
+int icm566xx_edmp_disable_tilt(inv_imu_device_t *s);
 
 /** @brief  Set ODR for APEX algorithm Tilt.
  *  @param[in] s  Pointer to device.
  *  @param[in] tilt_odr  New value for tilt ODR
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_set_tilt_odr(inv_imu_device_t *s, uint16_t tilt_odr);
+int icm566xx_edmp_set_tilt_odr(inv_imu_device_t *s, uint16_t tilt_odr);
 
 /** @brief  Enable APEX algorithm R2W.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable_r2w(inv_imu_device_t *s);
+int icm566xx_edmp_enable_r2w(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm R2W.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_r2w(inv_imu_device_t *s);
+int icm566xx_edmp_disable_r2w(inv_imu_device_t *s);
 
 /** @brief  Set ODR for APEX algorithm R2W.
  *  @param[in] s  Pointer to device.
  *  @param[in] r2w_odr  New value for R2W ODR
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_set_r2w_odr(inv_imu_device_t *s, uint16_t r2w_odr);
+int icm566xx_edmp_set_r2w_odr(inv_imu_device_t *s, uint16_t r2w_odr);
 
 /** @brief  Enable APEX algorithm B2S.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable_b2s(inv_imu_device_t *s);
+int icm566xx_edmp_enable_b2s(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm B2S.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_b2s(inv_imu_device_t *s);
+int icm566xx_edmp_disable_b2s(inv_imu_device_t *s);
 
 /** @brief  Set ODR for APEX algorithm B2S.
  *  @param[in] s  Pointer to device.
  *  @param[in] b2s_odr  New value for B2S ODR
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_set_b2s_odr(inv_imu_device_t *s, uint16_t b2s_odr);
+int icm566xx_edmp_set_b2s_odr(inv_imu_device_t *s, uint16_t b2s_odr);
 
 /** @brief  Enable APEX algorithm Tap.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable_tap(inv_imu_device_t *s);
+int icm566xx_edmp_enable_tap(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm Tap.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_tap(inv_imu_device_t *s);
+int icm566xx_edmp_disable_tap(inv_imu_device_t *s);
 
 /** @brief  Set ODR for APEX algorithm Tap.
  *  @param[in] s  Pointer to device.
  *  @param[in] tap_odr  New value for tap ODR
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_set_tap_odr(inv_imu_device_t *s, uint16_t tap_odr);
+int icm566xx_edmp_set_tap_odr(inv_imu_device_t *s, uint16_t tap_odr);
 
 /** @brief  Enable APEX algorithm Free Fall.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable_ff(inv_imu_device_t *s);
+int icm566xx_edmp_enable_ff(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm Free Fall.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_ff(inv_imu_device_t *s);
+int icm566xx_edmp_disable_ff(inv_imu_device_t *s);
 
 /** @brief  Set ODR for APEX algorithm Freefall.
  *  @param[in] s  Pointer to device.
  *  @param[in] ff_odr  New value for freefall ODR
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_set_ff_odr(inv_imu_device_t *s, uint16_t ff_odr);
+int icm566xx_edmp_set_ff_odr(inv_imu_device_t *s, uint16_t ff_odr);
 
 /** @brief  Enable APEX algorithm soft hard iron correlation.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable_soft_iron_cor(inv_imu_device_t *s);
+int icm566xx_edmp_enable_soft_iron_cor(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm soft hard iron correlation.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_soft_iron_cor(inv_imu_device_t *s);
+int icm566xx_edmp_disable_soft_iron_cor(inv_imu_device_t *s);
 
 /** @brief  Enable APEX algorithm Shake.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable_shake(inv_imu_device_t *s);
+int icm566xx_edmp_enable_shake(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm Shake.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_shake(inv_imu_device_t *s);
+int icm566xx_edmp_disable_shake(inv_imu_device_t *s);
 
 /** @brief  Set ODR for APEX algorithm Shake.
  *  @param[in] s  Pointer to device.
  *  @param[in] shake_odr  New value for shake ODR
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_set_shake_odr(inv_imu_device_t *s, uint16_t shake_odr);
+int icm566xx_edmp_set_shake_odr(inv_imu_device_t *s, uint16_t shake_odr);
 
 /** @brief  Enable APEX algorithm noMotion.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable_noMotion(inv_imu_device_t *s);
+int icm566xx_edmp_enable_noMotion(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm noMotion.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_noMotion(inv_imu_device_t *s);
+int icm566xx_edmp_disable_noMotion(inv_imu_device_t *s);
 
 /** @brief  Set ODR for APEX algorithm no-motion.
  *  @param[in] s  Pointer to device.
  *  @param[in] noMotion_odr  New value for no-motion ODR
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_set_noMotion_odr(inv_imu_device_t *s, uint16_t noMotion_odr);
+int icm566xx_edmp_set_noMotion_odr(inv_imu_device_t *s, uint16_t noMotion_odr);
 
 /** @brief  Enable APEX algorithm flat.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable_flat(inv_imu_device_t *s);
+int icm566xx_edmp_enable_flat(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm flat.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_flat(inv_imu_device_t *s);
+int icm566xx_edmp_disable_flat(inv_imu_device_t *s);
 
 /** @brief  Set ODR for APEX algorithm Flat.
  *  @param[in] s  Pointer to device.
  *  @param[in] flat_odr  New value for flat ODR
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_set_flat_odr(inv_imu_device_t *s, uint16_t flat_odr);
+int icm566xx_edmp_set_flat_odr(inv_imu_device_t *s, uint16_t flat_odr);
 
 /** @brief  Enable APEX algorithm Tap.
  *  @param[in] s  Pointer to device.
@@ -518,27 +509,27 @@ int inv_imu_edmp_set_flat_odr(inv_imu_device_t *s, uint16_t flat_odr);
  *  @param[in] frequency The requested frequency.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_set_compass_frequency(inv_imu_device_t *s,
-				       const dmp_ext_sen_odr_cfg_ext_odr_t frequency);
+int icm566xx_edmp_set_compass_frequency(inv_imu_device_t *s,
+					const dmp_ext_sen_odr_cfg_ext_odr_t frequency);
 
 /** @brief  Enable compass handling by eDMP as external sensor.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable_compass_es(inv_imu_device_t *s);
+int icm566xx_edmp_enable_compass_es(inv_imu_device_t *s);
 
 /** @brief  Disable compass handling by eDMP as external sensor.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_compass_es(inv_imu_device_t *s);
+int icm566xx_edmp_disable_compass_es(inv_imu_device_t *s);
 
 /** @brief Read APEX interrupt status.
  *  @param[in] s    Pointer to device.
  *  @param[out] it  Status of each APEX interrupt.
  *  @return         0 on success, negative value on error.
  */
-int inv_imu_edmp_get_int_apex_status(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it);
+int icm566xx_edmp_get_int_apex_status(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it);
 
 /** @brief Retrieve pedometer outputs.
  *  @param[in] s      Pointer to device.
@@ -546,28 +537,28 @@ int inv_imu_edmp_get_int_apex_status(inv_imu_device_t *s, inv_imu_edmp_int_state
  *  @return           0 on success, negative value on error.
  *  @retval           INV_IMU_ERROR_EDMP_BUF_EMPTY if step count buffer is empty.
  */
-int inv_imu_edmp_get_pedometer_data(inv_imu_device_t *s, inv_imu_edmp_pedometer_data_t *data);
+int icm566xx_edmp_get_pedometer_data(inv_imu_device_t *s, inv_imu_edmp_pedometer_data_t *data);
 
 /** @brief Retrieve APEX free fall outputs and format them.
  *  @param[in] s                   Pointer to device.
  *  @param[out] freefall_duration  Duration in number of sample.
  *  @return                        0 on success, negative value on error.
  */
-int inv_imu_edmp_get_ff_data(inv_imu_device_t *s, uint16_t *freefall_duration);
+int icm566xx_edmp_get_ff_data(inv_imu_device_t *s, uint16_t *freefall_duration);
 
 /** @brief Retrieve tap outputs.
  *  @param[in] s      Pointer to device.
  *  @param[out] data  Tap number and direction.
  *  @return           0 on success, negative value on error.
  */
-int inv_imu_edmp_get_tap_data(inv_imu_device_t *s, inv_imu_edmp_tap_data_t *data);
+int icm566xx_edmp_get_tap_data(inv_imu_device_t *s, inv_imu_edmp_tap_data_t *data);
 
 /** @brief Retrieve noMotion outputs.
  *  @param[in] s      Pointer to device.
  *  @param[out] data  Flat Status, timer,quat(x/y/z), cos_flat_angle.
  *  @return           0 on success, negative value on error.
  */
-int inv_imu_edmp_get_nomotion_data(inv_imu_device_t *s, inv_imu_edmp_nomtion_data_t *data);
+int icm566xx_edmp_get_nomotion_data(inv_imu_device_t *s, inv_imu_edmp_nomtion_data_t *data);
 
 #ifdef __cplusplus
 }

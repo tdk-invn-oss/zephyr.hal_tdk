@@ -1,19 +1,10 @@
 /*
+ * Copyright (c) 2015 TDK Invensense
  *
- * Copyright (c) [2015] by InvenSense, Inc.
- * * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
-#include "imu/inv_imu_selftest.h"
+#include "imu/icm566xx_selftest.h"
 #include "imu/inv_imu_edmp.h"
 #include "Invn/EmbUtils/Message.h" /* Andrew - Just for debug */
 
@@ -26,7 +17,7 @@ static int get_selftest_output(inv_imu_device_t *s, const inv_imu_selftest_param
 
 /* API implementation */
 
-int inv_imu_selftest_init_params(inv_imu_device_t *s, inv_imu_selftest_parameters_t *st_params)
+int icm566xx_selftest_init_params(inv_imu_device_t *s, inv_imu_selftest_parameters_t *st_params)
 {
 	int rc = INV_IMU_OK;
 
@@ -40,8 +31,8 @@ int inv_imu_selftest_init_params(inv_imu_device_t *s, inv_imu_selftest_parameter
 	return rc;
 }
 
-int inv_imu_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
-		     inv_imu_selftest_output_t *st_output)
+int icm566xx_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
+		      inv_imu_selftest_output_t *st_output)
 {
 	int rc = INV_IMU_OK;
 
@@ -49,12 +40,12 @@ int inv_imu_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *s
 		return INV_IMU_ERROR;
 	}
 
-	rc |= inv_imu_adv_device_reset(s);
+	rc |= icm566xx_adv_device_reset(s);
 
-	inv_imu_sleep_us(s, 10000);
+	icm566xx_sleep_us(s, 10000);
 
 	/* Configure start addresses as we reset the device */
-	rc |= inv_imu_edmp_configure(s);
+	rc |= icm566xx_edmp_configure(s);
 
 	rc |= set_selftest_parameters(s, st_params);
 
@@ -62,7 +53,7 @@ int inv_imu_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *s
 
 	rc |= get_selftest_output(s, st_params, st_output);
 
-	rc |= inv_imu_adv_device_reset(s);
+	rc |= icm566xx_adv_device_reset(s);
 
 	return rc;
 }
@@ -76,7 +67,7 @@ static int set_selftest_parameters(inv_imu_device_t *s,
 	uint32_t tmp_stc_params;
 	int init_en;
 
-	rc |= inv_imu_adv_power_up_sram(s);
+	rc |= icm566xx_adv_power_up_sram(s);
 
 	rc |= INV_IMU_READ_EDMP_SRAM(s, EDMP_STC_CONFIGPARAMS, (uint8_t *)&tmp_stc_params);
 	tmp_stc_params &= ~(SELFTESTCAL_INIT_EN_MASK | SELFTEST_ACCEL_EN_MASK |
@@ -108,27 +99,27 @@ static int run_internal_selftest(inv_imu_device_t *s)
 	int_apex_config1_t int_apex_config1;
 	int timeout_us = 3000000; /* 3 seconds */
 
-	rc |= inv_imu_read_reg(s, REG_HOST_MSG, 1, (uint8_t *)&reg_host_msg);
+	rc |= icm566xx_read_reg(s, REG_HOST_MSG, 1, (uint8_t *)&reg_host_msg);
 	reg_host_msg.testopenable = INV_IMU_ENABLE;
-	rc |= inv_imu_write_reg(s, REG_HOST_MSG, 1, (uint8_t *)&reg_host_msg);
+	rc |= icm566xx_write_reg(s, REG_HOST_MSG, 1, (uint8_t *)&reg_host_msg);
 
 	/* Enable desired interrupt */
-	rc |= inv_imu_read_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
+	rc |= icm566xx_read_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
 	int_apex_config1.int_status_mask_pin_selftest_done = 0;
-	rc |= inv_imu_write_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
+	rc |= icm566xx_write_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
 
 	/* Run EDMP */
-	rc |= inv_imu_edmp_run_ondemand(s, INV_IMU_EDMP_INT2);
+	rc |= icm566xx_edmp_run_ondemand(s, INV_IMU_EDMP_INT2);
 
 	/* Wait for the desired interrupt */
 	while (1) {
 		int_apex_status1_t int_apex_status1;
-		rc |= inv_imu_read_reg(s, INT_APEX_STATUS1, 1, (uint8_t *)&int_apex_status1);
+		rc |= icm566xx_read_reg(s, INT_APEX_STATUS1, 1, (uint8_t *)&int_apex_status1);
 		if (int_apex_status1.int_status_selftest_done) {
 			break;
 		}
 
-		inv_imu_sleep_us(s, 100);
+		icm566xx_sleep_us(s, 100);
 		timeout_us -= 100;
 
 		if (timeout_us <= 0) {
@@ -137,9 +128,9 @@ static int run_internal_selftest(inv_imu_device_t *s)
 	}
 
 	/* Disable interrupt */
-	rc |= inv_imu_read_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
+	rc |= icm566xx_read_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
 	int_apex_config1.int_status_mask_pin_selftest_done = 1;
-	rc |= inv_imu_write_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
+	rc |= icm566xx_write_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
 
 	return rc;
 }
@@ -208,7 +199,7 @@ static int get_selftest_output(inv_imu_device_t *s, const inv_imu_selftest_param
 ********************************************************************************************************
 */
 
-int inv_imu_st_direct_init_params(inv_imu_device_t *s, inv_imu_selftest_parameters_t *st_params)
+int icm566xx_st_direct_init_params(inv_imu_device_t *s, inv_imu_selftest_parameters_t *st_params)
 {
 	int rc = INV_IMU_OK;
 
@@ -240,71 +231,71 @@ static int set_st_direct_config(inv_imu_device_t *s, const inv_imu_selftest_para
 	uint16_t sys1_reg0 = 0x0030;
 	dmp_ext_sen_odr_cfg_t dmp_cfg;
 
-	inv_imu_write_reg(s, IPREG_SYS1_REG_0, 2, (uint8_t *)&sys1_reg0);
+	icm566xx_write_reg(s, IPREG_SYS1_REG_0, 2, (uint8_t *)&sys1_reg0);
 
-	inv_imu_read_reg(s, IPREG_SYS2_REG_117, 1, (uint8_t *)&sys2_reg117);
+	icm566xx_read_reg(s, IPREG_SYS2_REG_117, 1, (uint8_t *)&sys2_reg117);
 	sys2_reg117.tmp_inj_en_gos = 1;
-	inv_imu_write_reg(s, IPREG_SYS2_REG_117, 1, (uint8_t *)&sys2_reg117);
+	icm566xx_write_reg(s, IPREG_SYS2_REG_117, 1, (uint8_t *)&sys2_reg117);
 
-	inv_imu_read_reg(s, DMP_EXT_SEN_ODR_CFG, 1, (uint8_t *)&dmp_cfg);
+	icm566xx_read_reg(s, DMP_EXT_SEN_ODR_CFG, 1, (uint8_t *)&dmp_cfg);
 	dmp_cfg.apex_odr = DMP_EXT_SEN_ODR_CFG_APEX_ODR_800_HZ;
-	inv_imu_write_reg(s, DMP_EXT_SEN_ODR_CFG, 1, (uint8_t *)&dmp_cfg);
+	icm566xx_write_reg(s, DMP_EXT_SEN_ODR_CFG, 1, (uint8_t *)&dmp_cfg);
 
 	if (st_params->gyro_en) {
-		inv_imu_set_gyro_frequency(s, GYRO_CONFIG0_GYRO_ODR_800_HZ);
+		icm566xx_set_gyro_frequency(s, GYRO_CONFIG0_GYRO_ODR_800_HZ);
 #if INV_IMU_HIGH_FSR_SUPPORTED
-		inv_imu_set_gyro_fsr(s, GYRO_CONFIG0_AP_GYRO_FS_SEL_4000_DPS);
+		icm566xx_set_gyro_fsr(s, GYRO_CONFIG0_AP_GYRO_FS_SEL_4000_DPS);
 #else
-		inv_imu_set_gyro_fsr(s, GYRO_CONFIG0_AP_GYRO_FS_SEL_2000_DPS);
+		icm566xx_set_gyro_fsr(s, GYRO_CONFIG0_AP_GYRO_FS_SEL_2000_DPS);
 #endif
 
-		inv_imu_read_reg(s, IPREG_SYS1_REG_155, 1, (uint8_t *)&sys1_reg155);
+		icm566xx_read_reg(s, IPREG_SYS1_REG_155, 1, (uint8_t *)&sys1_reg155);
 		sys1_reg155.gyro_lpf_bypass = 0;
-		inv_imu_write_reg(s, IPREG_SYS1_REG_155, 1, (uint8_t *)&sys1_reg155);
+		icm566xx_write_reg(s, IPREG_SYS1_REG_155, 1, (uint8_t *)&sys1_reg155);
 
-		inv_imu_read_reg(s, IPREG_SYS1_REG_158, 1, (uint8_t *)&sys1_reg158);
+		icm566xx_read_reg(s, IPREG_SYS1_REG_158, 1, (uint8_t *)&sys1_reg158);
 		sys1_reg158.gyro_ois_3rd_ord_sel = 0;
 		sys1_reg158.gyro_ui_lpfbw_sel = 2;
-		inv_imu_write_reg(s, IPREG_SYS1_REG_158, 1, (uint8_t *)&sys1_reg158);
+		icm566xx_write_reg(s, IPREG_SYS1_REG_158, 1, (uint8_t *)&sys1_reg158);
 
 		sys1_reg146.gyro_x_tmid_gain = sys1_reg146.gyro_x_tmid_off = 7;
-		inv_imu_write_reg(s, IPREG_SYS1_REG_146, 1, (uint8_t *)&sys1_reg146);
+		icm566xx_write_reg(s, IPREG_SYS1_REG_146, 1, (uint8_t *)&sys1_reg146);
 
 		sys1_reg148.gyro_y_tmid_gain = sys1_reg148.gyro_y_tmid_off = 7;
-		inv_imu_write_reg(s, IPREG_SYS1_REG_148, 1, (uint8_t *)&sys1_reg148);
+		icm566xx_write_reg(s, IPREG_SYS1_REG_148, 1, (uint8_t *)&sys1_reg148);
 
 		sys1_reg150.gyro_z_tmid_gain = sys1_reg150.gyro_z_tmid_off = 7;
-		inv_imu_write_reg(s, IPREG_SYS1_REG_150, 1, (uint8_t *)&sys1_reg150);
+		icm566xx_write_reg(s, IPREG_SYS1_REG_150, 1, (uint8_t *)&sys1_reg150);
 
-		inv_imu_set_gyro_mode(s, PWR_MGMT0_GYRO_MODE_LN);
+		icm566xx_set_gyro_mode(s, PWR_MGMT0_GYRO_MODE_LN);
 	}
 	if (st_params->accel_en) {
-		inv_imu_set_accel_frequency(s, ACCEL_CONFIG0_ACCEL_ODR_800_HZ);
+		icm566xx_set_accel_frequency(s, ACCEL_CONFIG0_ACCEL_ODR_800_HZ);
 #if INV_IMU_HIGH_FSR_SUPPORTED
-		inv_imu_set_accel_fsr(s, ACCEL_CONFIG0_AP_ACCEL_FS_SEL_32_G);
+		icm566xx_set_accel_fsr(s, ACCEL_CONFIG0_AP_ACCEL_FS_SEL_32_G);
 #else
-		inv_imu_set_accel_fsr(s, ACCEL_CONFIG0_AP_ACCEL_FS_SEL_16_G);
+		icm566xx_set_accel_fsr(s, ACCEL_CONFIG0_AP_ACCEL_FS_SEL_16_G);
 #endif
 
-		inv_imu_read_reg(s, IPREG_SYS2_REG_112, 1, (uint8_t *)&sys2_reg112);
+		icm566xx_read_reg(s, IPREG_SYS2_REG_112, 1, (uint8_t *)&sys2_reg112);
 		sys2_reg112.accel_ui_3rd_ord_sel = 0;
 		sys2_reg112.accel_lpf_bypass = 0;
 		sys2_reg112.accel_ui_lpfbw_sel = 2;
-		inv_imu_write_reg(s, IPREG_SYS2_REG_112, 1, (uint8_t *)&sys2_reg112);
+		icm566xx_write_reg(s, IPREG_SYS2_REG_112, 1, (uint8_t *)&sys2_reg112);
 
 		sys2_reg105.accel_x_tmid_gain = sys2_reg105.accel_x_tmid_off = 7;
-		inv_imu_write_reg(s, IPREG_SYS2_REG_105, 1, (uint8_t *)&sys2_reg105);
+		icm566xx_write_reg(s, IPREG_SYS2_REG_105, 1, (uint8_t *)&sys2_reg105);
 
 		sys2_reg106.accel_y_tmid_gain = sys2_reg106.accel_y_tmid_off = 7;
-		inv_imu_write_reg(s, IPREG_SYS2_REG_106, 1, (uint8_t *)&sys2_reg106);
+		icm566xx_write_reg(s, IPREG_SYS2_REG_106, 1, (uint8_t *)&sys2_reg106);
 
 		sys2_reg107.accel_z_tmid_gain = sys2_reg107.accel_z_tmid_off = 7;
-		inv_imu_write_reg(s, IPREG_SYS2_REG_107, 1, (uint8_t *)&sys2_reg107);
+		icm566xx_write_reg(s, IPREG_SYS2_REG_107, 1, (uint8_t *)&sys2_reg107);
 
-		inv_imu_set_accel_mode(s, PWR_MGMT0_ACCEL_MODE_LN);
+		icm566xx_set_accel_mode(s, PWR_MGMT0_ACCEL_MODE_LN);
 	}
 
-	inv_imu_sleep_us(s, GYR_STARTUP_TIME_US);
+	icm566xx_sleep_us(s, GYR_STARTUP_TIME_US);
 
 	return rc;
 }
@@ -325,7 +316,7 @@ static int st_direct_phase1(inv_imu_device_t *s, const inv_imu_selftest_paramete
 	timeout = st_params->avg_time * 1000; /* Convert to us. */
 
 	while (timeout > 0) { /* Collect accel and gyro data in one pass */
-		rc |= inv_imu_get_register_data(s, &sensor_data);
+		rc |= icm566xx_get_register_data(s, &sensor_data);
 		num_samples++;
 		if (st_params->accel_en) { /* If accel enabled */
 			phase1_total[0] += sensor_data.accel_data[0];
@@ -337,7 +328,7 @@ static int st_direct_phase1(inv_imu_device_t *s, const inv_imu_selftest_paramete
 			phase1_total[4] += sensor_data.gyro_data[1];
 			phase1_total[5] += sensor_data.gyro_data[2];
 		}
-		inv_imu_sleep_us(s, ODR_INTERVAL);
+		icm566xx_sleep_us(s, ODR_INTERVAL);
 		timeout -= ODR_INTERVAL;
 	}
 
@@ -365,43 +356,43 @@ static int st_direct_phase2(inv_imu_device_t *s, const inv_imu_selftest_paramete
 	inv_imu_sensor_data_t sensor_data;
 
 	/* Analog configuration */
-	inv_imu_read_reg(s, IPREG_ANA_REG_8, 1, (uint8_t *)&ana_reg_8);
+	icm566xx_read_reg(s, IPREG_ANA_REG_8, 1, (uint8_t *)&ana_reg_8);
 	ana_reg_8.pd_accel_cp45_st_b_d2a = 1;
-	inv_imu_write_reg(s, IPREG_ANA_REG_8, 1, (uint8_t *)&ana_reg_8);
-	inv_imu_sleep_us(s, 1000);
+	icm566xx_write_reg(s, IPREG_ANA_REG_8, 1, (uint8_t *)&ana_reg_8);
+	icm566xx_sleep_us(s, 1000);
 	ana_reg_8.pd_accel_st_b_d2a = 1;
-	inv_imu_write_reg(s, IPREG_ANA_REG_8, 1, (uint8_t *)&ana_reg_8);
-	inv_imu_sleep_us(s, 1000);
+	icm566xx_write_reg(s, IPREG_ANA_REG_8, 1, (uint8_t *)&ana_reg_8);
+	icm566xx_sleep_us(s, 1000);
 	if (st_params->accel_en) { /* Run the accel axes one at a time */
 		for (int i = 0; i < 3; i++) {
 			timeout = st_params->avg_time * 1000; /* Convert to us. */
 			selftest_byte = (1 << i);             /* Cycle through the accel axes */
-			inv_imu_write_reg(s, SELFTEST, 1, &selftest_byte);
-			inv_imu_sleep_us(s, 10000);
+			icm566xx_write_reg(s, SELFTEST, 1, &selftest_byte);
+			icm566xx_sleep_us(s, 10000);
 			while (timeout > 0) { /* Collect the data for the active accel axis */
-				rc |= inv_imu_get_register_data(s, &sensor_data);
+				rc |= icm566xx_get_register_data(s, &sensor_data);
 				num_samples_accel[i]++;
 				phase2_total[i] += sensor_data.accel_data[i];
-				inv_imu_sleep_us(s, ODR_INTERVAL);
+				icm566xx_sleep_us(s, ODR_INTERVAL);
 				timeout -= ODR_INTERVAL;
 			}
 		}
 	}
 
 	if (st_params->gyro_en) { /* Run all three gyro axes at once */
-		inv_imu_sleep_us(s, 2000);
+		icm566xx_sleep_us(s, 2000);
 		selftest.en_ax_st = selftest.en_ay_st = selftest.en_az_st = 0;
 		selftest.en_gx_st = selftest.en_gy_st = selftest.en_gz_st = 1;
-		inv_imu_write_reg(s, SELFTEST, 1, (uint8_t *)&selftest);
-		inv_imu_sleep_us(s, GYR_STARTUP_TIME_US);
+		icm566xx_write_reg(s, SELFTEST, 1, (uint8_t *)&selftest);
+		icm566xx_sleep_us(s, GYR_STARTUP_TIME_US);
 		timeout = st_params->avg_time * 1000; /* Convert to us. */
 		while (timeout > 0) {
-			rc |= inv_imu_get_register_data(s, &sensor_data);
+			rc |= icm566xx_get_register_data(s, &sensor_data);
 			num_samples_gyro++;
 			phase2_total[3] += sensor_data.gyro_data[0];
 			phase2_total[4] += sensor_data.gyro_data[1];
 			phase2_total[5] += sensor_data.gyro_data[2];
-			inv_imu_sleep_us(s, ODR_INTERVAL);
+			icm566xx_sleep_us(s, ODR_INTERVAL);
 			timeout -= ODR_INTERVAL;
 		}
 	}
@@ -423,27 +414,27 @@ static int get_eDMP_params(inv_imu_device_t *s, int16_t str_ft[])
 	int rc = INV_IMU_OK;
 	inv_imu_selftest_parameters_t st_params;
 
-	rc |= inv_imu_edmp_configure(s); /* Configure start addresses as we reset the device */
+	rc |= icm566xx_edmp_configure(s); /* Configure start addresses as we reset the device */
 
-	rc |= inv_imu_selftest_init_params(s, &st_params);
+	rc |= icm566xx_selftest_init_params(s, &st_params);
 	st_params.gyro_en = 0;
 	st_params.avg_time = SELFTEST_AVG_TIME_10_MS;
 	rc |= set_selftest_parameters(s, &st_params);
 
 	rc |= run_internal_selftest(s); /* Run internal selftest to load SRAM */
-	inv_imu_read_sram(s, IMEM_SRAM_REG_12, 6,
-			  (uint8_t *)&str_ft[0]); /* Read accel_{x/y/z}_str_ft */
-	inv_imu_read_sram(s, IMEM_SRAM_REG_0, 6,
-			  (uint8_t *)&str_ft[3]); /* Read agyro_{x/y/z}_str_ft */
+	icm566xx_read_sram(s, IMEM_SRAM_REG_12, 6,
+			   (uint8_t *)&str_ft[0]); /* Read accel_{x/y/z}_str_ft */
+	icm566xx_read_sram(s, IMEM_SRAM_REG_0, 6,
+			   (uint8_t *)&str_ft[3]); /* Read agyro_{x/y/z}_str_ft */
 
 	return rc;
 }
 
 /*
- * inv_imu_st_direct: Run the self-test operation on the host.
+ * icm566xx_st_direct: Run the self-test operation on the host.
  */
-int inv_imu_st_direct(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
-		      inv_imu_selftest_output_t *st_output)
+int icm566xx_st_direct(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
+		       inv_imu_selftest_output_t *st_output)
 {
 #if INV_IMU_20BIT_REG_DATA_SUPPORTED == 1
 #define ACCEL_FSR      32      /* The accel FSR is 32g */
@@ -468,13 +459,13 @@ int inv_imu_st_direct(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *
 		return INV_IMU_ERROR;
 	}
 
-	rc |= inv_imu_adv_device_reset(s); /* Soft reset to create a clean configuration */
+	rc |= icm566xx_adv_device_reset(s); /* Soft reset to create a clean configuration */
 
-	inv_imu_sleep_us(s, 10000);
+	icm566xx_sleep_us(s, 10000);
 
-	rc |= inv_imu_adv_power_up_sram(s); /* Power up the SRAM */
+	rc |= icm566xx_adv_power_up_sram(s); /* Power up the SRAM */
 
-	inv_imu_sleep_us(s, 10000);
+	icm566xx_sleep_us(s, 10000);
 
 	rc |= get_eDMP_params(s, str_ft); /* Load and read str_ft values from SRAM */
 
@@ -557,7 +548,7 @@ int inv_imu_st_direct(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *
 				? 1
 				: -1;
 	}
-	rc |= inv_imu_adv_device_reset(s);
+	rc |= icm566xx_adv_device_reset(s);
 
 	return rc;
 }

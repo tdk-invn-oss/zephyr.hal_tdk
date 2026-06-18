@@ -1,16 +1,7 @@
 /*
+ * Copyright (c) 2015 TDK Invensense
  *
- * Copyright (c) [2015] by InvenSense, Inc.
- * * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 #include "imu/inv_imu_transport.h"
@@ -27,7 +18,7 @@ static int check_out_of_bounds_mreg(uint32_t reg, uint32_t len);
 static int write_mreg(inv_imu_transport_t *t, uint32_t reg, uint32_t len, const uint8_t *buf);
 static int read_mreg(inv_imu_transport_t *t, uint32_t reg, uint32_t len, uint8_t *buf);
 
-int inv_imu_read_reg(void *t, uint32_t reg, uint32_t len, uint8_t *buf)
+int icm566xx_read_reg(void *t, uint32_t reg, uint32_t len, uint8_t *buf)
 {
 	inv_imu_transport_t *tr = (inv_imu_transport_t *)t;
 	if (reg > 0xFF) {
@@ -37,7 +28,7 @@ int inv_imu_read_reg(void *t, uint32_t reg, uint32_t len, uint8_t *buf)
 	}
 }
 
-int inv_imu_write_reg(void *t, uint32_t reg, uint32_t len, const uint8_t *buf)
+int icm566xx_write_reg(void *t, uint32_t reg, uint32_t len, const uint8_t *buf)
 {
 	inv_imu_transport_t *tr = (inv_imu_transport_t *)t;
 	if (reg > 0xFF) {
@@ -47,13 +38,13 @@ int inv_imu_write_reg(void *t, uint32_t reg, uint32_t len, const uint8_t *buf)
 	}
 }
 
-int inv_imu_read_sram(void *t, uint32_t addr, uint32_t len, uint8_t *buf)
+int icm566xx_read_sram(void *t, uint32_t addr, uint32_t len, uint8_t *buf)
 {
 	inv_imu_transport_t *tr = (inv_imu_transport_t *)t;
 	return read_mreg(tr, addr, len, buf);
 }
 
-int inv_imu_write_sram(void *t, uint32_t addr, uint32_t len, const uint8_t *buf)
+int icm566xx_write_sram(void *t, uint32_t addr, uint32_t len, const uint8_t *buf)
 {
 	inv_imu_transport_t *tr = (inv_imu_transport_t *)t;
 	return write_mreg(tr, addr, len, buf);

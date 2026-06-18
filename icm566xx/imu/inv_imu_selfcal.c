@@ -1,19 +1,10 @@
 /*
+ * Copyright (c) 2015 TDK Invensense
  *
- * Copyright (c) [2015] by InvenSense, Inc.
- * * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
-#include "imu/inv_imu_selfcal.h"
+#include "imu/icm566xx_selfcal.h"
 #include "imu/inv_imu_edmp.h"
 
 /* Gyro Self-Cal calculation Method */
@@ -83,7 +74,7 @@ static int run_selfcal(inv_imu_device_t *s, const inv_imu_selfcal_parameters_t *
 
 /* API implementation */
 
-int inv_imu_selfcal_init_params(inv_imu_device_t *s, inv_imu_selfcal_parameters_t *sc_params)
+int icm566xx_selfcal_init_params(inv_imu_device_t *s, inv_imu_selfcal_parameters_t *sc_params)
 {
 	int rc = INV_IMU_OK;
 
@@ -111,8 +102,8 @@ int inv_imu_selfcal_init_params(inv_imu_device_t *s, inv_imu_selfcal_parameters_
 	return rc;
 }
 
-int inv_imu_selfcal(inv_imu_device_t *s, const inv_imu_selfcal_parameters_t *sc_params,
-		    inv_imu_selfcal_output_t *sc_output)
+int icm566xx_selfcal(inv_imu_device_t *s, const inv_imu_selfcal_parameters_t *sc_params,
+		     inv_imu_selfcal_output_t *sc_output)
 {
 	int rc = INV_IMU_OK;
 	inv_imu_selfcal_output_internal_t sc_internal_output = {0};
@@ -182,7 +173,7 @@ int inv_imu_selfcal(inv_imu_device_t *s, const inv_imu_selfcal_parameters_t *sc_
 	return rc;
 }
 
-int inv_imu_stc_set_accel_usergain(inv_imu_device_t *s, const uint16_t *accel_usergain)
+int icm566xx_stc_set_accel_usergain(inv_imu_device_t *s, const uint16_t *accel_usergain)
 {
 	int rc = INV_IMU_OK;
 	int i;
@@ -193,13 +184,13 @@ int inv_imu_stc_set_accel_usergain(inv_imu_device_t *s, const uint16_t *accel_us
 	 * IPREG_SYS2_REG_18, IPREG_SYS2_REG_20 and IPREG_SYS2_REG_22
 	 */
 	for (i = 0, reg_index = IPREG_SYS2_REG_18; i < 3; i++, reg_index += 2) {
-		rc |= inv_imu_write_reg(s, reg_index, 2, (uint8_t *)&accel_usergain[i]);
+		rc |= icm566xx_write_reg(s, reg_index, 2, (uint8_t *)&accel_usergain[i]);
 	}
 
 	return rc;
 }
 
-int inv_imu_stc_set_gyro_usergain(inv_imu_device_t *s, const uint16_t *gyro_usergain)
+int icm566xx_stc_set_gyro_usergain(inv_imu_device_t *s, const uint16_t *gyro_usergain)
 {
 	int rc = INV_IMU_OK;
 	int i;
@@ -210,7 +201,7 @@ int inv_imu_stc_set_gyro_usergain(inv_imu_device_t *s, const uint16_t *gyro_user
 	 * IPREG_SYS1_REG_8, IPREG_SYS1_REG_10 and IPREG_SYS1_REG_12
 	 */
 	for (i = 0, reg_index = IPREG_SYS1_REG_8; i < 3; i++, reg_index += 2) {
-		rc |= inv_imu_write_reg(s, reg_index, 2, (uint8_t *)&gyro_usergain[i]);
+		rc |= icm566xx_write_reg(s, reg_index, 2, (uint8_t *)&gyro_usergain[i]);
 	}
 
 	return rc;
@@ -345,7 +336,7 @@ static int set_selfcal_parameters(inv_imu_device_t *s,
 	uint32_t tmp_stc_params;
 	int init_en;
 
-	rc |= inv_imu_adv_power_up_sram(s);
+	rc |= icm566xx_adv_power_up_sram(s);
 
 	rc |= INV_IMU_READ_EDMP_SRAM(s, EDMP_STC_CONFIGPARAMS, (uint8_t *)&tmp_stc_params);
 	tmp_stc_params &=
@@ -381,27 +372,27 @@ static int run_internal_selfcal(inv_imu_device_t *s)
 	int_apex_config1_t int_apex_config1;
 	int timeout_us = 3000000; /* 3 seconds */
 
-	rc |= inv_imu_read_reg(s, REG_HOST_MSG, 1, (uint8_t *)&reg_host_msg);
+	rc |= icm566xx_read_reg(s, REG_HOST_MSG, 1, (uint8_t *)&reg_host_msg);
 	reg_host_msg.testopenable = INV_IMU_ENABLE;
-	rc |= inv_imu_write_reg(s, REG_HOST_MSG, 1, (uint8_t *)&reg_host_msg);
+	rc |= icm566xx_write_reg(s, REG_HOST_MSG, 1, (uint8_t *)&reg_host_msg);
 
 	/* Enable desired interrupt */
-	rc |= inv_imu_read_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
+	rc |= icm566xx_read_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
 	int_apex_config1.reserved = 0;
-	rc |= inv_imu_write_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
+	rc |= icm566xx_write_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
 
 	/* Run EDMP */
-	rc |= inv_imu_edmp_run_ondemand(s, INV_IMU_EDMP_INT2);
+	rc |= icm566xx_edmp_run_ondemand(s, INV_IMU_EDMP_INT2);
 
 	/* Wait for the desired interrupt */
 	while (1) {
 		int_apex_status1_t int_apex_status1;
-		rc |= inv_imu_read_reg(s, INT_APEX_STATUS1, 1, (uint8_t *)&int_apex_status1);
+		rc |= icm566xx_read_reg(s, INT_APEX_STATUS1, 1, (uint8_t *)&int_apex_status1);
 		if (int_apex_status1.reserved) {
 			break;
 		}
 
-		inv_imu_sleep_us(s, 100);
+		icm566xx_sleep_us(s, 100);
 		timeout_us -= 100;
 
 		if (timeout_us <= 0) {
@@ -409,9 +400,9 @@ static int run_internal_selfcal(inv_imu_device_t *s)
 		}
 	}
 	/* Disable interrupt */
-	rc |= inv_imu_read_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
+	rc |= icm566xx_read_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
 	int_apex_config1.reserved = 1;
-	rc |= inv_imu_write_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
+	rc |= icm566xx_write_reg(s, INT_APEX_CONFIG1, 1, (uint8_t *)&int_apex_config1);
 
 	return rc;
 }
@@ -442,12 +433,12 @@ static int get_selfcal_output(inv_imu_device_t *s, const inv_imu_selfcal_paramet
 		rc |= INV_IMU_READ_EDMP_SRAM(s, EDMP_STC_ACCEL_SC_CMOS_MEAS_X,
 					     (uint8_t *)&(sc_output_i->sc_accel_cmos_meas_x));
 
-		rc |= inv_imu_read_sram(s, IMEM_SRAM_REG_18, 2,
-					(uint8_t *)&(sc_output_i->sc_accel_nout_trim[0]));
-		rc |= inv_imu_read_sram(s, IMEM_SRAM_REG_20, 2,
-					(uint8_t *)&(sc_output_i->sc_accel_nout_trim[1]));
-		rc |= inv_imu_read_sram(s, IMEM_SRAM_REG_22, 2,
-					(uint8_t *)&(sc_output_i->sc_accel_nout_trim[2]));
+		rc |= icm566xx_read_sram(s, IMEM_SRAM_REG_18, 2,
+					 (uint8_t *)&(sc_output_i->sc_accel_nout_trim[0]));
+		rc |= icm566xx_read_sram(s, IMEM_SRAM_REG_20, 2,
+					 (uint8_t *)&(sc_output_i->sc_accel_nout_trim[1]));
+		rc |= icm566xx_read_sram(s, IMEM_SRAM_REG_22, 2,
+					 (uint8_t *)&(sc_output_i->sc_accel_nout_trim[2]));
 
 	} else {
 		sc_output->accel_status = INV_IMU_SC_STATUS_NOT_RUN;
@@ -466,12 +457,12 @@ static int get_selfcal_output(inv_imu_device_t *s, const inv_imu_selfcal_paramet
 						 ? INV_IMU_SC_STATUS_SUCCESS
 						 : INV_IMU_SC_STATUS_FAIL;
 
-		rc |= inv_imu_read_sram(s, IMEM_SRAM_REG_0, 2,
-					(uint8_t *)&(sc_output_i->sc_gyro_str_ft_trim[0]));
-		rc |= inv_imu_read_sram(s, IMEM_SRAM_REG_2, 2,
-					(uint8_t *)&(sc_output_i->sc_gyro_str_ft_trim[1]));
-		rc |= inv_imu_read_sram(s, IMEM_SRAM_REG_4, 2,
-					(uint8_t *)&(sc_output_i->sc_gyro_str_ft_trim[2]));
+		rc |= icm566xx_read_sram(s, IMEM_SRAM_REG_0, 2,
+					 (uint8_t *)&(sc_output_i->sc_gyro_str_ft_trim[0]));
+		rc |= icm566xx_read_sram(s, IMEM_SRAM_REG_2, 2,
+					 (uint8_t *)&(sc_output_i->sc_gyro_str_ft_trim[1]));
+		rc |= icm566xx_read_sram(s, IMEM_SRAM_REG_4, 2,
+					 (uint8_t *)&(sc_output_i->sc_gyro_str_ft_trim[2]));
 
 		rc |= INV_IMU_READ_EDMP_SRAM(s, EDMP_STC_GAIN_GX,
 					     (uint8_t *)&(sc_output_i->sc_gyro_step_response32[0]));
@@ -480,12 +471,12 @@ static int get_selfcal_output(inv_imu_device_t *s, const inv_imu_selfcal_paramet
 		rc |= INV_IMU_READ_EDMP_SRAM(s, EDMP_STC_GAIN_GZ,
 					     (uint8_t *)&(sc_output_i->sc_gyro_step_response32[2]));
 
-		rc |= inv_imu_read_sram(s, IMEM_SRAM_REG_6, 2,
-					(uint8_t *)&(sc_output_i->sc_gyro_cmos_trim[0]));
-		rc |= inv_imu_read_sram(s, IMEM_SRAM_REG_8, 2,
-					(uint8_t *)&(sc_output_i->sc_gyro_cmos_trim[1]));
-		rc |= inv_imu_read_sram(s, IMEM_SRAM_REG_10, 2,
-					(uint8_t *)&(sc_output_i->sc_gyro_cmos_trim[2]));
+		rc |= icm566xx_read_sram(s, IMEM_SRAM_REG_6, 2,
+					 (uint8_t *)&(sc_output_i->sc_gyro_cmos_trim[0]));
+		rc |= icm566xx_read_sram(s, IMEM_SRAM_REG_8, 2,
+					 (uint8_t *)&(sc_output_i->sc_gyro_cmos_trim[1]));
+		rc |= icm566xx_read_sram(s, IMEM_SRAM_REG_10, 2,
+					 (uint8_t *)&(sc_output_i->sc_gyro_cmos_trim[2]));
 
 		rc |= INV_IMU_READ_EDMP_SRAM(s, EDMP_STC_GAIN_GX,
 					     (uint8_t *)&(sc_output_i->sc_gyro_gain32[0]));
@@ -517,22 +508,22 @@ static int run_selfcal(inv_imu_device_t *s, const inv_imu_selfcal_parameters_t *
 {
 	int rc = INV_IMU_OK;
 
-	rc |= inv_imu_adv_device_reset(s);
+	rc |= icm566xx_adv_device_reset(s);
 
-	inv_imu_sleep_us(s, 10000);
+	icm566xx_sleep_us(s, 10000);
 
 	/* Configure start addresses as we reset the device */
-	rc |= inv_imu_edmp_configure(s);
+	rc |= icm566xx_edmp_configure(s);
 
 	rc |= set_selfcal_parameters(s, sc_params, gyro_method);
 
-	rc |= inv_imu_set_accel_fsr(s, ACCEL_CONFIG0_AP_ACCEL_FS_SEL_4_G);
+	rc |= icm566xx_set_accel_fsr(s, ACCEL_CONFIG0_AP_ACCEL_FS_SEL_4_G);
 
 	rc |= run_internal_selfcal(s);
 
 	rc |= get_selfcal_output(s, sc_params, sc_output, sc_output_i);
 
-	rc |= inv_imu_adv_device_reset(s);
+	rc |= icm566xx_adv_device_reset(s);
 
 	return rc;
 }

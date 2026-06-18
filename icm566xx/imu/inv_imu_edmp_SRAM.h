@@ -1,16 +1,7 @@
 /*
+ * Copyright (c) 2023 TDK Invensense
  *
- * Copyright (c) [2023] by InvenSense, Inc.
- * * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 #ifndef _INV_IMU_EDMP_SRAM_H_
@@ -79,7 +70,7 @@ typedef struct {
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_bump_init(inv_imu_device_t *s);
+int icm566xx_edmp_bump_init(inv_imu_device_t *s);
 
 /** @brief  Get current Bump configuration settings.
  *  @param[in]  s           Pointer to device.
@@ -87,8 +78,8 @@ int inv_imu_edmp_bump_init(inv_imu_device_t *s);
  * configuration.
  *  @return                 0 on success, negative value on error.
  */
-int inv_imu_edmp_bump_get_parameters(inv_imu_device_t *s,
-				     inv_imu_edmp_bump_parameters_t *bump_params);
+int icm566xx_edmp_bump_get_parameters(inv_imu_device_t *s,
+				      inv_imu_edmp_bump_parameters_t *bump_params);
 
 /** @brief  Set new Bump configuration settings.
  *  @param[in]  s           Pointer to device.
@@ -96,39 +87,39 @@ int inv_imu_edmp_bump_get_parameters(inv_imu_device_t *s,
  * configuration.
  *  @return                 0 on success, negative value on error.
  */
-int inv_imu_edmp_bump_set_parameters(inv_imu_device_t *s,
-				     const inv_imu_edmp_bump_parameters_t *bump_params);
+int icm566xx_edmp_bump_set_parameters(inv_imu_device_t *s,
+				      const inv_imu_edmp_bump_parameters_t *bump_params);
 
 /** @brief  Enable APEX algorithm Bump.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable_bump(inv_imu_device_t *s);
+int icm566xx_edmp_enable_bump(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm Bump.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable_bump(inv_imu_device_t *s);
+int icm566xx_edmp_disable_bump(inv_imu_device_t *s);
 
 /** @brief  Set ODR for APEX algorithm Bump.
  *  @param[in] s  Pointer to device.
  *  @param[in] bump_odr  New value for tap ODR
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_set_bump_odr(inv_imu_device_t *s, uint16_t bump_odr);
+int icm566xx_edmp_set_bump_odr(inv_imu_device_t *s, uint16_t bump_odr);
 
 /** @brief  Initialize APEX for use with SRAM algos
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_init_apex_sram(inv_imu_device_t *s);
+int icm566xx_edmp_init_apex_sram(inv_imu_device_t *s);
 
 /** @brief  Configure eDMP for use with SRAM algos
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_configure_sram(inv_imu_device_t *s);
+int icm566xx_edmp_configure_sram(inv_imu_device_t *s);
 
 #ifdef __cplusplus
 }

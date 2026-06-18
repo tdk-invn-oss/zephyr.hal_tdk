@@ -1,16 +1,7 @@
 /*
+ * Copyright (c) 2015 TDK Invensense
  *
- * Copyright (c) [2015] by InvenSense, Inc.
- * * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 /** @defgroup selftest Self-test
@@ -18,7 +9,7 @@
  *  @{
  */
 
-/** @file inv_imu_selftest.h */
+/** @file icm566xx_selftest.h */
 
 #ifndef _INV_IMU_SELFTEST_H_
 #define _INV_IMU_SELFTEST_H_
@@ -89,14 +80,14 @@ typedef struct {
  *  @param[in] st_params  Structure filled with recommended params.
  *  @return               0 on success, negative value on error.
  */
-int inv_imu_selftest_init_params(inv_imu_device_t *s, inv_imu_selftest_parameters_t *st_params);
+int icm566xx_selftest_init_params(inv_imu_device_t *s, inv_imu_selftest_parameters_t *st_params);
 
 /** @brief Provide recommended parameters to execute self-test.
  *  @param[in] s          Pointer to device.
  *  @param[in] st_params  Structure filled with recommended params.
  *  @return               0 on success, negative value on error.
  */
-int inv_imu_st_direct_init_params(inv_imu_device_t *s, inv_imu_selftest_parameters_t *st_params);
+int icm566xx_st_direct_init_params(inv_imu_device_t *s, inv_imu_selftest_parameters_t *st_params);
 
 /** @brief Perform hardware self-test for Accel and/or Gyro.
  *  @param[in] s            Pointer to device.
@@ -104,8 +95,8 @@ int inv_imu_st_direct_init_params(inv_imu_device_t *s, inv_imu_selftest_paramete
  *  @param[out] st_output   Output from Self-test operation.
  *  @return                 0 on success, negative value on error.
  */
-int inv_imu_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
-		     inv_imu_selftest_output_t *st_output);
+int icm566xx_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
+		      inv_imu_selftest_output_t *st_output);
 
 /** @brief Perform host-based self-test for Accel and/or Gyro.
  *  @param[in] s            Pointer to device.
@@ -113,8 +104,8 @@ int inv_imu_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *s
  *  @param[out] st_output   Output from Self-test operation.
  *  @return                 0 on success, negative value on error.
  */
-int inv_imu_st_direct(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
-		      inv_imu_selftest_output_t *st_output);
+int icm566xx_st_direct(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
+		       inv_imu_selftest_output_t *st_output);
 
 #ifdef __cplusplus
 }

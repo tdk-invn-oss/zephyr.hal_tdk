@@ -1,16 +1,7 @@
 /*
+ * Copyright (c) 2015 TDK Invensense
  *
- * Copyright (c) [2015] by InvenSense, Inc.
- * * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 /** @defgroup selfcal Self-cal
@@ -18,7 +9,7 @@
  *  @{
  */
 
-/** @file inv_imu_selfcal.h */
+/** @file icm566xx_selfcal.h */
 
 #ifndef _INV_IMU_SELFCAL_H_
 #define _INV_IMU_SELFCAL_H_
@@ -169,7 +160,7 @@ typedef struct {
  *  @param[in] sc_params   Structure filled with recommended params.
  *  @return                0 on success, negative value on error.
  */
-int inv_imu_selfcal_init_params(inv_imu_device_t *s, inv_imu_selfcal_parameters_t *sc_params);
+int icm566xx_selfcal_init_params(inv_imu_device_t *s, inv_imu_selfcal_parameters_t *sc_params);
 
 /** @brief Perform hardware self-cal plus user gain calculation for Accel and/or Gyro.
  *  @param[in] s            Pointer to device.
@@ -177,22 +168,22 @@ int inv_imu_selfcal_init_params(inv_imu_device_t *s, inv_imu_selfcal_parameters_
  *  @param[out] sc_output   Output from Self-Cal operation
  *  @return                 0 on success, negative value on error.
  */
-int inv_imu_selfcal(inv_imu_device_t *s, const inv_imu_selfcal_parameters_t *sc_params,
-		    inv_imu_selfcal_output_t *sc_output);
+int icm566xx_selfcal(inv_imu_device_t *s, const inv_imu_selfcal_parameters_t *sc_params,
+		     inv_imu_selfcal_output_t *sc_output);
 
 /** @brief Set accel user gain values to the appropriate register fields.
  *  @param[in] s               Pointer to device.
  *  @param[in] accel_usergain  Accel user gain values.
  *  @return                    0 on success, negative value on error.
  */
-int inv_imu_selfcal_set_accel_usergain(inv_imu_device_t *s, const uint16_t *accel_usergain);
+int icm566xx_selfcal_set_accel_usergain(inv_imu_device_t *s, const uint16_t *accel_usergain);
 
 /** @brief Set gyro user gain values to the appropriate register fields.
  *  @param[in] s              Pointer to device.
  *  @param[in] gyro_usergain  Gyro user gain values.
  *  @return                   0 on success, negative value on error.
  */
-int inv_imu_selfcal_set_gyro_usergain(inv_imu_device_t *s, const uint16_t *gyro_usergain);
+int icm566xx_selfcal_set_gyro_usergain(inv_imu_device_t *s, const uint16_t *gyro_usergain);
 
 #ifdef __cplusplus
 }

@@ -1,16 +1,7 @@
 /*
+ * Copyright (c) 2017 TDK Invensense
  *
- * Copyright (c) [2017] by InvenSense, Inc.
- * * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 /** @defgroup DriverAdv Driver Advanced
@@ -78,7 +69,7 @@ typedef struct {
 	 */
 	void (*sensor_event_cb)(inv_imu_sensor_event_t *event);
 
-	/* The following fields will be initialized by inv_imu_adv_init() */
+	/* The following fields will be initialized by icm566xx_adv_init() */
 	uint8_t fifo_is_used; /**< Keeps track of FIFO usage */
 	uint8_t fifo_comp_en; /**< Indicates if FIFO compression is enabled */
 
@@ -153,49 +144,49 @@ typedef struct {
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_init(inv_imu_device_t *s);
+int icm566xx_adv_init(inv_imu_device_t *s);
 
 /** @brief Performs a soft reset of the device.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_device_reset(inv_imu_device_t *s);
+int icm566xx_adv_device_reset(inv_imu_device_t *s);
 
 /** @brief Enable accel in low power mode
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_enable_accel_lp(inv_imu_device_t *s);
+int icm566xx_adv_enable_accel_lp(inv_imu_device_t *s);
 
 /** @brief Enable accel in low noise mode
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_enable_accel_ln(inv_imu_device_t *s);
+int icm566xx_adv_enable_accel_ln(inv_imu_device_t *s);
 
 /** @brief Disable accel.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_disable_accel(inv_imu_device_t *s);
+int icm566xx_adv_disable_accel(inv_imu_device_t *s);
 
 /** @brief Enable gyro in low noise mode.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_enable_gyro_ln(inv_imu_device_t *s);
+int icm566xx_adv_enable_gyro_ln(inv_imu_device_t *s);
 
 /** @brief Enable gyro in low power mode.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_enable_gyro_lp(inv_imu_device_t *s);
+int icm566xx_adv_enable_gyro_lp(inv_imu_device_t *s);
 
 /** @brief Disable gyro
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_disable_gyro(inv_imu_device_t *s);
+int icm566xx_adv_disable_gyro(inv_imu_device_t *s);
 
 #if INV_IMU_INT2_PIN_SUPPORTED
 /** @brief Configures INT2 pin for the requested usage (INT2, FSYNC, CLKIN or DRDY_INTR).
@@ -204,8 +195,8 @@ int inv_imu_adv_disable_gyro(inv_imu_device_t *s);
  *  @param[in] usage  Requested usage for INT2 pin.
  *  @return           0 on success, negative value on error.
  */
-int inv_imu_adv_set_int2_pin_usage(inv_imu_device_t *s,
-				   ioc_pad_scenario_ovrd_pads_int2_cfg_ovrd_val_t usage);
+int icm566xx_adv_set_int2_pin_usage(inv_imu_device_t *s,
+				    ioc_pad_scenario_ovrd_pads_int2_cfg_ovrd_val_t usage);
 #endif /* INV_IMU_INT2_PIN_SUPPORTED */
 
 #if INV_IMU_FSYNC_SUPPORTED
@@ -215,8 +206,8 @@ int inv_imu_adv_set_int2_pin_usage(inv_imu_device_t *s,
  * is detected.
  *  @return                0 on success, negative value on error.
  */
-int inv_imu_adv_configure_fsync_ap_tag(inv_imu_device_t *s,
-				       fsync_config0_ap_fsync_sel_t sensor_tag);
+int icm566xx_adv_configure_fsync_ap_tag(inv_imu_device_t *s,
+					fsync_config0_ap_fsync_sel_t sensor_tag);
 
 /** @brief Enable fsync tagging functionnality.
  *  In details it:
@@ -228,7 +219,7 @@ int inv_imu_adv_configure_fsync_ap_tag(inv_imu_device_t *s,
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_enable_fsync(inv_imu_device_t *s);
+int icm566xx_adv_enable_fsync(inv_imu_device_t *s);
 
 /** @brief Disable fsync tagging functionnality.
  *  In details it:
@@ -240,7 +231,7 @@ int inv_imu_adv_enable_fsync(inv_imu_device_t *s);
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_disable_fsync(inv_imu_device_t *s);
+int icm566xx_adv_disable_fsync(inv_imu_device_t *s);
 #endif
 
 /** @brief Read all registers containing data (temperature, accelerometer and gyroscope). * It will
@@ -249,27 +240,27 @@ int inv_imu_adv_disable_fsync(inv_imu_device_t *s);
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_get_data_from_registers(inv_imu_device_t *s);
+int icm566xx_adv_get_data_from_registers(inv_imu_device_t *s);
 
 /** @brief reset IMU fifo
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_reset_fifo(inv_imu_device_t *s);
+int icm566xx_adv_reset_fifo(inv_imu_device_t *s);
 
 /** @brief Retrieve FIFO configuration.
  *  @param[in] s     Pointer to device.
  *  @param[in] conf  Structure that will be filled with current configuration.
  *  @return          0 on success, negative value on error.
  */
-int inv_imu_adv_get_fifo_config(inv_imu_device_t *s, inv_imu_adv_fifo_config_t *conf);
+int icm566xx_adv_get_fifo_config(inv_imu_device_t *s, inv_imu_adv_fifo_config_t *conf);
 
 /** @brief Set FIFO configuration.
  *  @param[in] s     Pointer to device.
  *  @param[in] conf  Structure containing the requested configuration.
  *  @return          0 on success, negative value on error.
  */
-int inv_imu_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_config_t *conf);
+int icm566xx_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_config_t *conf);
 
 /** @brief Read all available packets from the FIFO. *  @param[in] s
  * Pointer to device.
@@ -278,8 +269,8 @@ int inv_imu_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_conf
  *  @param[out] fifo_count		Number of packet read in FIFO.
  *  @return						0 on success, negative value on error.
  */
-int inv_imu_adv_get_data_from_fifo(inv_imu_device_t *s, uint8_t *fifo_data, uint16_t fifo_data_size,
-				   uint16_t *fifo_count);
+int icm566xx_adv_get_data_from_fifo(inv_imu_device_t *s, uint8_t *fifo_data,
+				    uint16_t fifo_data_size, uint16_t *fifo_count);
 
 /** @brief Parse packets from FIFO buffer. For each packet function builds a
  *         sensor event containing packet data and validity information. Then it calls *
@@ -289,43 +280,43 @@ int inv_imu_adv_get_data_from_fifo(inv_imu_device_t *s, uint8_t *fifo_data, uint
  *  @param[in] fifo_count  Number of packet read in FIFO.
  *  @return                0 on success, negative value on error.
  */
-int inv_imu_adv_parse_fifo_data(inv_imu_device_t *s, const uint8_t *fifo_data,
-				const uint16_t fifo_count);
+int icm566xx_adv_parse_fifo_data(inv_imu_device_t *s, const uint8_t *fifo_data,
+				 const uint16_t fifo_count);
 
 /** @brief Converts accel_config0_accel_odr_t or gyro_config0_gyro_odr_t enums to period expressed
  * in us
  *  @param[in] odr_bitfield An accel_config0_accel_odr_t or gyro_config0_gyro_odr_t enum
  *  @return The corresponding period expressed in us
  */
-uint32_t inv_imu_adv_convert_odr_bitfield_to_us(uint32_t odr_bitfield);
+uint32_t icm566xx_adv_convert_odr_bitfield_to_us(uint32_t odr_bitfield);
 
 /** @brief Access accel full scale range
  *  @param[in] s           Pointer to device.
  *  @param[out] accel_fsr  Current full scale range.
  *  @return                0 on success, negative value on error.
  */
-int inv_imu_adv_get_accel_fsr(inv_imu_device_t *s, accel_config0_ap_accel_fs_sel_t *accel_fsr);
+int icm566xx_adv_get_accel_fsr(inv_imu_device_t *s, accel_config0_ap_accel_fs_sel_t *accel_fsr);
 
 /** @brief Access gyro full scale range
  *  @param[in] s          Pointer to device.
  *  @param[out] gyro_fsr  Current full scale range.
  *  @return               0 on success, negative value on error.
  */
-int inv_imu_adv_get_gyro_fsr(inv_imu_device_t *s, gyro_config0_ap_gyro_fs_sel_t *gyro_fsr);
+int icm566xx_adv_get_gyro_fsr(inv_imu_device_t *s, gyro_config0_ap_gyro_fs_sel_t *gyro_fsr);
 
 /** @brief Set timestamp resolution
  *  @param[in] s                Pointer to device.
  *  @param[in] timestamp_resol  Requested timestamp resolution
  *  @return                     0 on success, negative value on error.
  */
-int inv_imu_adv_set_timestamp_resolution(inv_imu_device_t *s,
-					 const tmst_wom_config_tmst_resol_t timestamp_resol);
+int icm566xx_adv_set_timestamp_resolution(inv_imu_device_t *s,
+					  const tmst_wom_config_tmst_resol_t timestamp_resol);
 
 /** @brief Get timestamp resolution.
  *  @param[in] s  Pointer to device.
  *  @return       Timestamp resolution in us, negative value on error
  */
-uint32_t inv_imu_adv_get_timestamp_resolution_us(inv_imu_device_t *s);
+uint32_t icm566xx_adv_get_timestamp_resolution_us(inv_imu_device_t *s);
 
 /** @brief Enable CLKIN RTC functionality.
  *  In details it:
@@ -334,13 +325,13 @@ uint32_t inv_imu_adv_get_timestamp_resolution_us(inv_imu_device_t *s);
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_enable_clkin_rtc(inv_imu_device_t *s);
+int icm566xx_adv_enable_clkin_rtc(inv_imu_device_t *s);
 
 /** @brief Disable CLKIN RTC functionality.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_disable_clkin_rtc(inv_imu_device_t *s);
+int icm566xx_adv_disable_clkin_rtc(inv_imu_device_t *s);
 
 /** @brief  Enable Wake On Motion.
  *  @param[in] s         Pointer to device. *  @param[in] wom_x_th  Threshold for X axis with 1g/256
@@ -351,9 +342,9 @@ int inv_imu_adv_disable_clkin_rtc(inv_imu_device_t *s);
  *  @param[in] wom_dur   Number of overthreshold events to wait before generating interrupt.
  *  @return              0 on success, negative value on error.
  */
-int inv_imu_adv_configure_wom(inv_imu_device_t *s, const uint8_t wom_x_th, const uint8_t wom_y_th,
-			      const uint8_t wom_z_th, tmst_wom_config_wom_int_mode_t wom_int,
-			      tmst_wom_config_wom_int_dur_t wom_dur);
+int icm566xx_adv_configure_wom(inv_imu_device_t *s, const uint8_t wom_x_th, const uint8_t wom_y_th,
+			       const uint8_t wom_z_th, tmst_wom_config_wom_int_mode_t wom_int,
+			       tmst_wom_config_wom_int_dur_t wom_dur);
 
 /** @brief  Enable Wake On Motion.
  *  note : WoM requests to have the accelerometer enabled to work. *  As a consequence Fifo
@@ -362,40 +353,40 @@ int inv_imu_adv_configure_wom(inv_imu_device_t *s, const uint8_t wom_x_th, const
  * Power Mode.
  *  @param[in] s  Pointer to device. * @return        0 on success, negative value on error.
  */
-int inv_imu_adv_enable_wom(inv_imu_device_t *s);
+int icm566xx_adv_enable_wom(inv_imu_device_t *s);
 
 /** @brief  Disable Wake On Motion.
  *  note : Fifo water-mark interrupt is re-enabled when WoM is disabled.
  *  @param[in] s  Pointer to device. *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_disable_wom(inv_imu_device_t *s);
+int icm566xx_adv_disable_wom(inv_imu_device_t *s);
 
 /** @brief Set the UI endianness and set the inv_device endianness field
  *  @param[in] s           Pointer to device. *  @param[in] endianness  Requested endianness value.
  * *  @return                0 on success, negative value on error.
  */
-int inv_imu_adv_set_endianness(inv_imu_device_t *s, sreg_ctrl_sreg_data_endian_sel_t endianness);
+int icm566xx_adv_set_endianness(inv_imu_device_t *s, sreg_ctrl_sreg_data_endian_sel_t endianness);
 
 /** @brief Power-up the SRAM.
  *  @param[in] s  Pointer to device. *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_power_up_sram(inv_imu_device_t *s);
+int icm566xx_adv_power_up_sram(inv_imu_device_t *s);
 
 /** @brief Power-down the SRAM.
  *  @param[in] s  Pointer to device. *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_power_down_sram(inv_imu_device_t *s);
+int icm566xx_adv_power_down_sram(inv_imu_device_t *s);
 
 /** @brief Power-up the ROM.
  *  @param[in] s  Pointer to device. *  @return       0 on success, negative value on error.
  */
-int inv_imu_adv_power_up_rom(inv_imu_device_t *s);
+int icm566xx_adv_power_up_rom(inv_imu_device_t *s);
 
 /** @brief Power-down the ROM.
  *  @param[in] s      Pointer to device.
  *  @return           0 on success, negative value on error.
  */
-int inv_imu_adv_power_down_rom(inv_imu_device_t *s);
+int icm566xx_adv_power_down_rom(inv_imu_device_t *s);
 
 #ifdef __cplusplus
 }

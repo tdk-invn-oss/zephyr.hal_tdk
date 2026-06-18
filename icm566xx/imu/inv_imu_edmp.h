@@ -1,16 +1,7 @@
 /*
+ * Copyright (c) 2017 TDK Invensense
  *
- * Copyright (c) [2017] by InvenSense, Inc.
- * * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 /** @defgroup EDMP EDMP
@@ -53,7 +44,7 @@ extern "C" {
  *  @return          0 on success, negative value on error.
  */
 #define INV_IMU_WRITE_EDMP_SRAM(s, name, val)                                                      \
-	inv_imu_write_sram(s, (uint32_t)name, name##_SIZE, val)
+	icm566xx_write_sram(s, (uint32_t)name, name##_SIZE, val)
 
 /** @brief Reads in EDMP SRAM
  *  @param[in] s     Pointer to device.
@@ -61,7 +52,7 @@ extern "C" {
  *  @param[in] val   Value to be read.
  *  @return          0 on success, negative value on error.
  */
-#define INV_IMU_READ_EDMP_SRAM(s, name, val) inv_imu_read_sram(s, (uint32_t)name, name##_SIZE, val)
+#define INV_IMU_READ_EDMP_SRAM(s, name, val) icm566xx_read_sram(s, (uint32_t)name, name##_SIZE, val)
 
 /** @brief EDMP input interrupt lines definition */
 typedef enum {
@@ -80,7 +71,7 @@ typedef struct {
  *  @param[in] s         Pointer to device.
  *  @return              0 on success, negative value on error.
  */
-int inv_imu_edmp_clear_apex_sram(inv_imu_device_t *s);
+int icm566xx_edmp_clear_apex_sram(inv_imu_device_t *s);
 
 /** @brief Configure EDMP Output Data Rate for APEX algorithms.
  *  @warning Accel frequency must be higher or equal to EDMP frequency.
@@ -88,47 +79,48 @@ int inv_imu_edmp_clear_apex_sram(inv_imu_device_t *s);
  *  @param[in] frequency The requested frequency.
  *  @return              0 on success, negative value on error.
  */
-int inv_imu_edmp_set_frequency(inv_imu_device_t *s, const dmp_ext_sen_odr_cfg_apex_odr_t frequency);
+int icm566xx_edmp_set_frequency(inv_imu_device_t *s,
+				const dmp_ext_sen_odr_cfg_apex_odr_t frequency);
 
 /** @brief Get EDMP Output Data Rate for APEX algorithms.
  *  @param[in] s          Pointer to device.
  *  @param[out] frequency The current frequency.
  *  @return               0 on success, negative value on error.
  */
-int inv_imu_edmp_get_frequency(inv_imu_device_t *s, dmp_ext_sen_odr_cfg_apex_odr_t *frequency);
+int icm566xx_edmp_get_frequency(inv_imu_device_t *s, dmp_ext_sen_odr_cfg_apex_odr_t *frequency);
 
 /** @brief Initialize EDMP APEX algorithms. This function should be called before
- *         calling any other function (expect for `inv_imu_edmp_set_frequency`).
+ *         calling any other function (expect for `icm566xx_edmp_set_frequency`).
  *  @warning This function will power-up the SRAM. For power consumption consideration,
- *           you can manually call `inv_imu_adv_power_down_sram` if you don't need to * preserve
+ *           you can manually call `icm566xx_adv_power_down_sram` if you don't need to * preserve
  * SRAM content.
  *  @warning This function requires the EDMP ODR to be set before being called.
- *           Make sure to call `inv_imu_edmp_set_frequency` before this one.
+ *           Make sure to call `icm566xx_edmp_set_frequency` before this one.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_init_apex(inv_imu_device_t *s);
+int icm566xx_edmp_init_apex(inv_imu_device_t *s);
 
 /** @brief Initialize EDMP APEX algorithms. This function should be called before
- *         calling any other function (expect for `inv_imu_edmp_set_frequency`).
+ *         calling any other function (expect for `icm566xx_edmp_set_frequency`).
  *  @warning This function requires the EDMP ODR to be set before being called.
- *           Make sure to call `inv_imu_edmp_set_frequency` before this one.
+ *           Make sure to call `icm566xx_edmp_set_frequency` before this one.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_init_apex_save_sram(inv_imu_device_t *s);
+int icm566xx_edmp_init_apex_save_sram(inv_imu_device_t *s);
 
 /** @brief  Enable EDMP.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_enable(inv_imu_device_t *s);
+int icm566xx_edmp_enable(inv_imu_device_t *s);
 
 /** @brief  Disable EDMP.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_disable(inv_imu_device_t *s);
+int icm566xx_edmp_disable(inv_imu_device_t *s);
 
 /** @brief  Mask requested interrupt sources for edmp interrupt line passed in parameter.
  *  @param[in] s            Pointer to device.
@@ -136,8 +128,8 @@ int inv_imu_edmp_disable(inv_imu_device_t *s);
  *  @param[in] int_mask     Interrupt sources to mask.
  *  @return                 0 on success, negative value on error.
  */
-int inv_imu_edmp_mask_int_src(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_nb,
-			      uint8_t int_mask);
+int icm566xx_edmp_mask_int_src(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_nb,
+			       uint8_t int_mask);
 
 /** @brief  Unmask requested interrupt sources for edmp interrupt line passed in parameter.
  *  @param[in] s            Pointer to device.
@@ -145,27 +137,27 @@ int inv_imu_edmp_mask_int_src(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_n
  *  @param[in] int_mask     Interrupt sources to unmask. *  @return                 0 on success,
  * negative value on error.
  */
-int inv_imu_edmp_unmask_int_src(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_nb,
-				uint8_t int_mask);
+int icm566xx_edmp_unmask_int_src(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_nb,
+				 uint8_t int_mask);
 
 /** @brief  Setup EDMP to execute code in ROM.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_configure(inv_imu_device_t *s);
+int icm566xx_edmp_configure(inv_imu_device_t *s);
 
 /** @brief Run EDMP using the on-demand mechanism.
  *  @param[in] s            Pointer to device.
  *  @param[in] edmp_int_nb  EDMP input interrupt line.
  *  @return                 0 on success, negative value on error.
  */
-int inv_imu_edmp_run_ondemand(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_nb);
+int icm566xx_edmp_run_ondemand(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_nb);
 
 /** @brief Wait until EDMP idle bit is set (means EDMP execution is completed).
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int inv_imu_edmp_wait_for_idle(inv_imu_device_t *s);
+int icm566xx_edmp_wait_for_idle(inv_imu_device_t *s);
 
 #ifdef __cplusplus
 }

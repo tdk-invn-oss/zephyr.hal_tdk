@@ -1,16 +1,7 @@
 /*
+ * Copyright (c) 2015 TDK Invensense
  *
- * Copyright (c) [2015] by InvenSense, Inc.
- * * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 /** @defgroup auth Secure Authentication
@@ -48,7 +39,7 @@ typedef struct {
  *  @param[in] s  Serial interface structure required for authentication routine.
  *  @return       0 on success, negative value on error.
  */
-STATIC_INLINE int inv_imu_authenticate_device(inv_serif_auth_t *s);
+STATIC_INLINE int icm566xx_authenticate_device(inv_serif_auth_t *s);
 
 /*
  * PRIVATE CODE
@@ -143,7 +134,7 @@ STATIC_INLINE int recover_settings(inv_serif_auth_t *s, device_settings_t *setti
 /*
  * Runs secure authentication procedure
  */
-STATIC_INLINE int inv_imu_authenticate_device(inv_serif_auth_t *s)
+STATIC_INLINE int icm566xx_authenticate_device(inv_serif_auth_t *s)
 {
 	int status = 0;
 	device_settings_t settings;

@@ -1,16 +1,7 @@
 /*
+ * Copyright (c) 2016 TDK Invensense
  *
- * Copyright (c) [2016] by InvenSense, Inc.
- * * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 #ifndef _INV_IMU_DATA_INJ_H_
@@ -238,11 +229,11 @@ typedef struct {
 /** @brief Max number of samples required for self-test data injection */
 #define DATA_INJ_SELF_TEST_MAX_SAMPLE_COUNT          (DATA_INJ_SELF_TEST_AG_200_TOTAL_SAMPLE_COUNT)
 
-uint32_t inv_imu_data_inj_inject(inv_imu_device_t *self, inv_imu_data_inj_feature_t feature,
-				 int32_t sensor_cli_test_data[6], uint16_t param, uint32_t idx,
-				 inv_imu_data_inj_output *out);
-void inv_imu_data_inj_reset(inv_imu_device_t *self);
-void inv_imu_data_inj_get_stats(inv_imu_data_inj_stats *stats);
+uint32_t icm566xx_data_inj_inject(inv_imu_device_t *self, inv_imu_data_inj_feature_t feature,
+				  int32_t sensor_cli_test_data[6], uint16_t param, uint32_t idx,
+				  inv_imu_data_inj_output *out);
+void icm566xx_data_inj_reset(inv_imu_device_t *self);
+void icm566xx_data_inj_get_stats(inv_imu_data_inj_stats *stats);
 
 /** @brief Set accel scaling factor so that data are injected in format expected by edmp which
  * differs from IV data format. Indeed, IV accel data are +/- FSRgee on 16bits but edmp expects only
@@ -262,7 +253,7 @@ void inv_imu_data_inj_get_stats(inv_imu_data_inj_stats *stats);
  *   6 - ACCEL_CONFIG0_SREG_UI_ACCEL_FS_SEL
  * * @return scale factor on success, negative value on error
  */
-void inv_imu_data_inj_set_accel_scale_factor(inv_imu_device_t *self);
+void icm566xx_data_inj_set_accel_scale_factor(inv_imu_device_t *self);
 
 /** @brief Returns scale factor to be applied on IV accel data to feed edmp with expected data
  * format. Scale factor is returned as an arithmetic shift to be applied on each of the 3 accel
@@ -272,9 +263,9 @@ void inv_imu_data_inj_set_accel_scale_factor(inv_imu_device_t *self);
  *
  * @return scale factor on success, negative value on error
  */
-int inv_imu_data_inj_get_accel_scale_factor(void);
+int icm566xx_data_inj_get_accel_scale_factor(void);
 
-int inv_imu_data_inj_force_ped_odr_25Hz(inv_imu_device_t *self);
+int icm566xx_data_inj_force_ped_odr_25Hz(inv_imu_device_t *self);
 
 /** @brief Get current time.
  *  @param[in] self  Pointer to device.

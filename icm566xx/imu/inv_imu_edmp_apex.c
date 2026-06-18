@@ -1,22 +1,13 @@
 /*
+ * Copyright (c) 2017 TDK Invensense
  *
- * Copyright (c) [2017] by InvenSense, Inc.
- * * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 #include "imu/inv_imu_edmp.h"
 #include "imu/inv_imu_edmp_apex.h"
 
-int inv_imu_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_t *p)
+int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_t *p)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_en1_t edmp_apex_en1;
@@ -177,20 +168,20 @@ int inv_imu_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_para
 
 	/* Power save */
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_POWER_SAVE_TIME, (uint8_t *)&p->power_save_time);
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
 	p->power_save_en = edmp_apex_en1.power_save_en ? INV_IMU_ENABLE : INV_IMU_DISABLE;
 
 	return status;
 }
 
-int inv_imu_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_t *p)
+int icm566xx_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_t *p)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_enx_t cfg;
 
 #if 0
 	/* DMP cannot be configured if it is running, hence make sure all APEX algorithms are off */
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 2, (uint8_t *)&cfg);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 2, (uint8_t *)&cfg);
 	if (cfg.edmp_apex_en0.pedo_en || cfg.edmp_apex_en0.tilt_en || cfg.edmp_apex_en0.ff_en ||
 	    cfg.edmp_apex_en0.smd_en || cfg.edmp_apex_en0.tap_en || cfg.edmp_apex_en0.r2w_en || cfg.edmp_apex_en0.shake_en || cfg.edmp_apex_en0.nomotion_en ||
 		cfg.edmp_apex_en1.flat_en)
@@ -355,19 +346,19 @@ int inv_imu_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_ape
 
 	/* Power save */
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_POWER_SAVE_TIME, (uint8_t *)&p->power_save_time);
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&cfg.edmp_apex_en1);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&cfg.edmp_apex_en1);
 	cfg.edmp_apex_en1.power_save_en = p->power_save_en;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&cfg.edmp_apex_en1);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&cfg.edmp_apex_en1);
 
 	return status;
 }
 
-int inv_imu_edmp_get_config_int_apex(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it)
+int icm566xx_edmp_get_config_int_apex(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it)
 {
 	int status = INV_IMU_OK;
 	int_apex_configx_t cfg;
 
-	status |= inv_imu_read_reg(s, INT_APEX_CONFIG0, 3, (uint8_t *)&cfg);
+	status |= icm566xx_read_reg(s, INT_APEX_CONFIG0, 3, (uint8_t *)&cfg);
 	/* INT_APEX_CONFIG0 */
 	it->INV_TAP = !cfg.int_apex_config0.int_status_mask_pin_tap_detect;
 	it->INV_HIGHG = !cfg.int_apex_config0.int_status_mask_pin_high_g_det;
@@ -400,7 +391,7 @@ int inv_imu_edmp_get_config_int_apex(inv_imu_device_t *s, inv_imu_edmp_int_state
 	return status;
 }
 
-int inv_imu_edmp_set_config_int_apex(inv_imu_device_t *s, const inv_imu_edmp_int_state_t *it)
+int icm566xx_edmp_set_config_int_apex(inv_imu_device_t *s, const inv_imu_edmp_int_state_t *it)
 {
 	int status = INV_IMU_OK;
 	int_apex_configx_t cfg = {0};
@@ -432,49 +423,49 @@ int inv_imu_edmp_set_config_int_apex(inv_imu_device_t *s, const inv_imu_edmp_int
 	cfg.int_apex_config2.int_status_mask_pin_flat_det = !it->INV_FLAT;
 	cfg.int_apex_config2.int_status_mask_pin_noflat_det = !it->INV_NO_FLAT;
 
-	status |= inv_imu_write_reg(s, INT_APEX_CONFIG0, 3, (uint8_t *)&cfg);
+	status |= icm566xx_write_reg(s, INT_APEX_CONFIG0, 3, (uint8_t *)&cfg);
 
 	return status;
 }
 
-int inv_imu_edmp_enable_pedometer(inv_imu_device_t *s)
+int icm566xx_edmp_enable_pedometer(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_en0_t edmp_apex_en0;
 
 	/* Make sure pedometer is not already enabled to prevent messing up pointers */
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	if (edmp_apex_en0.pedo_en) {
 		return status;
 	}
 
 	apex_buffer_mgmt_t apex_buffer_mgmt;
 
-	status |= inv_imu_read_reg(s, APEX_BUFFER_MGMT, 1, (uint8_t *)&apex_buffer_mgmt);
+	status |= icm566xx_read_reg(s, APEX_BUFFER_MGMT, 1, (uint8_t *)&apex_buffer_mgmt);
 	apex_buffer_mgmt.step_count_host_rptr = 2;
 	apex_buffer_mgmt.step_count_edmp_wptr = 0;
-	status |= inv_imu_write_reg(s, APEX_BUFFER_MGMT, 1, (uint8_t *)&apex_buffer_mgmt);
+	status |= icm566xx_write_reg(s, APEX_BUFFER_MGMT, 1, (uint8_t *)&apex_buffer_mgmt);
 
 	/* Enable Pedometer */
 	edmp_apex_en0.pedo_en = INV_IMU_ENABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_disable_pedometer(inv_imu_device_t *s)
+int icm566xx_edmp_disable_pedometer(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_en0_t edmp_apex_en0;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	edmp_apex_en0.pedo_en = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_set_pedometer_odr(inv_imu_device_t *s, uint16_t ped_odr)
+int icm566xx_edmp_set_pedometer_odr(inv_imu_device_t *s, uint16_t ped_odr)
 {
 	int status = INV_IMU_OK;
 
@@ -483,31 +474,31 @@ int inv_imu_edmp_set_pedometer_odr(inv_imu_device_t *s, uint16_t ped_odr)
 	return status;
 }
 
-int inv_imu_edmp_enable_smd(inv_imu_device_t *s)
+int icm566xx_edmp_enable_smd(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_en0_t edmp_apex_en0;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	edmp_apex_en0.smd_en = INV_IMU_ENABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_disable_smd(inv_imu_device_t *s)
+int icm566xx_edmp_disable_smd(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_en0_t edmp_apex_en0;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	edmp_apex_en0.smd_en = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_set_smd_odr(inv_imu_device_t *s, uint16_t smd_odr)
+int icm566xx_edmp_set_smd_odr(inv_imu_device_t *s, uint16_t smd_odr)
 {
 	int status = INV_IMU_OK;
 
@@ -517,31 +508,31 @@ int inv_imu_edmp_set_smd_odr(inv_imu_device_t *s, uint16_t smd_odr)
 	return status;
 }
 
-int inv_imu_edmp_enable_tilt(inv_imu_device_t *s)
+int icm566xx_edmp_enable_tilt(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_en0_t edmp_apex_en0;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	edmp_apex_en0.tilt_en = INV_IMU_ENABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_disable_tilt(inv_imu_device_t *s)
+int icm566xx_edmp_disable_tilt(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_en0_t edmp_apex_en0;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	edmp_apex_en0.tilt_en = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_set_tilt_odr(inv_imu_device_t *s, uint16_t tilt_odr)
+int icm566xx_edmp_set_tilt_odr(inv_imu_device_t *s, uint16_t tilt_odr)
 {
 	int status = INV_IMU_OK;
 
@@ -550,31 +541,31 @@ int inv_imu_edmp_set_tilt_odr(inv_imu_device_t *s, uint16_t tilt_odr)
 	return status;
 }
 
-int inv_imu_edmp_enable_r2w(inv_imu_device_t *s)
+int icm566xx_edmp_enable_r2w(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_en0_t edmp_apex_en0;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	edmp_apex_en0.r2w_en = INV_IMU_ENABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_disable_r2w(inv_imu_device_t *s)
+int icm566xx_edmp_disable_r2w(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_en0_t edmp_apex_en0;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	edmp_apex_en0.r2w_en = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_set_r2w_odr(inv_imu_device_t *s, uint16_t r2w_odr)
+int icm566xx_edmp_set_r2w_odr(inv_imu_device_t *s, uint16_t r2w_odr)
 {
 	int status = INV_IMU_OK;
 
@@ -582,37 +573,37 @@ int inv_imu_edmp_set_r2w_odr(inv_imu_device_t *s, uint16_t r2w_odr)
 	return status;
 }
 
-int inv_imu_edmp_enable_b2s(inv_imu_device_t *s)
+int icm566xx_edmp_enable_b2s(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	fifo_config0_t fifo_config0;
 	edmp_apex_en1_t edmp_apex_en1;
 
-	status |= inv_imu_read_reg(s, FIFO_CONFIG0, 1, (uint8_t *)&fifo_config0);
+	status |= icm566xx_read_reg(s, FIFO_CONFIG0, 1, (uint8_t *)&fifo_config0);
 	if (fifo_config0.fifo_depth == FIFO_CONFIG0_FIFO_DEPTH_MAX) {
 		return INV_IMU_ERROR;
 	}
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
 	edmp_apex_en1.b2s_en = INV_IMU_ENABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
 
 	return status;
 }
 
-int inv_imu_edmp_disable_b2s(inv_imu_device_t *s)
+int icm566xx_edmp_disable_b2s(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_en1_t edmp_apex_en1;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
 	edmp_apex_en1.b2s_en = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
 
 	return status;
 }
 
-int inv_imu_edmp_set_b2s_odr(inv_imu_device_t *s, uint16_t b2s_odr)
+int icm566xx_edmp_set_b2s_odr(inv_imu_device_t *s, uint16_t b2s_odr)
 {
 	int status = INV_IMU_OK;
 
@@ -620,31 +611,31 @@ int inv_imu_edmp_set_b2s_odr(inv_imu_device_t *s, uint16_t b2s_odr)
 	return status;
 }
 
-int inv_imu_edmp_enable_tap(inv_imu_device_t *s)
+int icm566xx_edmp_enable_tap(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_en0_t edmp_apex_en0;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	edmp_apex_en0.tap_en = INV_IMU_ENABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_disable_tap(inv_imu_device_t *s)
+int icm566xx_edmp_disable_tap(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_en0_t edmp_apex_en0;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	edmp_apex_en0.tap_en = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_set_tap_odr(inv_imu_device_t *s, uint16_t smd_odr)
+int icm566xx_edmp_set_tap_odr(inv_imu_device_t *s, uint16_t smd_odr)
 {
 	int status = INV_IMU_OK;
 
@@ -653,44 +644,44 @@ int inv_imu_edmp_set_tap_odr(inv_imu_device_t *s, uint16_t smd_odr)
 	return status;
 }
 
-int inv_imu_edmp_enable_ff(inv_imu_device_t *s)
+int icm566xx_edmp_enable_ff(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_en0_t edmp_apex_en0;
 
 	/* Make sure freefall is not already enabled to prevent messing up pointers */
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	if (edmp_apex_en0.ff_en) {
 		return status;
 	}
 
 	apex_buffer_mgmt_t apex_buffer_mgmt;
 
-	status |= inv_imu_read_reg(s, APEX_BUFFER_MGMT, 1, (uint8_t *)&apex_buffer_mgmt);
+	status |= icm566xx_read_reg(s, APEX_BUFFER_MGMT, 1, (uint8_t *)&apex_buffer_mgmt);
 	apex_buffer_mgmt.ff_duration_host_rptr = 0;
 	apex_buffer_mgmt.ff_duration_edmp_wptr = 0;
-	status |= inv_imu_write_reg(s, APEX_BUFFER_MGMT, 1, (uint8_t *)&apex_buffer_mgmt);
+	status |= icm566xx_write_reg(s, APEX_BUFFER_MGMT, 1, (uint8_t *)&apex_buffer_mgmt);
 
 	/* Enable freefall */
 	edmp_apex_en0.ff_en = INV_IMU_ENABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_disable_ff(inv_imu_device_t *s)
+int icm566xx_edmp_disable_ff(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	edmp_apex_en0_t edmp_apex_en0;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	edmp_apex_en0.ff_en = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_set_ff_odr(inv_imu_device_t *s, uint16_t ff_odr)
+int icm566xx_edmp_set_ff_odr(inv_imu_device_t *s, uint16_t ff_odr)
 {
 	int status = INV_IMU_OK;
 
@@ -699,47 +690,47 @@ int inv_imu_edmp_set_ff_odr(inv_imu_device_t *s, uint16_t ff_odr)
 	return status;
 }
 
-int inv_imu_edmp_enable_soft_iron_cor(inv_imu_device_t *s)
+int icm566xx_edmp_enable_soft_iron_cor(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 
 	return status;
 }
 
-int inv_imu_edmp_disable_soft_iron_cor(inv_imu_device_t *s)
+int icm566xx_edmp_disable_soft_iron_cor(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 
 	return status;
 }
 
-int inv_imu_edmp_enable_shake(inv_imu_device_t *s)
+int icm566xx_edmp_enable_shake(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 
 	edmp_apex_en0_t edmp_apex_en0;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	edmp_apex_en0.shake_en = INV_IMU_ENABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_disable_shake(inv_imu_device_t *s)
+int icm566xx_edmp_disable_shake(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 
 	edmp_apex_en0_t edmp_apex_en0;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	edmp_apex_en0.shake_en = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_set_shake_odr(inv_imu_device_t *s, uint16_t shake_odr)
+int icm566xx_edmp_set_shake_odr(inv_imu_device_t *s, uint16_t shake_odr)
 {
 	int status = INV_IMU_OK;
 
@@ -747,33 +738,33 @@ int inv_imu_edmp_set_shake_odr(inv_imu_device_t *s, uint16_t shake_odr)
 	return status;
 }
 
-int inv_imu_edmp_enable_noMotion(inv_imu_device_t *s)
+int icm566xx_edmp_enable_noMotion(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 
 	edmp_apex_en0_t edmp_apex_en0;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	edmp_apex_en0.nomotion_en = INV_IMU_ENABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_disable_noMotion(inv_imu_device_t *s)
+int icm566xx_edmp_disable_noMotion(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 
 	edmp_apex_en0_t edmp_apex_en0;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 	edmp_apex_en0.nomotion_en = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
 
 	return status;
 }
 
-int inv_imu_edmp_set_noMotion_odr(inv_imu_device_t *s, uint16_t noMotion_odr)
+int icm566xx_edmp_set_noMotion_odr(inv_imu_device_t *s, uint16_t noMotion_odr)
 {
 	int status = INV_IMU_OK;
 
@@ -781,33 +772,33 @@ int inv_imu_edmp_set_noMotion_odr(inv_imu_device_t *s, uint16_t noMotion_odr)
 	return status;
 }
 
-int inv_imu_edmp_enable_flat(inv_imu_device_t *s)
+int icm566xx_edmp_enable_flat(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 
 	edmp_apex_en1_t edmp_apex_en1;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
 	edmp_apex_en1.flat_en = INV_IMU_ENABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
 
 	return status;
 }
 
-int inv_imu_edmp_disable_flat(inv_imu_device_t *s)
+int icm566xx_edmp_disable_flat(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 
 	edmp_apex_en1_t edmp_apex_en1;
 
-	status |= inv_imu_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
 	edmp_apex_en1.flat_en = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
 
 	return status;
 }
 
-int inv_imu_edmp_set_flat_odr(inv_imu_device_t *s, uint16_t flat_odr)
+int icm566xx_edmp_set_flat_odr(inv_imu_device_t *s, uint16_t flat_odr)
 {
 	int status = INV_IMU_OK;
 
@@ -815,35 +806,35 @@ int inv_imu_edmp_set_flat_odr(inv_imu_device_t *s, uint16_t flat_odr)
 	return status;
 }
 
-int inv_imu_edmp_set_compass_frequency(inv_imu_device_t *s,
-				       const dmp_ext_sen_odr_cfg_ext_odr_t frequency)
+int icm566xx_edmp_set_compass_frequency(inv_imu_device_t *s,
+					const dmp_ext_sen_odr_cfg_ext_odr_t frequency)
 {
 	int status = INV_IMU_OK;
 
 	return status;
 }
 
-int inv_imu_edmp_enable_compass_es(inv_imu_device_t *s)
+int icm566xx_edmp_enable_compass_es(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 
 	return status;
 }
 
-int inv_imu_edmp_disable_compass_es(inv_imu_device_t *s)
+int icm566xx_edmp_disable_compass_es(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 
 	return status;
 }
 
-int inv_imu_edmp_get_int_apex_status(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it)
+int icm566xx_edmp_get_int_apex_status(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it)
 {
 	int status = INV_IMU_OK;
 	int_apex_statusx_t st;
 
 	/* Read APEX interrupt status */
-	status |= inv_imu_read_reg(s, INT_APEX_STATUS0, 3, (uint8_t *)&st);
+	status |= icm566xx_read_reg(s, INT_APEX_STATUS0, 3, (uint8_t *)&st);
 
 	it->INV_TAP = st.int_apex_status0.int_status_tap_detect;
 	it->INV_HIGHG = st.int_apex_status0.int_status_high_g_det;
@@ -870,7 +861,7 @@ int inv_imu_edmp_get_int_apex_status(inv_imu_device_t *s, inv_imu_edmp_int_state
 	return status;
 }
 
-int inv_imu_edmp_get_pedometer_data(inv_imu_device_t *s, inv_imu_edmp_pedometer_data_t *ped_data)
+int icm566xx_edmp_get_pedometer_data(inv_imu_device_t *s, inv_imu_edmp_pedometer_data_t *ped_data)
 {
 	int status = INV_IMU_OK;
 	uint8_t data[2];
@@ -884,7 +875,7 @@ int inv_imu_edmp_get_pedometer_data(inv_imu_device_t *s, inv_imu_edmp_pedometer_
 
 	/*
 	 * Always read BUF2 as we forced a buffer full
-	 * configuration in `inv_imu_edmp_init_apex` function.
+	 * configuration in `icm566xx_edmp_init_apex` function.
 	 */
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_PED_STEP_CNT_BUF2, data);
 
@@ -914,14 +905,14 @@ int inv_imu_edmp_get_pedometer_data(inv_imu_device_t *s, inv_imu_edmp_pedometer_
 	return status;
 }
 
-int inv_imu_edmp_get_ff_data(inv_imu_device_t *s, uint16_t *freefall_duration)
+int icm566xx_edmp_get_ff_data(inv_imu_device_t *s, uint16_t *freefall_duration)
 {
 	int status = INV_IMU_OK;
 	uint8_t data[2];
 	apex_buffer_mgmt_t apex_buffer_mgmt;
 	uint8_t edmp_wptr, host_rptr;
 
-	status |= inv_imu_read_reg(s, APEX_BUFFER_MGMT, 1, (uint8_t *)&apex_buffer_mgmt);
+	status |= icm566xx_read_reg(s, APEX_BUFFER_MGMT, 1, (uint8_t *)&apex_buffer_mgmt);
 	host_rptr = apex_buffer_mgmt.ff_duration_host_rptr;
 	edmp_wptr = apex_buffer_mgmt.ff_duration_edmp_wptr;
 
@@ -938,14 +929,14 @@ int inv_imu_edmp_get_ff_data(inv_imu_device_t *s, uint16_t *freefall_duration)
 	host_rptr = (host_rptr + 1) & 0x03;
 
 	apex_buffer_mgmt.ff_duration_host_rptr = host_rptr;
-	status |= inv_imu_write_reg(s, APEX_BUFFER_MGMT, 1, (uint8_t *)&apex_buffer_mgmt);
+	status |= icm566xx_write_reg(s, APEX_BUFFER_MGMT, 1, (uint8_t *)&apex_buffer_mgmt);
 
 	*freefall_duration = (data[1] << 8) | data[0];
 
 	return status;
 }
 
-int inv_imu_edmp_get_tap_data(inv_imu_device_t *s, inv_imu_edmp_tap_data_t *data)
+int icm566xx_edmp_get_tap_data(inv_imu_device_t *s, inv_imu_edmp_tap_data_t *data)
 {
 	int status = INV_IMU_OK;
 
@@ -969,7 +960,7 @@ int inv_imu_edmp_get_tap_data(inv_imu_device_t *s, inv_imu_edmp_tap_data_t *data
 	return status;
 }
 
-int inv_imu_edmp_get_nomotion_data(inv_imu_device_t *s, inv_imu_edmp_nomtion_data_t *data)
+int icm566xx_edmp_get_nomotion_data(inv_imu_device_t *s, inv_imu_edmp_nomtion_data_t *data)
 {
 	int status = INV_IMU_OK;
 

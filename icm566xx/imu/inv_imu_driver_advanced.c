@@ -1,16 +1,7 @@
 /*
+ * Copyright (c) 2017 TDK Invensense
  *
- * Copyright (c) [2017] by InvenSense, Inc.
- * * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted.
- * * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
+ * SPDX-License-Identifier: BSD 3-Clause
  */
 
 #include "imu/inv_imu_driver_advanced.h"
@@ -25,7 +16,7 @@ static int init_fsync_tag(inv_imu_device_t *s);
 /* Fail build if `condition` is true */
 #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2 * !!(condition)]))
 
-int inv_imu_adv_init(inv_imu_device_t *s)
+int icm566xx_adv_init(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	uint8_t whoami;
@@ -40,7 +31,7 @@ int inv_imu_adv_init(inv_imu_device_t *s)
 	}
 
 	/* Wait 3 ms to ensure device is properly supplied  */
-	inv_imu_sleep_us(s, 3000);
+	icm566xx_sleep_us(s, 3000);
 
 	/* Configure IMU depending on the serial interface */
 	status |= configure_serial_interface(s);
@@ -49,26 +40,26 @@ int inv_imu_adv_init(inv_imu_device_t *s)
 	}
 
 	/* Read and check whoami */
-	status |= inv_imu_get_who_am_i(s, &whoami);
+	status |= icm566xx_get_who_am_i(s, &whoami);
 	if (whoami != INV_IMU_WHOAMI) {
 		return INV_IMU_ERROR;
 	}
 
 	/* Reset device */
-	status |= inv_imu_adv_device_reset(s);
+	status |= icm566xx_adv_device_reset(s);
 
 	return status;
 }
 
-int inv_imu_adv_device_reset(inv_imu_device_t *s)
+int icm566xx_adv_device_reset(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
 
-	status |= inv_imu_soft_reset(s);
+	status |= icm566xx_soft_reset(s);
 
 	/* Read endianness for further processing */
-	status |= inv_imu_get_endianness(s); /* Set `endianness_data` variable */
+	status |= icm566xx_get_endianness(s); /* Set `endianness_data` variable */
 
 	/* Set default FIFO configuration */
 	e->fifo_is_used = INV_IMU_DISABLE; /* FIFO disabled by default */
@@ -88,24 +79,24 @@ int inv_imu_adv_device_reset(inv_imu_device_t *s)
 	return status;
 }
 
-int inv_imu_adv_enable_accel_lp(inv_imu_device_t *s)
+int icm566xx_adv_enable_accel_lp(inv_imu_device_t *s)
 {
-	return inv_imu_set_accel_mode(s, PWR_MGMT0_ACCEL_MODE_LP);
+	return icm566xx_set_accel_mode(s, PWR_MGMT0_ACCEL_MODE_LP);
 }
 
-int inv_imu_adv_enable_accel_ln(inv_imu_device_t *s)
+int icm566xx_adv_enable_accel_ln(inv_imu_device_t *s)
 {
-	return inv_imu_set_accel_mode(s, PWR_MGMT0_ACCEL_MODE_LN);
+	return icm566xx_set_accel_mode(s, PWR_MGMT0_ACCEL_MODE_LN);
 }
 
-int inv_imu_adv_disable_accel(inv_imu_device_t *s)
+int icm566xx_adv_disable_accel(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
 	pwr_mgmt0_t pwr_mgmt0;
 	int clear_fifo = 0;
 
-	status |= inv_imu_read_reg(s, PWR_MGMT0, 1, (uint8_t *)&pwr_mgmt0);
+	status |= icm566xx_read_reg(s, PWR_MGMT0, 1, (uint8_t *)&pwr_mgmt0);
 
 	/*
 	 * Check if accel is the last one enabled.
@@ -116,34 +107,34 @@ int inv_imu_adv_disable_accel(inv_imu_device_t *s)
 	}
 
 	/* Turn off accel */
-	status |= inv_imu_set_accel_mode(s, PWR_MGMT0_ACCEL_MODE_OFF);
+	status |= icm566xx_set_accel_mode(s, PWR_MGMT0_ACCEL_MODE_OFF);
 
 	if (clear_fifo) {
 		/* Reset FIFO to guarrantee no data is left after turning off all sensors. */
-		status |= inv_imu_adv_reset_fifo(s);
+		status |= icm566xx_adv_reset_fifo(s);
 	}
 
 	return status;
 }
 
-int inv_imu_adv_enable_gyro_ln(inv_imu_device_t *s)
+int icm566xx_adv_enable_gyro_ln(inv_imu_device_t *s)
 {
-	return inv_imu_set_gyro_mode(s, PWR_MGMT0_GYRO_MODE_LN);
+	return icm566xx_set_gyro_mode(s, PWR_MGMT0_GYRO_MODE_LN);
 }
 
-int inv_imu_adv_enable_gyro_lp(inv_imu_device_t *s)
+int icm566xx_adv_enable_gyro_lp(inv_imu_device_t *s)
 {
-	return inv_imu_set_gyro_mode(s, PWR_MGMT0_GYRO_MODE_LP);
+	return icm566xx_set_gyro_mode(s, PWR_MGMT0_GYRO_MODE_LP);
 }
 
-int inv_imu_adv_disable_gyro(inv_imu_device_t *s)
+int icm566xx_adv_disable_gyro(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
 	pwr_mgmt0_t pwr_mgmt0;
 	int clear_fifo = 0;
 
-	status |= inv_imu_read_reg(s, PWR_MGMT0, 1, (uint8_t *)&pwr_mgmt0);
+	status |= icm566xx_read_reg(s, PWR_MGMT0, 1, (uint8_t *)&pwr_mgmt0);
 
 	/*
 	 * Check if gyro is the last one enabled.
@@ -154,34 +145,36 @@ int inv_imu_adv_disable_gyro(inv_imu_device_t *s)
 	}
 
 	/* Turn off gyro */
-	status |= inv_imu_set_gyro_mode(s, PWR_MGMT0_GYRO_MODE_OFF);
+	status |= icm566xx_set_gyro_mode(s, PWR_MGMT0_GYRO_MODE_OFF);
 
 	if (clear_fifo) {
 		/* Reset FIFO to guarrantee no data is left after turning off all sensors. */
-		status |= inv_imu_adv_reset_fifo(s);
+		status |= icm566xx_adv_reset_fifo(s);
 	}
 
 	return status;
 }
 
 #if INV_IMU_INT2_PIN_SUPPORTED
-int inv_imu_adv_set_int2_pin_usage(inv_imu_device_t *s,
-				   ioc_pad_scenario_ovrd_pads_int2_cfg_ovrd_val_t usage)
+int icm566xx_adv_set_int2_pin_usage(inv_imu_device_t *s,
+				    ioc_pad_scenario_ovrd_pads_int2_cfg_ovrd_val_t usage)
 {
 	int status = INV_IMU_OK;
 	ioc_pad_scenario_ovrd_t ioc_pad_scenario_ovrd;
 
-	status |= inv_imu_read_reg(s, IOC_PAD_SCENARIO_OVRD, 1, (uint8_t *)&ioc_pad_scenario_ovrd);
+	status |= icm566xx_read_reg(s, IOC_PAD_SCENARIO_OVRD, 1, (uint8_t *)&ioc_pad_scenario_ovrd);
 	ioc_pad_scenario_ovrd.pads_int2_cfg_ovrd = 1;
 	ioc_pad_scenario_ovrd.pads_int2_cfg_ovrd_val = usage;
-	status |= inv_imu_write_reg(s, IOC_PAD_SCENARIO_OVRD, 1, (uint8_t *)&ioc_pad_scenario_ovrd);
+	status |=
+		icm566xx_write_reg(s, IOC_PAD_SCENARIO_OVRD, 1, (uint8_t *)&ioc_pad_scenario_ovrd);
 
 	return status;
 }
 #endif /* INV_IMU_INT2_PIN_SUPPORTED */
 
 #if INV_IMU_FSYNC_SUPPORTED
-int inv_imu_adv_configure_fsync_ap_tag(inv_imu_device_t *s, fsync_config0_ap_fsync_sel_t sensor_tag)
+int icm566xx_adv_configure_fsync_ap_tag(inv_imu_device_t *s,
+					fsync_config0_ap_fsync_sel_t sensor_tag)
 {
 	int status = INV_IMU_OK;
 	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
@@ -189,53 +182,53 @@ int inv_imu_adv_configure_fsync_ap_tag(inv_imu_device_t *s, fsync_config0_ap_fsy
 
 	e->fsync_tag = sensor_tag;
 
-	status |= inv_imu_read_reg(s, FSYNC_CONFIG0, 1, (uint8_t *)&fsync_config0);
+	status |= icm566xx_read_reg(s, FSYNC_CONFIG0, 1, (uint8_t *)&fsync_config0);
 	fsync_config0.ap_fsync_sel = sensor_tag;
-	status |= inv_imu_write_reg(s, FSYNC_CONFIG0, 1, (uint8_t *)&fsync_config0);
+	status |= icm566xx_write_reg(s, FSYNC_CONFIG0, 1, (uint8_t *)&fsync_config0);
 
 	return status;
 }
 
-int inv_imu_adv_enable_fsync(inv_imu_device_t *s)
+int icm566xx_adv_enable_fsync(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	tmst_wom_config_t tmst_wom_config;
 	smc_control_0_t smc_control_0;
 
-	status |= inv_imu_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
+	status |= icm566xx_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 	tmst_wom_config.tmst_delta_en = INV_IMU_ENABLE;
-	status |= inv_imu_write_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
+	status |= icm566xx_write_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 
-	status |= inv_imu_read_reg(s, SMC_CONTROL_0, 1, (uint8_t *)&smc_control_0);
+	status |= icm566xx_read_reg(s, SMC_CONTROL_0, 1, (uint8_t *)&smc_control_0);
 	smc_control_0.tmst_fsync_en = INV_IMU_ENABLE;
 	smc_control_0.tmst_en = INV_IMU_ENABLE;
-	status |= inv_imu_write_reg(s, SMC_CONTROL_0, 1, (uint8_t *)&smc_control_0);
+	status |= icm566xx_write_reg(s, SMC_CONTROL_0, 1, (uint8_t *)&smc_control_0);
 
 	return status;
 }
 
-int inv_imu_adv_disable_fsync(inv_imu_device_t *s)
+int icm566xx_adv_disable_fsync(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	smc_control_0_t smc_control_0;
 	tmst_wom_config_t tmst_wom_config;
 
-	status |= inv_imu_read_reg(s, SMC_CONTROL_0, 1, (uint8_t *)&smc_control_0);
+	status |= icm566xx_read_reg(s, SMC_CONTROL_0, 1, (uint8_t *)&smc_control_0);
 	smc_control_0.tmst_fsync_en = INV_IMU_DISABLE;
 	smc_control_0.tmst_en = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, SMC_CONTROL_0, 1, (uint8_t *)&smc_control_0);
+	status |= icm566xx_write_reg(s, SMC_CONTROL_0, 1, (uint8_t *)&smc_control_0);
 
-	status |= inv_imu_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
+	status |= icm566xx_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 	tmst_wom_config.tmst_delta_en = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
+	status |= icm566xx_write_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 
 	return status;
 }
 #endif
 
-int inv_imu_adv_configure_wom(inv_imu_device_t *s, const uint8_t wom_x_th, const uint8_t wom_y_th,
-			      const uint8_t wom_z_th, tmst_wom_config_wom_int_mode_t wom_int,
-			      tmst_wom_config_wom_int_dur_t wom_dur)
+int icm566xx_adv_configure_wom(inv_imu_device_t *s, const uint8_t wom_x_th, const uint8_t wom_y_th,
+			       const uint8_t wom_z_th, tmst_wom_config_wom_int_mode_t wom_int,
+			       tmst_wom_config_wom_int_dur_t wom_dur)
 {
 	int status = INV_IMU_OK;
 	uint8_t data[3];
@@ -244,48 +237,48 @@ int inv_imu_adv_configure_wom(inv_imu_device_t *s, const uint8_t wom_x_th, const
 	data[0] = wom_x_th; /* Set X threshold */
 	data[1] = wom_y_th; /* Set Y threshold */
 	data[2] = wom_z_th; /* Set Z threshold */
-	status |= inv_imu_write_reg(s, ACCEL_WOM_X_THR, sizeof(data), &data[0]);
+	status |= icm566xx_write_reg(s, ACCEL_WOM_X_THR, sizeof(data), &data[0]);
 
 	/*
 	 * Compare current sample with the previous sample and WOM from the 3 axis
 	 * are ORed or ANDed to produce WOM signal.
 	 */
-	status |= inv_imu_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
+	status |= icm566xx_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 	tmst_wom_config.wom_mode = TMST_WOM_CONFIG_WOM_MODE_CMP_PREV;
 	tmst_wom_config.wom_int_mode = wom_int;
 	tmst_wom_config.wom_int_dur = wom_dur;
-	status |= inv_imu_write_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
+	status |= icm566xx_write_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 
 	return status;
 }
 
-int inv_imu_adv_enable_wom(inv_imu_device_t *s)
+int icm566xx_adv_enable_wom(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	tmst_wom_config_t tmst_wom_config;
 
 	/* Enable WOM */
-	status |= inv_imu_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
+	status |= icm566xx_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 	tmst_wom_config.wom_en = INV_IMU_ENABLE;
-	status |= inv_imu_write_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
+	status |= icm566xx_write_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 
 	return status;
 }
 
-int inv_imu_adv_disable_wom(inv_imu_device_t *s)
+int icm566xx_adv_disable_wom(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	tmst_wom_config_t tmst_wom_config;
 
 	/* Disable WOM */
-	status |= inv_imu_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
+	status |= icm566xx_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 	tmst_wom_config.wom_en = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
+	status |= icm566xx_write_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 
 	return status;
 }
 
-int inv_imu_adv_get_data_from_registers(inv_imu_device_t *s)
+int icm566xx_adv_get_data_from_registers(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
@@ -299,7 +292,7 @@ int inv_imu_adv_get_data_from_registers(inv_imu_device_t *s)
 #endif
 
 	/* Read sensor data from registers. */
-	status |= inv_imu_read_reg(s, ACCEL_DATA_X_0, sizeof(data), data);
+	status |= icm566xx_read_reg(s, ACCEL_DATA_X_0, sizeof(data), data);
 
 	/* Read accel data from sensor registers. */
 	FORMAT_16_BITS_DATA(s->endianness_data, &data[0], (uint16_t *)&event.accel[0]);
@@ -327,7 +320,7 @@ int inv_imu_adv_get_data_from_registers(inv_imu_device_t *s)
 	}
 
 #if defined(EXT_DATA_X)
-	status |= inv_imu_read_reg(s, EXT_DATA_X, sizeof(ext_data), ext_data);
+	status |= icm566xx_read_reg(s, EXT_DATA_X, sizeof(ext_data), ext_data);
 #endif
 	event.accel_high_res[0] = ext_data[0] & 0x0F;
 	event.accel_high_res[1] = ext_data[1] & 0x0F;
@@ -383,7 +376,7 @@ int inv_imu_adv_get_data_from_registers(inv_imu_device_t *s)
 		 * and last ODR event. Fsync delta time depends on data endianness as counter is
 		 * read over 2 registers and timestamp resolution.
 		 */
-		status |= inv_imu_read_reg(s, TMST_FSYNC_DATA_0, 2, fsync_count);
+		status |= icm566xx_read_reg(s, TMST_FSYNC_DATA_0, 2, fsync_count);
 		FORMAT_16_BITS_DATA(s->endianness_data, &fsync_count[0],
 				    (uint16_t *)&event.timestamp_fsync);
 
@@ -852,14 +845,14 @@ static int parse_uncompressed_fifo_frame(inv_imu_device_t *s, uint8_t *frame)
 	return status;
 }
 
-int inv_imu_adv_get_data_from_fifo(inv_imu_device_t *s, uint8_t *fifo_data, uint16_t fifo_data_size,
-				   uint16_t *fifo_count)
+int icm566xx_adv_get_data_from_fifo(inv_imu_device_t *s, uint8_t *fifo_data,
+				    uint16_t fifo_data_size, uint16_t *fifo_count)
 {
 	int status = INV_IMU_OK;
 	uint8_t fifo_count_reg[2];
 
 	/* Read FIFO count */
-	status |= inv_imu_read_reg(s, FIFO_COUNT_0, 2, &fifo_count_reg[0]);
+	status |= icm566xx_read_reg(s, FIFO_COUNT_0, 2, &fifo_count_reg[0]);
 	FORMAT_16_BITS_DATA(s->endianness_data, fifo_count_reg, fifo_count);
 
 	/* If not enough room in the buffer */
@@ -867,12 +860,12 @@ int inv_imu_adv_get_data_from_fifo(inv_imu_device_t *s, uint8_t *fifo_data, uint
 		*fifo_count = fifo_data_size / s->fifo_frame_size; /* Don't read all of the FIFO */
 	}
 
-	status |= inv_imu_read_reg(s, FIFO_DATA, *fifo_count * s->fifo_frame_size, fifo_data);
+	status |= icm566xx_read_reg(s, FIFO_DATA, *fifo_count * s->fifo_frame_size, fifo_data);
 	return status;
 }
 
-int inv_imu_adv_parse_fifo_data(inv_imu_device_t *s, const uint8_t *fifo_data,
-				const uint16_t fifo_count)
+int icm566xx_adv_parse_fifo_data(inv_imu_device_t *s, const uint8_t *fifo_data,
+				 const uint16_t fifo_count)
 {
 	int status = INV_IMU_OK;
 	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
@@ -904,7 +897,7 @@ int inv_imu_adv_parse_fifo_data(inv_imu_device_t *s, const uint8_t *fifo_data,
 	return status;
 }
 
-uint32_t inv_imu_adv_convert_odr_bitfield_to_us(uint32_t odr_bitfield)
+uint32_t icm566xx_adv_convert_odr_bitfield_to_us(uint32_t odr_bitfield)
 {
 	switch (odr_bitfield) {
 	case ACCEL_CONFIG0_ACCEL_ODR_6400_HZ:
@@ -937,13 +930,13 @@ uint32_t inv_imu_adv_convert_odr_bitfield_to_us(uint32_t odr_bitfield)
 	}
 }
 
-int inv_imu_adv_get_accel_fsr(inv_imu_device_t *s, accel_config0_ap_accel_fs_sel_t *accel_fsr)
+int icm566xx_adv_get_accel_fsr(inv_imu_device_t *s, accel_config0_ap_accel_fs_sel_t *accel_fsr)
 {
 	int status = INV_IMU_OK;
 	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
 	fifo_config3_t fifo_config3;
 
-	status |= inv_imu_read_reg(s, FIFO_CONFIG3, 1, (uint8_t *)&fifo_config3);
+	status |= icm566xx_read_reg(s, FIFO_CONFIG3, 1, (uint8_t *)&fifo_config3);
 
 	if (e->fifo_is_used == INV_IMU_ENABLE && (fifo_config3.fifo_hires_en == INV_IMU_ENABLE)) {
 		/* FIFO is used and High Resolution mode is enabled */
@@ -954,20 +947,20 @@ int inv_imu_adv_get_accel_fsr(inv_imu_device_t *s, accel_config0_ap_accel_fs_sel
 #endif
 	} else {
 		accel_config0_t accel_config0;
-		status |= inv_imu_read_reg(s, ACCEL_CONFIG0, 1, (uint8_t *)&accel_config0);
+		status |= icm566xx_read_reg(s, ACCEL_CONFIG0, 1, (uint8_t *)&accel_config0);
 		*accel_fsr = (accel_config0_ap_accel_fs_sel_t)accel_config0.ap_accel_fs_sel;
 	}
 
 	return status;
 }
 
-int inv_imu_adv_get_gyro_fsr(inv_imu_device_t *s, gyro_config0_ap_gyro_fs_sel_t *gyro_fsr)
+int icm566xx_adv_get_gyro_fsr(inv_imu_device_t *s, gyro_config0_ap_gyro_fs_sel_t *gyro_fsr)
 {
 	int status = INV_IMU_OK;
 	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
 	fifo_config3_t fifo_config3;
 
-	status |= inv_imu_read_reg(s, FIFO_CONFIG3, 1, (uint8_t *)&fifo_config3);
+	status |= icm566xx_read_reg(s, FIFO_CONFIG3, 1, (uint8_t *)&fifo_config3);
 
 	if (e->fifo_is_used == INV_IMU_ENABLE && (fifo_config3.fifo_hires_en == INV_IMU_ENABLE)) {
 		/* FIFO is used and High Resolution mode is enabled */
@@ -978,43 +971,43 @@ int inv_imu_adv_get_gyro_fsr(inv_imu_device_t *s, gyro_config0_ap_gyro_fs_sel_t 
 #endif
 	} else {
 		gyro_config0_t gyro_config0;
-		status |= inv_imu_read_reg(s, GYRO_CONFIG0, 1, (uint8_t *)&gyro_config0);
+		status |= icm566xx_read_reg(s, GYRO_CONFIG0, 1, (uint8_t *)&gyro_config0);
 		*gyro_fsr = (gyro_config0_ap_gyro_fs_sel_t)gyro_config0.ap_gyro_fs_sel;
 	}
 
 	return status;
 }
 
-int inv_imu_adv_set_timestamp_resolution(inv_imu_device_t *s,
-					 const tmst_wom_config_tmst_resol_t timestamp_resol)
+int icm566xx_adv_set_timestamp_resolution(inv_imu_device_t *s,
+					  const tmst_wom_config_tmst_resol_t timestamp_resol)
 {
 	int status = INV_IMU_OK;
 	tmst_wom_config_t tmst_wom_config;
 
-	status |= inv_imu_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
+	status |= icm566xx_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 	tmst_wom_config.tmst_resol = timestamp_resol;
-	status |= inv_imu_write_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
+	status |= icm566xx_write_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 
 	return status;
 }
 
-int inv_imu_adv_reset_fifo(inv_imu_device_t *s)
+int icm566xx_adv_reset_fifo(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 
-	status |= inv_imu_flush_fifo(s);
+	status |= icm566xx_flush_fifo(s);
 	status |= init_fifo_compression(s);
 
 	return status;
 }
 
-int inv_imu_adv_get_fifo_config(inv_imu_device_t *s, inv_imu_adv_fifo_config_t *conf)
+int icm566xx_adv_get_fifo_config(inv_imu_device_t *s, inv_imu_adv_fifo_config_t *conf)
 {
 	int status = INV_IMU_OK;
 	fifo_configx_t cfg;
 	odr_decimate_config_t odr_decimate_config;
 
-	status |= inv_imu_read_reg(s, FIFO_CONFIG0, 6, (uint8_t *)&cfg);
+	status |= icm566xx_read_reg(s, FIFO_CONFIG0, 6, (uint8_t *)&cfg);
 
 	/* FIFO_CONFIG0 */
 	conf->base_conf.fifo_mode = (fifo_config0_fifo_mode_t)cfg.fifo_config0.fifo_mode;
@@ -1025,7 +1018,7 @@ int inv_imu_adv_get_fifo_config(inv_imu_device_t *s, inv_imu_adv_fifo_config_t *
 	} else {
 		/*
 		 * `fifo_depth` is invalid so force it to FIFO_CONFIG0_FIFO_DEPTH_APEX.
-		 * It will eventually be applied when calling `inv_imu_set_fifo_config`.
+		 * It will eventually be applied when calling `icm566xx_set_fifo_config`.
 		 */
 		conf->base_conf.fifo_depth = FIFO_CONFIG0_FIFO_DEPTH_APEX;
 	}
@@ -1048,7 +1041,7 @@ int inv_imu_adv_get_fifo_config(inv_imu_device_t *s, inv_imu_adv_fifo_config_t *
 	conf->comp_en = cfg.fifo_config4.fifo_comp_en;
 	conf->tmst_fsync_en = cfg.fifo_config4.fifo_tmst_fsync_en;
 
-	status |= inv_imu_read_reg(s, ODR_DECIMATE_CONFIG, 1, (uint8_t *)&odr_decimate_config);
+	status |= icm566xx_read_reg(s, ODR_DECIMATE_CONFIG, 1, (uint8_t *)&odr_decimate_config);
 
 	/* ODR_DECIMATE_CONFIG */
 	conf->gyro_dec =
@@ -1059,7 +1052,7 @@ int inv_imu_adv_get_fifo_config(inv_imu_device_t *s, inv_imu_adv_fifo_config_t *
 	return status;
 }
 
-int inv_imu_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_config_t *conf)
+int icm566xx_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_config_t *conf)
 {
 	int status = INV_IMU_OK;
 	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
@@ -1081,8 +1074,8 @@ int inv_imu_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_conf
 		return INV_IMU_ERROR_BAD_ARG;
 	}
 
-	status |= inv_imu_read_reg(s, FIFO_CONFIG0, 6, (uint8_t *)&cfg);
-	status |= inv_imu_read_reg(s, ODR_DECIMATE_CONFIG, 1, (uint8_t *)&odr_decimate_config);
+	status |= icm566xx_read_reg(s, FIFO_CONFIG0, 6, (uint8_t *)&cfg);
+	status |= icm566xx_read_reg(s, ODR_DECIMATE_CONFIG, 1, (uint8_t *)&odr_decimate_config);
 
 	/* Disable fifo compression only if it was enabled */
 	if (cfg.fifo_config4.fifo_comp_en == INV_IMU_ENABLE) {
@@ -1091,34 +1084,35 @@ int inv_imu_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_conf
 		uint32_t gyro_odr = UINT32_MAX;
 
 		/* Retreive fatest ODR */
-		status |= inv_imu_read_reg(s, PWR_MGMT0, 1, (uint8_t *)&pwr_mgmt0);
+		status |= icm566xx_read_reg(s, PWR_MGMT0, 1, (uint8_t *)&pwr_mgmt0);
 
 		if (pwr_mgmt0.accel_mode != PWR_MGMT0_ACCEL_MODE_OFF) {
 			accel_config0_t accel_config0;
-			status |= inv_imu_read_reg(s, ACCEL_CONFIG0, 1, (uint8_t *)&accel_config0);
-			accel_odr = inv_imu_adv_convert_odr_bitfield_to_us(accel_config0.accel_odr);
+			status |= icm566xx_read_reg(s, ACCEL_CONFIG0, 1, (uint8_t *)&accel_config0);
+			accel_odr =
+				icm566xx_adv_convert_odr_bitfield_to_us(accel_config0.accel_odr);
 		}
 
 		if (pwr_mgmt0.gyro_mode != PWR_MGMT0_GYRO_MODE_OFF) {
 			gyro_config0_t gyro_config0;
-			status |= inv_imu_read_reg(s, GYRO_CONFIG0, 1, (uint8_t *)&gyro_config0);
-			gyro_odr = inv_imu_adv_convert_odr_bitfield_to_us(gyro_config0.gyro_odr);
+			status |= icm566xx_read_reg(s, GYRO_CONFIG0, 1, (uint8_t *)&gyro_config0);
+			gyro_odr = icm566xx_adv_convert_odr_bitfield_to_us(gyro_config0.gyro_odr);
 		}
 
 		cfg.fifo_config4.fifo_comp_en = INV_IMU_DISABLE;
-		status |= inv_imu_write_reg(s, FIFO_CONFIG4, 1, (uint8_t *)&cfg.fifo_config4);
+		status |= icm566xx_write_reg(s, FIFO_CONFIG4, 1, (uint8_t *)&cfg.fifo_config4);
 
 		/* Wait 2 ODR */
 		if (accel_odr != UINT32_MAX || gyro_odr != UINT32_MAX) {
-			inv_imu_sleep_us(s, 2 * (accel_odr < gyro_odr ? accel_odr : gyro_odr));
+			icm566xx_sleep_us(s, 2 * (accel_odr < gyro_odr ? accel_odr : gyro_odr));
 		}
 	}
 
 	/* Disable FIFO to safely apply configuration */
 	cfg.fifo_config3.fifo_if_en = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, FIFO_CONFIG3, 1, (uint8_t *)&cfg.fifo_config3);
+	status |= icm566xx_write_reg(s, FIFO_CONFIG3, 1, (uint8_t *)&cfg.fifo_config3);
 	cfg.fifo_config0.fifo_mode = (uint8_t)FIFO_CONFIG0_FIFO_MODE_BYPASS;
-	status |= inv_imu_write_reg(s, FIFO_CONFIG0, 1, (uint8_t *)&cfg.fifo_config0);
+	status |= icm566xx_write_reg(s, FIFO_CONFIG0, 1, (uint8_t *)&cfg.fifo_config0);
 
 	/* Set FIFO depth */
 	cfg.fifo_config0.fifo_depth = conf->base_conf.fifo_depth;
@@ -1144,11 +1138,11 @@ int inv_imu_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_conf
 	odr_decimate_config.gyro_fifo_odr_dec = (uint8_t)conf->gyro_dec;
 
 	/* Apply configuration */
-	status |= inv_imu_write_reg(s, FIFO_CONFIG0, 6, (uint8_t *)&cfg);
-	status |= inv_imu_write_reg(s, ODR_DECIMATE_CONFIG, 1, (uint8_t *)&odr_decimate_config);
+	status |= icm566xx_write_reg(s, FIFO_CONFIG0, 6, (uint8_t *)&cfg);
+	status |= icm566xx_write_reg(s, ODR_DECIMATE_CONFIG, 1, (uint8_t *)&odr_decimate_config);
 
 	/* Turn on Timestamp if needed */
-	status |= inv_imu_read_reg(s, SMC_CONTROL_0, 1, (uint8_t *)&smc_control_0);
+	status |= icm566xx_read_reg(s, SMC_CONTROL_0, 1, (uint8_t *)&smc_control_0);
 	if (conf->tmst_fsync_en) {
 		smc_control_0.tmst_en = INV_IMU_ENABLE;
 		smc_control_0.tmst_fsync_en = INV_IMU_ENABLE;
@@ -1156,7 +1150,7 @@ int inv_imu_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_conf
 		smc_control_0.tmst_en = INV_IMU_DISABLE;
 		smc_control_0.tmst_fsync_en = INV_IMU_DISABLE;
 	}
-	status |= inv_imu_write_reg(s, SMC_CONTROL_0, 1, (uint8_t *)&smc_control_0);
+	status |= icm566xx_write_reg(s, SMC_CONTROL_0, 1, (uint8_t *)&smc_control_0);
 
 	/* Set expected fifo_mode */
 	cfg.fifo_config0.fifo_mode = (uint8_t)conf->base_conf.fifo_mode;
@@ -1169,9 +1163,9 @@ int inv_imu_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_conf
 		 */
 		/* `fifo_if_en` */
 		cfg.fifo_config3.fifo_if_en = INV_IMU_DISABLE;
-		status |= inv_imu_write_reg(s, FIFO_CONFIG3, 1, (uint8_t *)&cfg.fifo_config3);
+		status |= icm566xx_write_reg(s, FIFO_CONFIG3, 1, (uint8_t *)&cfg.fifo_config3);
 		/* `fifo_mode` */
-		status |= inv_imu_write_reg(s, FIFO_CONFIG0, 1, (uint8_t *)&cfg.fifo_config0);
+		status |= icm566xx_write_reg(s, FIFO_CONFIG0, 1, (uint8_t *)&cfg.fifo_config0);
 
 		e->fifo_comp_en = INV_IMU_DISABLE;
 		e->fifo_is_used = INV_IMU_DISABLE;
@@ -1183,13 +1177,13 @@ int inv_imu_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_conf
 		 *  - Set `fifo_comp_en` (only applied if fifo_mode != BYPASS)
 		 */
 		/* `fifo_mode` */
-		status |= inv_imu_write_reg(s, FIFO_CONFIG0, 1, (uint8_t *)&cfg.fifo_config0);
+		status |= icm566xx_write_reg(s, FIFO_CONFIG0, 1, (uint8_t *)&cfg.fifo_config0);
 		/* `fifo_if_en` */
 		cfg.fifo_config3.fifo_if_en = INV_IMU_ENABLE;
-		status |= inv_imu_write_reg(s, FIFO_CONFIG3, 1, (uint8_t *)&cfg.fifo_config3);
+		status |= icm566xx_write_reg(s, FIFO_CONFIG3, 1, (uint8_t *)&cfg.fifo_config3);
 		/* `fifo_comp_en` */
 		cfg.fifo_config4.fifo_comp_en = conf->comp_en;
-		status |= inv_imu_write_reg(s, FIFO_CONFIG4, 1, (uint8_t *)&cfg.fifo_config4);
+		status |= icm566xx_write_reg(s, FIFO_CONFIG4, 1, (uint8_t *)&cfg.fifo_config4);
 
 		e->fifo_comp_en = conf->comp_en;
 		e->fifo_is_used = INV_IMU_ENABLE;
@@ -1214,12 +1208,12 @@ int inv_imu_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_conf
 	return status;
 }
 
-uint32_t inv_imu_adv_get_timestamp_resolution_us(inv_imu_device_t *s)
+uint32_t icm566xx_adv_get_timestamp_resolution_us(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	tmst_wom_config_t tmst_wom_config;
 
-	status |= inv_imu_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
+	status |= icm566xx_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 
 	if (status != INV_IMU_OK) {
 		return 0;
@@ -1235,7 +1229,7 @@ uint32_t inv_imu_adv_get_timestamp_resolution_us(inv_imu_device_t *s)
 	return 0;
 }
 
-int inv_imu_adv_enable_clkin_rtc(inv_imu_device_t *s)
+int icm566xx_adv_enable_clkin_rtc(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	otp_heater_rtc_config_t otp_heater_rtc_config;
@@ -1246,65 +1240,67 @@ int inv_imu_adv_enable_clkin_rtc(inv_imu_device_t *s)
 	 * ACCEL_SRC_CTRL[1:0] and GYRO_SRC_CTRL[1:0]
 	 * must be set to 2'b10 (SRC and prefilter on)
 	 */
-	status |= inv_imu_read_reg(s, IPREG_SYS2_REG_109, 1, (uint8_t *)&ipreg_sys2_reg_109);
+	status |= icm566xx_read_reg(s, IPREG_SYS2_REG_109, 1, (uint8_t *)&ipreg_sys2_reg_109);
 	ipreg_sys2_reg_109.accel_src_ctrl = IPREG_SYS2_REG_109_ACCEL_SRC_CTRL_SRC_ON_PREFILTER_ON;
-	status |= inv_imu_write_reg(s, IPREG_SYS2_REG_109, 1, (uint8_t *)&ipreg_sys2_reg_109);
+	status |= icm566xx_write_reg(s, IPREG_SYS2_REG_109, 1, (uint8_t *)&ipreg_sys2_reg_109);
 
-	status |= inv_imu_read_reg(s, IPREG_SYS1_REG_154, 1, (uint8_t *)&ipreg_sys1_reg_154);
+	status |= icm566xx_read_reg(s, IPREG_SYS1_REG_154, 1, (uint8_t *)&ipreg_sys1_reg_154);
 	ipreg_sys1_reg_154.gyro_src_ctrl = IPREG_SYS1_REG_154_GYRO_SRC_CTRL_SRC_ON_PREFILTER_ON;
-	status |= inv_imu_write_reg(s, IPREG_SYS1_REG_154, 1, (uint8_t *)&ipreg_sys1_reg_154);
+	status |= icm566xx_write_reg(s, IPREG_SYS1_REG_154, 1, (uint8_t *)&ipreg_sys1_reg_154);
 
-	status |= inv_imu_read_reg(s, OTP_HEATER_RTC_CONFIG, 1, (uint8_t *)&otp_heater_rtc_config);
+	status |= icm566xx_read_reg(s, OTP_HEATER_RTC_CONFIG, 1, (uint8_t *)&otp_heater_rtc_config);
 	otp_heater_rtc_config.rtc_mode = INV_IMU_ENABLE;
-	status |= inv_imu_write_reg(s, OTP_HEATER_RTC_CONFIG, 1, (uint8_t *)&otp_heater_rtc_config);
+	status |=
+		icm566xx_write_reg(s, OTP_HEATER_RTC_CONFIG, 1, (uint8_t *)&otp_heater_rtc_config);
 
 	return status;
 }
 
-int inv_imu_adv_disable_clkin_rtc(inv_imu_device_t *s)
+int icm566xx_adv_disable_clkin_rtc(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	otp_heater_rtc_config_t otp_heater_rtc_config;
 
-	status |= inv_imu_read_reg(s, OTP_HEATER_RTC_CONFIG, 1, (uint8_t *)&otp_heater_rtc_config);
+	status |= icm566xx_read_reg(s, OTP_HEATER_RTC_CONFIG, 1, (uint8_t *)&otp_heater_rtc_config);
 	otp_heater_rtc_config.rtc_mode = INV_IMU_DISABLE;
-	status |= inv_imu_write_reg(s, OTP_HEATER_RTC_CONFIG, 1, (uint8_t *)&otp_heater_rtc_config);
+	status |=
+		icm566xx_write_reg(s, OTP_HEATER_RTC_CONFIG, 1, (uint8_t *)&otp_heater_rtc_config);
 
 	return status;
 }
 
-int inv_imu_adv_power_up_sram(inv_imu_device_t *s)
+int icm566xx_adv_power_up_sram(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	fifo_sram_sleep_t fifo_sram_sleep;
 
-	status |= inv_imu_read_reg(s, FIFO_SRAM_SLEEP, 1, (uint8_t *)&fifo_sram_sleep);
+	status |= icm566xx_read_reg(s, FIFO_SRAM_SLEEP, 1, (uint8_t *)&fifo_sram_sleep);
 	fifo_sram_sleep.fifo_gsleep_shared_sram = 1;
-	status |= inv_imu_write_reg(s, FIFO_SRAM_SLEEP, 1, (uint8_t *)&fifo_sram_sleep);
+	status |= icm566xx_write_reg(s, FIFO_SRAM_SLEEP, 1, (uint8_t *)&fifo_sram_sleep);
 
 	return status;
 }
 
-int inv_imu_adv_power_down_sram(inv_imu_device_t *s)
+int icm566xx_adv_power_down_sram(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	fifo_sram_sleep_t fifo_sram_sleep;
 
-	status |= inv_imu_read_reg(s, FIFO_SRAM_SLEEP, 1, (uint8_t *)&fifo_sram_sleep);
+	status |= icm566xx_read_reg(s, FIFO_SRAM_SLEEP, 1, (uint8_t *)&fifo_sram_sleep);
 	fifo_sram_sleep.fifo_gsleep_shared_sram = 0;
-	status |= inv_imu_write_reg(s, FIFO_SRAM_SLEEP, 1, (uint8_t *)&fifo_sram_sleep);
+	status |= icm566xx_write_reg(s, FIFO_SRAM_SLEEP, 1, (uint8_t *)&fifo_sram_sleep);
 
 	return status;
 }
 
-int inv_imu_adv_set_endianness(inv_imu_device_t *s, sreg_ctrl_sreg_data_endian_sel_t endianness)
+int icm566xx_adv_set_endianness(inv_imu_device_t *s, sreg_ctrl_sreg_data_endian_sel_t endianness)
 {
 	int status = INV_IMU_OK;
 	sreg_ctrl_t sreg_ctrl;
 
-	status |= inv_imu_read_reg(s, SREG_CTRL, 1, (uint8_t *)&sreg_ctrl);
+	status |= icm566xx_read_reg(s, SREG_CTRL, 1, (uint8_t *)&sreg_ctrl);
 	sreg_ctrl.sreg_data_endian_sel = (uint8_t)endianness;
-	status |= inv_imu_write_reg(s, SREG_CTRL, 1, (uint8_t *)&sreg_ctrl);
+	status |= icm566xx_write_reg(s, SREG_CTRL, 1, (uint8_t *)&sreg_ctrl);
 
 	if (!status) {
 		s->endianness_data = (uint8_t)endianness;
@@ -1330,7 +1326,8 @@ static int configure_serial_interface(inv_imu_device_t *s)
 		intf_config1_ovrd.ap_spi_34_mode_ovrd = INV_IMU_ENABLE;
 		intf_config1_ovrd.ap_spi_34_mode_ovrd_val =
 			INTF_CONFIG1_OVRD_AP_SPI_34_MODE_OVRD_VAL_4_WIRE;
-		status |= inv_imu_write_reg(s, INTF_CONFIG1_OVRD, 1, (uint8_t *)&intf_config1_ovrd);
+		status |=
+			icm566xx_write_reg(s, INTF_CONFIG1_OVRD, 1, (uint8_t *)&intf_config1_ovrd);
 		break;
 
 	case UI_SPI3:
@@ -1338,7 +1335,8 @@ static int configure_serial_interface(inv_imu_device_t *s)
 		intf_config1_ovrd.ap_spi_34_mode_ovrd = INV_IMU_ENABLE;
 		intf_config1_ovrd.ap_spi_34_mode_ovrd_val =
 			INTF_CONFIG1_OVRD_AP_SPI_34_MODE_OVRD_VAL_3_WIRE;
-		status |= inv_imu_write_reg(s, INTF_CONFIG1_OVRD, 1, (uint8_t *)&intf_config1_ovrd);
+		status |=
+			icm566xx_write_reg(s, INTF_CONFIG1_OVRD, 1, (uint8_t *)&intf_config1_ovrd);
 		break;
 
 	default:
@@ -1372,7 +1370,7 @@ static int init_fsync_tag(inv_imu_device_t *s)
 	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
 	fsync_config0_t fsync_config0;
 
-	status |= inv_imu_read_reg(s, FSYNC_CONFIG0, 1, (uint8_t *)&fsync_config0);
+	status |= icm566xx_read_reg(s, FSYNC_CONFIG0, 1, (uint8_t *)&fsync_config0);
 	e->fsync_tag = (fsync_config0_ap_fsync_sel_t)fsync_config0.ap_fsync_sel;
 
 	return status;
