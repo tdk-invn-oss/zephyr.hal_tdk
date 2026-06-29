@@ -21,10 +21,10 @@
 extern "C" {
 #endif
 
-#include "imu/inv_imu_driver_advanced.h"
-#include "imu/inv_imu_edmp.h"
+#include "icm566xx/imu/inv_imu_driver_advanced.h"
+#include "icm566xx/imu/inv_imu_edmp.h"
 
-#include "imu/inv_imu_defs_internal.h"
+#include "icm566xx/imu/inv_imu_defs_internal.h"
 
 #include <stdint.h>
 #include <string.h>

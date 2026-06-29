@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD 3-Clause
  */
 
-#include "imu/inv_imu_edmp.h"
+#include "icm566xx/imu/inv_imu_edmp.h"
 
 int icm566xx_edmp_clear_apex_sram(inv_imu_device_t *s)
 {

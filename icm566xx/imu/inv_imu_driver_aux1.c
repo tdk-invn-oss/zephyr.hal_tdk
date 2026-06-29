@@ -3,8 +3,8 @@
  *
  * SPDX-License-Identifier: BSD 3-Clause
  */
-#include "imu/inv_imu_driver.h"
-#include "imu/inv_imu_driver_aux1.h"
+#include "icm566xx/imu/inv_imu_driver.h"
+#include "icm566xx/imu/inv_imu_driver_aux1.h"
 
 #define AUX_ENDIANNESS SREG_CTRL_SREG_DATA_BIG_ENDIAN
 

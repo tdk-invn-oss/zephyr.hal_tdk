@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD 3-Clause
  */
 
-#include "imu/inv_imu_transport.h"
-#include "imu/inv_imu_defs.h"
+#include "icm566xx/imu/inv_imu_transport.h"
+#include "icm566xx/imu/inv_imu_defs.h"
 
 /* Static function definition */
 

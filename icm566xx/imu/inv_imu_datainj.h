@@ -7,7 +7,7 @@
 #ifndef _INV_IMU_DATA_INJ_H_
 #define _INV_IMU_DATA_INJ_H_
 
-#include "imu/inv_imu_driver_advanced.h"
+#include "icm566xx/imu/inv_imu_driver_advanced.h"
 
 typedef enum {
 	/* APEX features */

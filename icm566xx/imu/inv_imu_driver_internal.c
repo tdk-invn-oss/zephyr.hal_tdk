@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD 3-Clause
  */
 
-#include "imu/inv_imu_driver_internal.h"
-#include "imu/inv_imu_edmp_memmap_internal.h"
+#include "icm566xx/imu/inv_imu_driver_internal.h"
+#include "icm566xx/imu/inv_imu_edmp_memmap_internal.h"
 
 int icm566xx_read_chip_config(inv_imu_device_t *s, inv_imu_chip_config_t *cfg)
 {
@@ -121,7 +121,7 @@ int icm566xx_check_eDMP_image(void *s)
 
 	int rc = 0;
 	static uint8_t ref[] = {
-#include "imu/edmp_prgm_rom.h"
+#include "icm566xx/imu/edmp_prgm_rom.h"
 	};
 	fpga_ctrl_t fpga_ctrl;
 

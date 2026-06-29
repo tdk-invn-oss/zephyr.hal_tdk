@@ -17,11 +17,11 @@ extern "C" {
 
 #include <stdint.h>
 
-#include "imu/inv_imu_defs.h"
+#include "icm566xx/imu/inv_imu_defs.h"
 
 /* Include regmap internal (le = little endian, be = big endian) */
-#include "imu/inv_imu_regmap_internal_le.h"
-/* #include "imu/inv_imu_regmap_internal_be.h" */
+#include "icm566xx/imu/inv_imu_regmap_internal_le.h"
+/* #include "icm566xx/imu/inv_imu_regmap_internal_be.h" */
 
 /* Manufacturing info */
 #define OTP_MANUFACT_INFO_ADDR 0xAAF3

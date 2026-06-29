@@ -36,11 +36,11 @@ extern "C" {
 #if (INV_IMU_WHOAMI == 0xD3) &&                                                                    \
 	defined(CUSTOMER_EXAMPLE) /* Only use these for the 56622 example apps */
 /* Include regmap (le = little endian, be = big endian) */
-#include "imu/inv_imu_regmap_56622_le.h"
-/* #include "imu/inv_imu_regmap_56622_be.h" */
+#include "icm566xx/imu/inv_imu_regmap_56622_le.h"
+/* #include "icm566xx/imu/inv_imu_regmap_56622_be.h" */
 #else
-#include "imu/inv_imu_regmap_le.h"
-/* #include "imu/inv_imu_regmap_be.h" */
+#include "icm566xx/imu/inv_imu_regmap_le.h"
+/* #include "icm566xx/imu/inv_imu_regmap_be.h" */
 #endif
 
 /* Error/Success codes */

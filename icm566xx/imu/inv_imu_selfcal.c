@@ -5,7 +5,7 @@
  */
 
 #include "imu/icm566xx_selfcal.h"
-#include "imu/inv_imu_edmp.h"
+#include "icm566xx/imu/inv_imu_edmp.h"
 
 /* Gyro Self-Cal calculation Method */
 /* The methods chosen has exhibited the best result for a given axis */

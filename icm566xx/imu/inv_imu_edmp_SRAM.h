@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-#include "imu/inv_imu_driver.h"
+#include "icm566xx/imu/inv_imu_driver.h"
 
 /* Bump specific memory map */
 #define EDMP_RAM_PRGM_BASE 0x5AC

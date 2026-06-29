@@ -3,9 +3,9 @@
  *
  * SPDX-License-Identifier: BSD 3-Clause
  */
-#include "imu/inv_imu_edmp.h"
-#include "imu/inv_imu_edmp_SRAM.h"
-#include "imu/inv_imu_edmp_defs.h"
+#include "icm566xx/imu/inv_imu_edmp.h"
+#include "icm566xx/imu/inv_imu_edmp_SRAM.h"
+#include "icm566xx/imu/inv_imu_edmp_defs.h"
 
 static int dmp_getDecimationRate(inv_imu_device_t *s, uint16_t featureOdr, int8_t *decimationRate)
 {

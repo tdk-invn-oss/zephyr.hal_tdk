@@ -9,12 +9,12 @@
 #include "Invn/EmbUtils/Message.h"
 #include "Invn/EmbUtils/ErrorHelper.h"
 #include "inv_imu_datainj.h"
-#include "imu/inv_imu_driver_internal.h"
-#include "imu/inv_imu_edmp.h"
-#include "imu/inv_imu_edmp_apex.h"
-#include "imu/inv_imu_edmp_SRAM.h"
-#include "imu/inv_imu_edmp_memmap_internal.h"
-#include "imu/inv_imu_defs_internal.h"
+#include "icm566xx/imu/inv_imu_driver_internal.h"
+#include "icm566xx/imu/inv_imu_edmp.h"
+#include "icm566xx/imu/inv_imu_edmp_apex.h"
+#include "icm566xx/imu/inv_imu_edmp_SRAM.h"
+#include "icm566xx/imu/inv_imu_edmp_memmap_internal.h"
+#include "icm566xx/imu/inv_imu_defs_internal.h"
 
 /* board driver */
 #include "uart.h"

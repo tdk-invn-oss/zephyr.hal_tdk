@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD 3-Clause
  */
 
-#include "imu/inv_imu_defs.h"
-#include "imu/inv_imu_driver.h"
-#include "imu/inv_imu_version.h"
+#include "icm566xx/imu/inv_imu_defs.h"
+#include "icm566xx/imu/inv_imu_driver.h"
+#include "icm566xx/imu/inv_imu_version.h"
 
 void icm566xx_sleep_us(inv_imu_device_t *s, uint32_t us)
 {

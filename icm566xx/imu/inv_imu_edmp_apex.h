@@ -18,10 +18,10 @@
 extern "C" {
 #endif
 
-#include "imu/inv_imu_driver.h"
-#include "imu/inv_imu_edmp.h"
-#include "imu/inv_imu_edmp_memmap.h"
-#include "imu/inv_imu_edmp_defs.h"
+#include "icm566xx/imu/inv_imu_driver.h"
+#include "icm566xx/imu/inv_imu_edmp.h"
+#include "icm566xx/imu/inv_imu_edmp_memmap.h"
+#include "icm566xx/imu/inv_imu_edmp_defs.h"
 
 #include <stdint.h>
 #include <string.h>

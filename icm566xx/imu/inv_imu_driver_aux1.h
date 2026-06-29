@@ -18,10 +18,10 @@
 extern "C" {
 #endif
 
-#include "imu/inv_imu_defs.h"
+#include "icm566xx/imu/inv_imu_defs.h"
 
 #if INV_IMU_AUX1_SUPPORTED
-#include "imu/inv_imu_transport.h"
+#include "icm566xx/imu/inv_imu_transport.h"
 
 /** @brief AUX1 Interrupts definition */
 typedef struct {

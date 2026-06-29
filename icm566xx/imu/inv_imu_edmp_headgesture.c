@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD 3-Clause
  */
 
-#include "imu/inv_imu_edmp.h"
-#include "imu/inv_imu_edmp_headgesture.h"
+#include "icm566xx/imu/inv_imu_edmp.h"
+#include "icm566xx/imu/inv_imu_edmp_headgesture.h"
 #include "imu/inv_imu_edmp_ram_hdgst_defs.h"
 #include "imu/inv_imu_edmp_ram_headgesture_memmap.h"
 

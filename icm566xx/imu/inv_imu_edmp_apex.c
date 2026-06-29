@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD 3-Clause
  */
 
-#include "imu/inv_imu_edmp.h"
-#include "imu/inv_imu_edmp_apex.h"
+#include "icm566xx/imu/inv_imu_edmp.h"
+#include "icm566xx/imu/inv_imu_edmp_apex.h"
 
 int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_t *p)
 {

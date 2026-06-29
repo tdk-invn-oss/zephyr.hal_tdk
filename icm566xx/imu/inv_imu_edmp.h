@@ -18,14 +18,14 @@
 extern "C" {
 #endif
 
-#include "imu/inv_imu_driver.h"
+#include "icm566xx/imu/inv_imu_driver.h"
 #if (INV_IMU_WHOAMI == 0xD3) &&                                                                    \
 	defined(CUSTOMER_EXAMPLE) /* Only use this for the 56622 example apps */
-#include "imu/inv_imu_edmp_memmap_56622.h"
+#include "icm566xx/imu/inv_imu_edmp_memmap_56622.h"
 #else
-#include "imu/inv_imu_edmp_memmap.h"
+#include "icm566xx/imu/inv_imu_edmp_memmap.h"
 #endif
-#include "imu/inv_imu_edmp_defs.h"
+#include "icm566xx/imu/inv_imu_edmp_defs.h"
 
 #include <stdint.h>
 #include <string.h>

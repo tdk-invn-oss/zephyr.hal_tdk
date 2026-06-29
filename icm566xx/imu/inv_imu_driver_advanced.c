@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD 3-Clause
  */
 
-#include "imu/inv_imu_driver_advanced.h"
+#include "icm566xx/imu/inv_imu_driver_advanced.h"
 
 /* Static functions */
 static int configure_serial_interface(inv_imu_device_t *s);

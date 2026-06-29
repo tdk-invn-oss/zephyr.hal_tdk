@@ -5,7 +5,7 @@
  */
 
 #include "imu/icm566xx_selftest.h"
-#include "imu/inv_imu_edmp.h"
+#include "icm566xx/imu/inv_imu_edmp.h"
 #include "Invn/EmbUtils/Message.h" /* Andrew - Just for debug */
 
 /* Static functions definition */
