@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 TDK Invensense
+ * Copyright (c) 2026 TDK Invensense
  *
  * SPDX-License-Identifier: BSD 3-Clause
  */
