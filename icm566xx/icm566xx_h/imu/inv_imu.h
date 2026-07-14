@@ -16,14 +16,16 @@ extern "C" {
  *  @{
  */
 
+#include <zephyr/devicetree.h>
+
 /** @file inv_imu.h */
 
-#if CONFIG_USE_EMD_ICM56622
+#if DT_HAS_COMPAT_STATUS_OKAY(invensense_icm56622)
 /* Device description ICM56622 */
 #define SENSOR_DATA_TYPE   int16_t
 #define FORMAT_SENSOR_DATA FORMAT_16BIT_REG_DATA
 #define INV_IMU_WHOAMI     0xD3
-#elif CONFIG_USE_EMD_ICM56686
+#elif DT_HAS_COMPAT_STATUS_OKAY(invensense_icm56686)
 /* Device description ICM56686 */
 #define SENSOR_DATA_TYPE   int32_t
 #define FORMAT_SENSOR_DATA FORMAT_20BIT_REG_DATA
