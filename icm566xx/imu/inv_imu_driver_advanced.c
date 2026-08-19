@@ -58,15 +58,9 @@ int icm566xx_adv_device_reset(inv_imu_device_t *s)
 
 	status |= icm566xx_soft_reset(s);
 
-	/* Read endianness for further processing */
-	status |= icm566xx_get_endianness(s); /* Set `endianness_data` variable */
-
 	/* Set default FIFO configuration */
 	e->fifo_is_used = INV_IMU_DISABLE; /* FIFO disabled by default */
 	e->fifo_comp_en = INV_IMU_DISABLE; /* FIFO compression disabled by default */
-
-	/* From driver layer */
-	s->fifo_frame_size = 0; /* Init at 0 by default */
 
 	/* Initialize FIFO compression variables */
 	status |= init_fifo_compression(s);
@@ -92,7 +86,7 @@ int icm566xx_adv_enable_accel_ln(inv_imu_device_t *s)
 int icm566xx_adv_disable_accel(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
-	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
+	const inv_imu_adv_var_t *e = (const inv_imu_adv_var_t *)s->adv_var;
 	pwr_mgmt0_t pwr_mgmt0;
 	int clear_fifo = 0;
 
@@ -110,7 +104,7 @@ int icm566xx_adv_disable_accel(inv_imu_device_t *s)
 	status |= icm566xx_set_accel_mode(s, PWR_MGMT0_ACCEL_MODE_OFF);
 
 	if (clear_fifo) {
-		/* Reset FIFO to guarrantee no data is left after turning off all sensors. */
+		/* Reset FIFO to guarantee no data is left after turning off all sensors. */
 		status |= icm566xx_adv_reset_fifo(s);
 	}
 
@@ -130,7 +124,7 @@ int icm566xx_adv_enable_gyro_lp(inv_imu_device_t *s)
 int icm566xx_adv_disable_gyro(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
-	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
+	const inv_imu_adv_var_t *e = (const inv_imu_adv_var_t *)s->adv_var;
 	pwr_mgmt0_t pwr_mgmt0;
 	int clear_fifo = 0;
 
@@ -148,7 +142,7 @@ int icm566xx_adv_disable_gyro(inv_imu_device_t *s)
 	status |= icm566xx_set_gyro_mode(s, PWR_MGMT0_GYRO_MODE_OFF);
 
 	if (clear_fifo) {
-		/* Reset FIFO to guarrantee no data is left after turning off all sensors. */
+		/* Reset FIFO to guarantee no data is left after turning off all sensors. */
 		status |= icm566xx_adv_reset_fifo(s);
 	}
 
@@ -164,7 +158,7 @@ int icm566xx_adv_set_int2_pin_usage(inv_imu_device_t *s,
 
 	status |= icm566xx_read_reg(s, IOC_PAD_SCENARIO_OVRD, 1, (uint8_t *)&ioc_pad_scenario_ovrd);
 	ioc_pad_scenario_ovrd.pads_int2_cfg_ovrd = 1;
-	ioc_pad_scenario_ovrd.pads_int2_cfg_ovrd_val = usage;
+	ioc_pad_scenario_ovrd.pads_int2_cfg_ovrd_val = (uint8_t)usage;
 	status |=
 		icm566xx_write_reg(s, IOC_PAD_SCENARIO_OVRD, 1, (uint8_t *)&ioc_pad_scenario_ovrd);
 
@@ -183,7 +177,7 @@ int icm566xx_adv_configure_fsync_ap_tag(inv_imu_device_t *s,
 	e->fsync_tag = sensor_tag;
 
 	status |= icm566xx_read_reg(s, FSYNC_CONFIG0, 1, (uint8_t *)&fsync_config0);
-	fsync_config0.ap_fsync_sel = sensor_tag;
+	fsync_config0.ap_fsync_sel = (uint8_t)sensor_tag;
 	status |= icm566xx_write_reg(s, FSYNC_CONFIG0, 1, (uint8_t *)&fsync_config0);
 
 	return status;
@@ -245,8 +239,8 @@ int icm566xx_adv_configure_wom(inv_imu_device_t *s, const uint8_t wom_x_th, cons
 	 */
 	status |= icm566xx_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 	tmst_wom_config.wom_mode = TMST_WOM_CONFIG_WOM_MODE_CMP_PREV;
-	tmst_wom_config.wom_int_mode = wom_int;
-	tmst_wom_config.wom_int_dur = wom_dur;
+	tmst_wom_config.wom_int_mode = (uint8_t)wom_int;
+	tmst_wom_config.wom_int_dur = (uint8_t)wom_dur;
 	status |= icm566xx_write_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 
 	return status;
@@ -281,7 +275,7 @@ int icm566xx_adv_disable_wom(inv_imu_device_t *s)
 int icm566xx_adv_get_data_from_registers(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
-	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
+	const inv_imu_adv_var_t *e = (const inv_imu_adv_var_t *)s->adv_var;
 	inv_imu_sensor_event_t event = {0};
 	uint8_t data[ACCEL_DATA_SIZE + GYRO_DATA_SIZE + TEMP_DATA_SIZE];
 	uint8_t ext_data[3] = {0};
@@ -319,7 +313,7 @@ int icm566xx_adv_get_data_from_registers(inv_imu_device_t *s)
 		event.sensor_mask |= (1 << INV_SENSOR_TEMPERATURE);
 	}
 
-#if defined(EXT_DATA_X)
+#if INV_IMU_HIGH_FSR_SUPPORTED == 1
 	status |= icm566xx_read_reg(s, EXT_DATA_X, sizeof(ext_data), ext_data);
 #endif
 	event.accel_high_res[0] = ext_data[0] & 0x0F;
@@ -400,18 +394,17 @@ int icm566xx_adv_get_data_from_registers(inv_imu_device_t *s)
 static int parse_fifo_frame(inv_imu_device_t *s, uint8_t *frame)
 {
 	int status = INV_IMU_OK;
-	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
+	const inv_imu_adv_var_t *e = (const inv_imu_adv_var_t *)s->adv_var;
 	uint16_t frame_idx = 0;
-	fifo_header_t *header;
+	const fifo_header_t *header;
 	inv_imu_sensor_event_t event;
-	uint8_t fifo_32bytes = s->fifo_frame_size == 32 ? 1 : 0;
 
 	event.sensor_mask = 0;
-	header = (fifo_header_t *)&(frame[frame_idx]);
+	header = (const fifo_header_t *)&(frame[frame_idx]);
 	frame_idx += FIFO_HEADER_SIZE;
 
 	/* Read accel data */
-	if (header->bits.accel_bit || fifo_32bytes) {
+	if (header->bits.accel_bit) {
 		FORMAT_16_BITS_DATA(s->endianness_data, &(frame[0 + frame_idx]),
 				    (uint16_t *)&event.accel[0]);
 		FORMAT_16_BITS_DATA(s->endianness_data, &(frame[2 + frame_idx]),
@@ -422,7 +415,7 @@ static int parse_fifo_frame(inv_imu_device_t *s, uint8_t *frame)
 	}
 
 	/* Read gyro data */
-	if (header->bits.gyro_bit || fifo_32bytes) {
+	if (header->bits.gyro_bit) {
 		FORMAT_16_BITS_DATA(s->endianness_data, &(frame[0 + frame_idx]),
 				    (uint16_t *)&event.gyro[0]);
 		FORMAT_16_BITS_DATA(s->endianness_data, &(frame[2 + frame_idx]),
@@ -432,8 +425,8 @@ static int parse_fifo_frame(inv_imu_device_t *s, uint8_t *frame)
 		frame_idx += GYRO_DATA_SIZE;
 	}
 
-	if ((header->bits.accel_bit) || (header->bits.gyro_bit) || fifo_32bytes) {
-		if (header->bits.twentybits_bit && !fifo_32bytes) {
+	if ((header->bits.accel_bit) || (header->bits.gyro_bit)) {
+		if (header->bits.twentybits_bit) {
 			FORMAT_16_BITS_DATA(s->endianness_data, &(frame[0 + frame_idx]),
 					    (uint16_t *)&event.temperature);
 			frame_idx += FIFO_TEMP_DATA_SIZE + FIFO_TEMP_HIGH_RES_SIZE;
@@ -451,7 +444,7 @@ static int parse_fifo_frame(inv_imu_device_t *s, uint8_t *frame)
 		}
 	}
 
-	if ((header->bits.timestamp_bit) || (header->bits.fsync_bit) || fifo_32bytes) {
+	if ((header->bits.timestamp_bit) || (header->bits.fsync_bit)) {
 		FORMAT_16_BITS_DATA(s->endianness_data, &(frame[0 + frame_idx]),
 				    &event.timestamp_fsync);
 		frame_idx += FIFO_TS_FSYNC_SIZE;
@@ -467,7 +460,7 @@ static int parse_fifo_frame(inv_imu_device_t *s, uint8_t *frame)
 		    (event.accel[2] != INVALID_VALUE_FIFO)) {
 			event.sensor_mask |= (1 << INV_SENSOR_ACCEL);
 
-			if (header->bits.twentybits_bit && !fifo_32bytes) {
+			if (header->bits.twentybits_bit) {
 				event.accel_high_res[0] = (frame[0 + frame_idx] >> 4) & 0xF;
 				event.accel_high_res[1] = (frame[1 + frame_idx] >> 4) & 0xF;
 				event.accel_high_res[2] = (frame[2 + frame_idx] >> 4) & 0xF;
@@ -481,7 +474,7 @@ static int parse_fifo_frame(inv_imu_device_t *s, uint8_t *frame)
 		    (event.gyro[2] != INVALID_VALUE_FIFO)) {
 			event.sensor_mask |= (1 << INV_SENSOR_GYRO);
 
-			if (header->bits.twentybits_bit && !fifo_32bytes) {
+			if (header->bits.twentybits_bit) {
 				event.gyro_high_res[0] = (frame[0 + frame_idx]) & 0xF;
 				event.gyro_high_res[1] = (frame[1 + frame_idx]) & 0xF;
 				event.gyro_high_res[2] = (frame[2 + frame_idx]) & 0xF;
@@ -489,7 +482,7 @@ static int parse_fifo_frame(inv_imu_device_t *s, uint8_t *frame)
 		}
 	}
 
-	if (header->bits.twentybits_bit && !fifo_32bytes) {
+	if (header->bits.twentybits_bit) {
 		frame_idx += FIFO_ACCEL_GYRO_HIGH_RES_SIZE;
 	}
 
@@ -510,8 +503,8 @@ static int decode_compressed_event(inv_imu_device_t *s, uint8_t *frame, uint8_t 
 {
 	int status = INV_IMU_OK;
 	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
-	fifo_comp_header_t *comp_header = (fifo_comp_header_t *)&frame[0];
-	fifo_comp_decode_t *decode_header = (fifo_comp_decode_t *)&frame[1];
+	const fifo_comp_header_t *comp_header = (const fifo_comp_header_t *)&frame[0];
+	const fifo_comp_decode_t *decode_header = (const fifo_comp_decode_t *)&frame[1];
 	uint8_t validity_mask;
 	int8_t diff_s0[3];
 	int8_t diff_s1[3];
@@ -736,11 +729,12 @@ static int parse_compressed_fifo_frame(inv_imu_device_t *s, uint8_t *frame)
 {
 	int status = INV_IMU_OK;
 
-	fifo_comp_header_t *header = (fifo_comp_header_t *)&frame[0];
+	const fifo_comp_header_t *header = (const fifo_comp_header_t *)&frame[0];
 	int event_num = 1;
 
 	for (int i = FIFO_COMP_1_SAMPLE_IN_FRAME; i <= header->bits.tot_sample; i++) {
-		status |= decode_compressed_event(s, frame, event_num++);
+		status |= decode_compressed_event(s, frame, event_num);
+		event_num++;
 	}
 
 	return status;
@@ -756,11 +750,11 @@ static int parse_uncompressed_fifo_frame(inv_imu_device_t *s, uint8_t *frame)
 	int status = INV_IMU_OK;
 	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
 	uint16_t frame_idx = 0;
-	fifo_header_t *header;
+	const fifo_header_t *header;
 	inv_imu_sensor_event_t event;
 
 	event.sensor_mask = 0;
-	header = (fifo_header_t *)&(frame[frame_idx]);
+	header = (const fifo_header_t *)&(frame[frame_idx]);
 	frame_idx += FIFO_HEADER_SIZE;
 
 	/* If `ext_header` is 1, this is not an uncompressed frame */
@@ -849,17 +843,16 @@ int icm566xx_adv_get_data_from_fifo(inv_imu_device_t *s, uint8_t *fifo_data,
 				    uint16_t fifo_data_size, uint16_t *fifo_count)
 {
 	int status = INV_IMU_OK;
-	uint8_t fifo_count_reg[2];
 
 	/* Read FIFO count */
-	status |= icm566xx_read_reg(s, FIFO_COUNT_0, 2, &fifo_count_reg[0]);
-	FORMAT_16_BITS_DATA(s->endianness_data, fifo_count_reg, fifo_count);
+	status |= icm566xx_get_frame_count(s, fifo_count);
 
 	/* If not enough room in the buffer */
 	if (*fifo_count * s->fifo_frame_size > fifo_data_size) {
 		*fifo_count = fifo_data_size / s->fifo_frame_size; /* Don't read all of the FIFO */
 	}
 
+	/* Read FIFO data */
 	status |= icm566xx_read_reg(s, FIFO_DATA, *fifo_count * s->fifo_frame_size, fifo_data);
 	return status;
 }
@@ -868,21 +861,21 @@ int icm566xx_adv_parse_fifo_data(inv_imu_device_t *s, const uint8_t *fifo_data,
 				 const uint16_t fifo_count)
 {
 	int status = INV_IMU_OK;
-	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
+	const inv_imu_adv_var_t *e = (const inv_imu_adv_var_t *)s->adv_var;
 	uint16_t fifo_idx = 0;
 
 	/* Foreach packet in the FIFO */
 	for (uint16_t i = 0; i < fifo_count; i++) {
-		uint8_t frame[32] = {0};
+		uint8_t frame[20] = {0};
 
 		/* Create frame */
-		for (int j = 0; j < s->fifo_frame_size; j++) {
+		for (uint8_t j = 0; j < s->fifo_frame_size && j < (uint8_t)sizeof(frame); j++) {
 			frame[j] = fifo_data[fifo_idx + j];
 		}
 		fifo_idx += s->fifo_frame_size;
 
 		if (e->fifo_comp_en) {
-			fifo_header_t *header = (fifo_header_t *)&(frame[0]);
+			const fifo_header_t *header = (const fifo_header_t *)&(frame[0]);
 
 			if (!header->bits.ext_header) { /* Frame is not compressed */
 				status |= parse_uncompressed_fifo_frame(s, frame);
@@ -933,7 +926,7 @@ uint32_t icm566xx_adv_convert_odr_bitfield_to_us(uint32_t odr_bitfield)
 int icm566xx_adv_get_accel_fsr(inv_imu_device_t *s, accel_config0_ap_accel_fs_sel_t *accel_fsr)
 {
 	int status = INV_IMU_OK;
-	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
+	const inv_imu_adv_var_t *e = (const inv_imu_adv_var_t *)s->adv_var;
 	fifo_config3_t fifo_config3;
 
 	status |= icm566xx_read_reg(s, FIFO_CONFIG3, 1, (uint8_t *)&fifo_config3);
@@ -957,7 +950,7 @@ int icm566xx_adv_get_accel_fsr(inv_imu_device_t *s, accel_config0_ap_accel_fs_se
 int icm566xx_adv_get_gyro_fsr(inv_imu_device_t *s, gyro_config0_ap_gyro_fs_sel_t *gyro_fsr)
 {
 	int status = INV_IMU_OK;
-	inv_imu_adv_var_t *e = (inv_imu_adv_var_t *)s->adv_var;
+	const inv_imu_adv_var_t *e = (const inv_imu_adv_var_t *)s->adv_var;
 	fifo_config3_t fifo_config3;
 
 	status |= icm566xx_read_reg(s, FIFO_CONFIG3, 1, (uint8_t *)&fifo_config3);
@@ -985,7 +978,7 @@ int icm566xx_adv_set_timestamp_resolution(inv_imu_device_t *s,
 	tmst_wom_config_t tmst_wom_config;
 
 	status |= icm566xx_read_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
-	tmst_wom_config.tmst_resol = timestamp_resol;
+	tmst_wom_config.tmst_resol = (uint8_t)timestamp_resol;
 	status |= icm566xx_write_reg(s, TMST_WOM_CONFIG, 1, (uint8_t *)&tmst_wom_config);
 
 	return status;
@@ -1083,7 +1076,7 @@ int icm566xx_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_con
 		uint32_t accel_odr = UINT32_MAX;
 		uint32_t gyro_odr = UINT32_MAX;
 
-		/* Retreive fatest ODR */
+		/* Retrieve fastest ODR */
 		status |= icm566xx_read_reg(s, PWR_MGMT0, 1, (uint8_t *)&pwr_mgmt0);
 
 		if (pwr_mgmt0.accel_mode != PWR_MGMT0_ACCEL_MODE_OFF) {
@@ -1115,7 +1108,7 @@ int icm566xx_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_con
 	status |= icm566xx_write_reg(s, FIFO_CONFIG0, 1, (uint8_t *)&cfg.fifo_config0);
 
 	/* Set FIFO depth */
-	cfg.fifo_config0.fifo_depth = conf->base_conf.fifo_depth;
+	cfg.fifo_config0.fifo_depth = (uint8_t)conf->base_conf.fifo_depth;
 
 	/* Set WM */
 	cfg.fifo_config1_0 = (uint8_t)conf->base_conf.fifo_wm_th;
@@ -1129,7 +1122,7 @@ int icm566xx_adv_set_fifo_config(inv_imu_device_t *s, const inv_imu_adv_fifo_con
 	cfg.fifo_config3.fifo_gyro_en = conf->base_conf.gyro_en;
 	cfg.fifo_config3.fifo_accel_en = conf->base_conf.accel_en;
 
-	/* Set compression configuration, timestamp and buffer size for ES0 */
+	/* Set compression configuration, timestamp */
 	cfg.fifo_config4.fifo_comp_nc_flow_cfg = (uint8_t)conf->comp_nc_flow_cfg;
 	cfg.fifo_config4.fifo_tmst_fsync_en = (uint8_t)conf->tmst_fsync_en;
 
@@ -1229,6 +1222,7 @@ uint32_t icm566xx_adv_get_timestamp_resolution_us(inv_imu_device_t *s)
 	return 0;
 }
 
+#if INV_IMU_CLKIN_SUPPORTED
 int icm566xx_adv_enable_clkin_rtc(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
@@ -1268,6 +1262,7 @@ int icm566xx_adv_disable_clkin_rtc(inv_imu_device_t *s)
 
 	return status;
 }
+#endif /* INV_IMU_CLKIN_SUPPORTED */
 
 int icm566xx_adv_power_up_sram(inv_imu_device_t *s)
 {
@@ -1322,7 +1317,7 @@ static int configure_serial_interface(inv_imu_device_t *s)
 		break; /* Nothing to do */
 
 	case UI_SPI4:
-		/* Enable SPI 3/4 overide and set 4-wire mode */
+		/* Enable SPI 3/4 override and set 4-wire mode */
 		intf_config1_ovrd.ap_spi_34_mode_ovrd = INV_IMU_ENABLE;
 		intf_config1_ovrd.ap_spi_34_mode_ovrd_val =
 			INTF_CONFIG1_OVRD_AP_SPI_34_MODE_OVRD_VAL_4_WIRE;
@@ -1331,7 +1326,7 @@ static int configure_serial_interface(inv_imu_device_t *s)
 		break;
 
 	case UI_SPI3:
-		/* Enable SPI 3/4 overide and set 3-wire mode */
+		/* Enable SPI 3/4 override and set 3-wire mode */
 		intf_config1_ovrd.ap_spi_34_mode_ovrd = INV_IMU_ENABLE;
 		intf_config1_ovrd.ap_spi_34_mode_ovrd_val =
 			INTF_CONFIG1_OVRD_AP_SPI_34_MODE_OVRD_VAL_3_WIRE;

@@ -24,7 +24,7 @@ extern "C" {
 #include <string.h>
 
 /** @brief Maximum buffer size mirrored from FIFO */
-#define FIFO_MIRRORING_SIZE 16 * 258 /* packet size * max_count = 4kB */
+#define FIFO_MIRRORING_SIZE 16 * 256 /* packet size * max_count = 4kB */
 
 /*
  * Driver's structures definitions
@@ -54,12 +54,6 @@ typedef struct {
 
 	/** High-res portion of the accel raw data (if using high-res mode) */
 	int8_t gyro_high_res[3];
-
-	/** Buffer for external sensor 0 connected to EDMP */
-	uint8_t es0[9];
-
-	/** Buffer for external sensor 1 connected to EDMP */
-	uint8_t es1[6];
 } inv_imu_sensor_event_t;
 
 /** @brief Definition of extended variables */
@@ -93,18 +87,6 @@ typedef enum {
 	INV_SENSOR_GYRO,
 	INV_SENSOR_FSYNC_EVENT,
 	INV_SENSOR_TEMPERATURE,
-	INV_SENSOR_EDMP_PEDOMETER_EVENT,
-	INV_SENSOR_EDMP_PEDOMETER_COUNT,
-	INV_SENSOR_EDMP_TILT,
-	INV_SENSOR_EDMP_FF,
-	INV_SENSOR_EDMP_LOWG,
-	INV_SENSOR_EDMP_HIGHG,
-	INV_SENSOR_EDMP_SMD,
-	INV_SENSOR_EDMP_TAP,
-	INV_SENSOR_EDMP_R2W_WAKE,
-	INV_SENSOR_EDMP_R2W_SLEEP,
-	INV_SENSOR_ES0,
-	INV_SENSOR_ES1,
 	INV_SENSOR_MAX
 } inv_imu_sensor_id_t;
 
@@ -189,8 +171,7 @@ int icm566xx_adv_enable_gyro_lp(inv_imu_device_t *s);
 int icm566xx_adv_disable_gyro(inv_imu_device_t *s);
 
 #if INV_IMU_INT2_PIN_SUPPORTED
-/** @brief Configures INT2 pin for the requested usage (INT2, FSYNC, CLKIN or DRDY_INTR).
- *  It also disables AUX2 in pad scenario if AUX2 is supported for current variant.
+/** @brief Configures INT2 pin for the requested usage (INT2, FSYNC, CLKIN).
  *  @param[in] s      Pointer to device.
  *  @param[in] usage  Requested usage for INT2 pin.
  *  @return           0 on success, negative value on error.
@@ -209,7 +190,7 @@ int icm566xx_adv_set_int2_pin_usage(inv_imu_device_t *s,
 int icm566xx_adv_configure_fsync_ap_tag(inv_imu_device_t *s,
 					fsync_config0_ap_fsync_sel_t sensor_tag);
 
-/** @brief Enable fsync tagging functionnality.
+/** @brief Enable fsync tagging functionality.
  *  In details it:
  *     - enables fsync
  *     - enables timestamp to registers. Once fysnc is enabled fsync counter is pushed to * fifo
@@ -221,7 +202,7 @@ int icm566xx_adv_configure_fsync_ap_tag(inv_imu_device_t *s,
  */
 int icm566xx_adv_enable_fsync(inv_imu_device_t *s);
 
-/** @brief Disable fsync tagging functionnality.
+/** @brief Disable fsync tagging functionality.
  *  In details it:
  *     - disables fsync
  *     - disables timestamp to registers. Once fysnc is disabled  timestamp is pushed to fifo *
@@ -274,7 +255,7 @@ int icm566xx_adv_get_data_from_fifo(inv_imu_device_t *s, uint8_t *fifo_data,
 
 /** @brief Parse packets from FIFO buffer. For each packet function builds a
  *         sensor event containing packet data and validity information. Then it calls *
- * sensor_event_cb funtion passed in parameter of inv_imu_init function for each *         packet.
+ * sensor_event_cb function passed in parameter of inv_imu_init function for each *         packet.
  *  @param[in] s           Pointer to device.
  *  @param[in] fifo_data   Pointer to FIFO data buffer.
  *  @param[in] fifo_count  Number of packet read in FIFO.
@@ -318,6 +299,7 @@ int icm566xx_adv_set_timestamp_resolution(inv_imu_device_t *s,
  */
 uint32_t icm566xx_adv_get_timestamp_resolution_us(inv_imu_device_t *s);
 
+#if INV_IMU_CLKIN_SUPPORTED
 /** @brief Enable CLKIN RTC functionality.
  *  In details it:
  *     - enables SRC and prefilter for accel and gyro.
@@ -332,6 +314,7 @@ int icm566xx_adv_enable_clkin_rtc(inv_imu_device_t *s);
  *  @return       0 on success, negative value on error.
  */
 int icm566xx_adv_disable_clkin_rtc(inv_imu_device_t *s);
+#endif /* INV_IMU_CLKIN_SUPPORTED */
 
 /** @brief  Enable Wake On Motion.
  *  @param[in] s         Pointer to device. *  @param[in] wom_x_th  Threshold for X axis with 1g/256
@@ -376,17 +359,6 @@ int icm566xx_adv_power_up_sram(inv_imu_device_t *s);
  *  @param[in] s  Pointer to device. *  @return       0 on success, negative value on error.
  */
 int icm566xx_adv_power_down_sram(inv_imu_device_t *s);
-
-/** @brief Power-up the ROM.
- *  @param[in] s  Pointer to device. *  @return       0 on success, negative value on error.
- */
-int icm566xx_adv_power_up_rom(inv_imu_device_t *s);
-
-/** @brief Power-down the ROM.
- *  @param[in] s      Pointer to device.
- *  @return           0 on success, negative value on error.
- */
-int icm566xx_adv_power_down_rom(inv_imu_device_t *s);
 
 #ifdef __cplusplus
 }

@@ -21,43 +21,51 @@ extern "C" {
 #include <stdint.h>
 
 /** @brief Function pointer to read register(s).
- *  @param[in] reg   Register address to be read.
- *  @param[out] buf  Output data from the register.
- *  @param[in] len   Number of byte to be read.
- *  @return          0 on success, negative value on error.
+ *  @param[in] context  Pointer to context.
+ *  @param[in] reg      Register address to be read.
+ *  @param[out] buf     Output data from the register.
+ *  @param[in] len      Number of byte to be read.
+ *  @return             0 on success, negative value on error.
  */
-typedef int (*inv_imu_read_reg_t)(uint8_t reg, uint8_t *buf, uint32_t len);
+typedef int (*inv_imu_read_reg_t)(void *context, uint8_t reg, uint8_t *buf, uint32_t len);
 
 /** @brief Function pointer to write register(s).
- *  @param[in] reg  Register address to be written.
- *  @param[in] buf  Input data to write.
- *  @param[in] len  Number of byte to be written.
- *  @return         0 on success, negative value on error.
+ *  @param[in] context  Pointer to context.
+ *  @param[in] reg      Register address to be written.
+ *  @param[in] buf      Input data to write.
+ *  @param[in] len      Number of byte to be written.
+ *  @return             0 on success, negative value on error.
  */
-typedef int (*inv_imu_write_reg_t)(uint8_t reg, const uint8_t *buf, uint32_t len);
+typedef int (*inv_imu_write_reg_t)(void *context, uint8_t reg, const uint8_t *buf, uint32_t len);
 
-/** @brief Available serial interface type. */
-typedef enum {
-	UI_I2C,    /**< Selects I2C interface. */
-	UI_SPI4,   /**< Selects 4-wire SPI interface. */
-	UI_SPI3,   /**< Selects 3-wire SPI interface. */
-	UI_I3C,    /**< Selects I3C interface. */
-	AUX1_I3C,  /**< Selects Aux1 I3C interface. */
-	AUX1_SPI3, /**< Selects Aux1 3-wire SPI interface. */
-	AUX2_SPI3, /**< Selects Aux2 3-wire SPI interface. */
-} inv_imu_serif_type_t;
+/* Available serial interface type. */
+#define UI_I2C    0 /**< identifies I2C interface. */
+#define UI_SPI4   1 /**< identifies 4-wire SPI interface. */
+#define UI_SPI3   2 /**< identifies 3-wire SPI interface. */
+#define UI_I3C    3 /**< identifies I3C interface. */
+#define AUX1_I3C  4 /**< identifies AUX1 I3C interface. */
+#define AUX1_SPI3 5 /**< identifies AUX1 3-wire SPI interface. */
+#define AUX1_SPI4 6 /**< identifies AUX1 4-wire SPI interface. */
+
+/** @brief Serif type definition.
+ *  @deprecated Kept for retrocompatibility. Replaced with `uint32_t` type
+ *              in `inv_imu_transport_t` struct.
+ */
+typedef uint32_t inv_imu_serif_type_t;
 
 /** @brief Structure dedicated to transport layer transport interface. */
 typedef struct {
 	/* Serial interface variables (should be initialized by application) */
-	inv_imu_read_reg_t read_reg;     /**< Function pointer to read register(s). */
-	inv_imu_write_reg_t write_reg;   /**< Function pointer to write register(s). */
-	inv_imu_serif_type_t serif_type; /**< Serial interface type. */
+	void *context;
+	inv_imu_read_reg_t read_reg;   /**< Function pointer to read register(s). */
+	inv_imu_write_reg_t write_reg; /**< Function pointer to write register(s). */
 
 	/** @brief Callback to sleep function.
 	 *  @param[in] us  Time to sleep in microseconds.
 	 */
 	void (*sleep_us)(uint32_t us);
+
+	uint32_t serif_type; /**< Serial interface type. */
 } inv_imu_transport_t;
 
 /** @brief Reads data from a register on IMU.

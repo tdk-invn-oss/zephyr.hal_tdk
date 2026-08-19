@@ -4,8 +4,13 @@
  * SPDX-License-Identifier: BSD 3-Clause
  */
 #include "icm566xx/imu/inv_imu_edmp.h"
-#include "icm566xx/imu/inv_imu_edmp_SRAM.h"
+#include "imu/inv_imu_edmp_SRAM.h"
 #include "icm566xx/imu/inv_imu_edmp_defs.h"
+#include "icm566xx/imu/inv_imu_edmp_ram_bump_memmap.h"
+
+#define EDMP_ROM_START_ADDR_IRQ0 (EDMP_ROM_BASE + 0x0000)
+#define EDMP_ROM_START_ADDR_IRQ1 (EDMP_ROM_BASE + 0x0004)
+#define EDMP_ROM_START_ADDR_IRQ2 (EDMP_ROM_BASE + 0x0008)
 
 static int dmp_getDecimationRate(inv_imu_device_t *s, uint16_t featureOdr, int8_t *decimationRate)
 {
@@ -47,16 +52,13 @@ int icm566xx_edmp_bump_init(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 	static uint8_t ram_img[] = {
-#include "edmp_ram_extended_features_image.h"
+#include "icm566xx/imu/edmp_ram_extended_features_image.h"
 	};
+	uint8_t value = 0;
 
-	{
-		/* Clear SRAM */
-		uint8_t value = 0;
-		for (uint32_t i = 0; i < (sizeof(ram_img)); i++) {
-			status |=
-				icm566xx_write_sram(s, (uint32_t)EDMP_RAM_PRGM_BASE + i, 1, &value);
-		}
+	/* Clear SRAM */
+	for (uint32_t i = 0; i < (sizeof(ram_img)); i++) {
+		status |= icm566xx_write_sram(s, (uint32_t)EDMP_RAM_PRGM_BASE + i, 1, &value);
 	}
 	status |= icm566xx_write_sram(s, (uint32_t)EDMP_RAM_PRGM_BASE, sizeof(ram_img), ram_img);
 	return status;
@@ -68,21 +70,21 @@ int icm566xx_edmp_bump_get_parameters(inv_imu_device_t *s,
 	int status = INV_IMU_OK;
 
 	/* Bump */
-	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_bump_config_bump_th_ratio_Q8,
+	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_BUMP_CONFIG_BUMP_TH_RATIO,
 					 (uint8_t *)&bump_params->bump_th_ratio_Q8);
-	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_bump_config_change_th_ratio_Q8,
+	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_BUMP_CONFIG_CHANGE_TH_RATIO,
 					 (uint8_t *)&bump_params->bump_change_th_ratio_Q8);
-	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_bump_config_conf_time,
+	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_BUMP_CONFIG_CONF_TIME,
 					 (uint8_t *)&bump_params->bump_conf_time);
-	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_bump_config_debounce_time,
+	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_BUMP_CONFIG_DEBOUNCE_TIME,
 					 (uint8_t *)&bump_params->bump_debounce_time);
-	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_bump_config_min_bump_nb,
+	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_BUMP_CONFIG_MIN_BUMP_NB,
 					 (uint8_t *)&bump_params->bump_min_bump_nb);
-	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_bump_config_bump_time,
+	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_BUMP_CONFIG_BUMP_TIME,
 					 (uint8_t *)&bump_params->bump_time);
-	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_bump_config_change_th_offset_Q12,
+	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_BUMP_CONFIG_CHANGE_TH_OFFSET,
 					 (uint8_t *)&bump_params->bump_change_th_offset_Q12);
-	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_bump_config_bump_th_offset_Q12,
+	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_BUMP_CONFIG_BUMP_TH_OFFSET,
 					 (uint8_t *)&bump_params->bump_th_offset_Q12);
 
 	return status;
@@ -94,21 +96,21 @@ int icm566xx_edmp_bump_set_parameters(inv_imu_device_t *s,
 	int status = INV_IMU_OK;
 
 	/* Bump */
-	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_bump_config_bump_th_ratio_Q8,
+	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_BUMP_CONFIG_BUMP_TH_RATIO,
 					  (uint8_t *)&bump_params->bump_th_ratio_Q8);
-	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_bump_config_change_th_ratio_Q8,
+	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_BUMP_CONFIG_CHANGE_TH_RATIO,
 					  (uint8_t *)&bump_params->bump_change_th_ratio_Q8);
-	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_bump_config_conf_time,
+	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_BUMP_CONFIG_CONF_TIME,
 					  (uint8_t *)&bump_params->bump_conf_time);
-	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_bump_config_debounce_time,
+	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_BUMP_CONFIG_DEBOUNCE_TIME,
 					  (uint8_t *)&bump_params->bump_debounce_time);
-	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_bump_config_min_bump_nb,
+	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_BUMP_CONFIG_MIN_BUMP_NB,
 					  (uint8_t *)&bump_params->bump_min_bump_nb);
-	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_bump_config_bump_time,
+	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_BUMP_CONFIG_BUMP_TIME,
 					  (uint8_t *)&bump_params->bump_time);
-	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_bump_config_change_th_offset_Q12,
+	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_BUMP_CONFIG_CHANGE_TH_OFFSET,
 					  (uint8_t *)&bump_params->bump_change_th_offset_Q12);
-	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_bump_config_bump_th_offset_Q12,
+	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_BUMP_CONFIG_BUMP_TH_OFFSET,
 					  (uint8_t *)&bump_params->bump_th_offset_Q12);
 
 	return status;
@@ -150,7 +152,7 @@ int icm566xx_edmp_set_bump_odr(inv_imu_device_t *s, uint16_t bump_odr)
 	int8_t decim_rate = 0;
 	inv_imu_edmp_bump_parameters_t bump_params;
 
-	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_bump_config_odr_bump, (uint8_t *)&bump_odr);
+	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_BUMP_CONFIG_ODR, (uint8_t *)&bump_odr);
 	status |= dmp_getDecimationRate(s, bump_odr, &decim_rate);
 	if (status) {
 		return status;
@@ -158,9 +160,9 @@ int icm566xx_edmp_set_bump_odr(inv_imu_device_t *s, uint16_t bump_odr)
 
 	bump_params.bump_decim_rate = decim_rate;
 	bump_params.bump_decim_count = bump_params.bump_decim_rate;
-	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_bump_decim_rate,
+	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_BUMP_DECIM_RATE,
 					  (uint8_t *)&bump_params.bump_decim_rate);
-	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_bump_decim_count,
+	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_BUMP_DECIM_COUNT,
 					  (uint8_t *)&bump_params.bump_decim_count);
 
 	return status;
@@ -188,22 +190,11 @@ int icm566xx_edmp_configure_sram(inv_imu_device_t *s)
 int icm566xx_edmp_init_apex_sram(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
-	fifo_sram_sleep_t fifo_sram_sleep;
-	uint8_t value;
 
-	/* Same impl as icm566xx_adv_power_up_sram, duplicated here to prevent dependency */
-	status |= icm566xx_read_reg(s, FIFO_SRAM_SLEEP, 1, (uint8_t *)&fifo_sram_sleep);
-	fifo_sram_sleep.fifo_gsleep_shared_sram = 1;
-	status |= icm566xx_write_reg(s, FIFO_SRAM_SLEEP, 1, (uint8_t *)&fifo_sram_sleep);
-
-	/* Clear SRAM */
-	value = 0;
-	for (int i = 0; i < EDMP_RAM_SIZE; i++) {
-		status |= icm566xx_write_sram(s, (uint32_t)EDMP_RAM_BASE + i, 1, &value);
-	}
-
+	status |= icm566xx_edmp_clear_apex_sram(s);
 	/* Configure DMP address registers */
 	status |= icm566xx_edmp_configure_sram(s);
-	status |= icm566xx_edmp_init_apex_save_sram(s);
+	status |= icm566xx_edmp_recompute_apex_decimation(s);
+
 	return status;
 }

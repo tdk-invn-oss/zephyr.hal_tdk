@@ -23,32 +23,14 @@ extern "C" {
 /* Include device definition */
 #include "icm566xx/icm566xx_h/imu/inv_imu.h"
 
-#define INV_IMU_FSYNC_SUPPORTED    1
-#define INV_IMU_INT2_PIN_SUPPORTED 1
-#define INV_IMU_AUX1_SUPPORTED     1
-
-#if (INV_IMU_WHOAMI == 0xD3) /* 56622 */
-#define INV_IMU_20BIT_REG_DATA_SUPPORTED 0
-#define INV_IMU_HIGH_FSR_SUPPORTED       0
-#else
-#define INV_IMU_20BIT_REG_DATA_SUPPORTED 1
-#define INV_IMU_HIGH_FSR_SUPPORTED       1
-#endif
-
-#if (INV_IMU_WHOAMI == 0xD3) &&                                                                    \
-	defined(CUSTOMER_EXAMPLE) /* Only use these for the 56622 example apps */
 /* Include regmap (le = little endian, be = big endian) */
-#include "icm566xx/imu/inv_imu_regmap_56622_le.h"
-/* #include "icm566xx/imu/inv_imu_regmap_56622_be.h" */
-#else
 #include "icm566xx/imu/inv_imu_regmap_le.h"
 /* #include "icm566xx/imu/inv_imu_regmap_be.h" */
-#endif
 
 /* Error/Success codes */
 #define INV_IMU_OK                   0   /**< Success */
 #define INV_IMU_ERROR                -1  /**< Unspecified error */
-#define INV_IMU_ERROR_TRANSPORT      -3  /**< Error occured at transport level */
+#define INV_IMU_ERROR_TRANSPORT      -3  /**< Error occurred at transport level */
 #define INV_IMU_ERROR_TIMEOUT        -4  /**< Action did not complete in the expected time window */
 #define INV_IMU_ERROR_BAD_ARG        -11 /**< Invalid argument provided */
 #define INV_IMU_ERROR_EDMP_BUF_EMPTY -127 /**< EDMP buffer is empty */
@@ -70,9 +52,6 @@ extern "C" {
 #define FIFO_TS_FSYNC_SIZE            2
 #define FIFO_TEMP_HIGH_RES_SIZE       1
 #define FIFO_ACCEL_GYRO_HIGH_RES_SIZE 3
-#define FIFO_ES0_6B_DATA_SIZE         6
-#define FIFO_ES0_9B_DATA_SIZE         9
-#define FIFO_ES1_DATA_SIZE            6
 
 /* FIFO: Special values */
 #define INVALID_VALUE_FIFO            ((int16_t)0x8000)
@@ -103,8 +82,8 @@ extern "C" {
 
 /** Sensor data from registers */
 typedef struct {
-	SENSOR_DATA_TYPE accel_data[3];
-	SENSOR_DATA_TYPE gyro_data[3];
+	sensor_data_t accel_data[3];
+	sensor_data_t gyro_data[3];
 	int16_t temp_data;
 } inv_imu_sensor_data_t;
 
@@ -147,11 +126,6 @@ typedef union {
 		uint8_t ext_header: 1;
 	} bits;
 } fifo_comp_header_t;
-
-/** Describe the content of the second FIFO header */
-typedef union {
-	uint8_t Byte;
-} fifo_header2_t;
 
 /** Describe the content of the FIFO Compression Decoding Tag */
 typedef union {
@@ -220,7 +194,7 @@ typedef enum {
 /*
  * INTX_CONFIG2
  * Applies to both INT1_CONFIG2 and INT2_CONFIG2 (bits are located at the * same position on two
- * differents registers)
+ * different registers)
  */
 
 /* intX_drive */
@@ -352,8 +326,6 @@ typedef enum {
 	FIFO_CONFIG2_FIFO_FRAME_SIZE_8 = 0x0,
 	FIFO_CONFIG2_FIFO_FRAME_SIZE_16 = 0x1,
 	FIFO_CONFIG2_FIFO_FRAME_SIZE_20 = 0x2,
-	FIFO_CONFIG2_FIFO_FRAME_SIZE_32 = 0x3,
-	FIFO_CONFIG2_FIFO_FRAME_SIZE_64 = 0x4,
 } fifo_config2_fifo_frame_size_t;
 
 /*
@@ -527,8 +499,9 @@ typedef enum {
 #if INV_IMU_FSYNC_SUPPORTED
 	IOC_PAD_SCENARIO_OVRD_INT2_CFG_OVRD_VAL_FSYNC = 1,
 #endif
+#if INV_IMU_CLKIN_SUPPORTED
 	IOC_PAD_SCENARIO_OVRD_INT2_CFG_OVRD_VAL_CLKIN = 2,
-	IOC_PAD_SCENARIO_OVRD_INT2_CFG_OVRD_VAL_DRDY_INTR = 3,
+#endif
 } ioc_pad_scenario_ovrd_pads_int2_cfg_ovrd_val_t;
 
 /*
@@ -635,19 +608,19 @@ typedef enum {
 
 /* gyro_lp_avg_sel */
 typedef enum {
-	ipreg_sys1_reg_158_gyro_lpAVG_64 = 0xC,
-	ipreg_sys1_reg_158_gyro_lpAVG_32 = 0xB,
-	ipreg_sys1_reg_158_gyro_lpAVG_20 = 0xA,
-	ipreg_sys1_reg_158_gyro_lpAVG_18 = 0x9,
-	ipreg_sys1_reg_158_gyro_lpAVG_16 = 0x8,
-	ipreg_sys1_reg_158_gyro_lpAVG_11 = 0x7,
-	ipreg_sys1_reg_158_gyro_lpAVG_10 = 0x6,
-	ipreg_sys1_reg_158_gyro_lpAVG_8 = 0x5,
-	ipreg_sys1_reg_158_gyro_lpAVG_7 = 0x4,
-	ipreg_sys1_reg_158_gyro_lpAVG_5 = 0x3,
-	ipreg_sys1_reg_158_gyro_lpAVG_4 = 0x2,
-	ipreg_sys1_reg_158_gyro_lpAVG_2 = 0x1,
-	ipreg_sys1_reg_158_gyro_lpAVG_1 = 0x0,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_64 = 0xC,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_32 = 0xB,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_20 = 0xA,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_18 = 0x9,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_16 = 0x8,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_11 = 0x7,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_10 = 0x6,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_8 = 0x5,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_7 = 0x4,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_5 = 0x3,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_4 = 0x2,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_2 = 0x1,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_1 = 0x0,
 } ipreg_sys1_reg_157_gyro_lp;
 
 /*
@@ -723,105 +696,6 @@ typedef enum {
  * Bank IMEM_SRAM
  * ---------------------------------------------------------------------------
  */
-
-/*
- * EDMP_STC_RESULTS
- */
-
-#define STC_RESULTS_ACCEL_X_MASK   0x0001
-#define STC_RESULTS_ACCEL_Y_MASK   0x0002
-#define STC_RESULTS_ACCEL_Z_MASK   0x0004
-#define STC_RESULTS_GYRO_X_MASK    0x0008
-#define STC_RESULTS_GYRO_Y_MASK    0x0010
-#define STC_RESULTS_GYRO_Z_MASK    0x0020
-#define STC_RESULTS_ST_STATUS_MASK 0x00C0
-#define STC_RESULTS_ACCEL_SC_MASK  0x0300
-#define STC_RESULTS_GYRO_SC_MASK   0x0C00
-
-/*
- * EDMP_STC_CONFIGPARAMS
- */
-
-#define SELFTESTCAL_INIT_EN_MASK   0x0001
-#define SELFTESTCAL_INIT_EN        0x0001
-#define SELFTESTCAL_INIT_DIS       0x0000
-#define SELFTEST_ACCEL_EN_MASK     0x0002
-#define SELFTEST_ACCEL_EN          0x0002
-#define SELFTEST_ACCEL_DIS         0x0000
-#define SELFTEST_GYRO_EN_MASK      0x0004
-#define SELFTEST_GYRO_EN           0x0004
-#define SELFTEST_UNUSED            0x0078
-#define SELFTEST_GYRO_DIS          0x0000
-#define SELFTEST_AVERAGE_TIME_MASK 0x0380
-#define SELFTEST_ACCEL_THRESH_MASK 0x1C00
-#define SELFTEST_GYRO_THRESH_MASK  0xE000
-
-typedef enum {
-	SELFTEST_AVG_TIME_10_MS = 0x0000,
-	SELFTEST_AVG_TIME_20_MS = 0x0080,
-	SELFTEST_AVG_TIME_40_MS = 0x0100,
-	SELFTEST_AVG_TIME_80_MS = 0x0180,
-	SELFTEST_AVG_TIME_160_MS = 0x0200,
-	SELFTEST_AVG_TIME_320_MS = 0x0280,
-
-	ST_DIRECT_AVG_TIME_10_MS = 10,
-	ST_DIRECT_AVG_TIME_20_MS = 20,
-	ST_DIRECT_AVG_TIME_40_MS = 40,
-	ST_DIRECT_AVG_TIME_80_MS = 80,
-	ST_DIRECT_AVG_TIME_160_MS = 160,
-	ST_DIRECT_AVG_TIME_320_MS = 320
-} selftest_average_time_t;
-
-typedef enum {
-	SELFTEST_ACCEL_THRESHOLD_5_PERCENT = 0x0000,
-	SELFTEST_ACCEL_THRESHOLD_10_PERCENT = 0x0400,
-	SELFTEST_ACCEL_THRESHOLD_15_PERCENT = 0x0800,
-	SELFTEST_ACCEL_THRESHOLD_20_PERCENT = 0x0c00,
-	SELFTEST_ACCEL_THRESHOLD_25_PERCENT = 0x1000,
-	SELFTEST_ACCEL_THRESHOLD_30_PERCENT = 0x1400,
-	SELFTEST_ACCEL_THRESHOLD_40_PERCENT = 0x1800,
-	SELFTEST_ACCEL_THRESHOLD_50_PERCENT = 0x1c00,
-
-	ST_DIRECT_ACCEL_THRESHOLD_5_PERCENT = 5,
-	ST_DIRECT_ACCEL_THRESHOLD_10_PERCENT = 10,
-	ST_DIRECT_ACCEL_THRESHOLD_15_PERCENT = 15,
-	ST_DIRECT_ACCEL_THRESHOLD_20_PERCENT = 20,
-	ST_DIRECT_ACCEL_THRESHOLD_25_PERCENT = 25,
-	ST_DIRECT_ACCEL_THRESHOLD_30_PERCENT = 30,
-	ST_DIRECT_ACCEL_THRESHOLD_40_PERCENT = 40,
-	ST_DIRECT_ACCEL_THRESHOLD_50_PERCENT = 50
-} selftest_accel_threshold_t;
-
-typedef enum {
-	SELFTEST_GYRO_THRESHOLD_5_PERCENT = 0x0000,
-	SELFTEST_GYRO_THRESHOLD_10_PERCENT = 0x2000,
-	SELFTEST_GYRO_THRESHOLD_15_PERCENT = 0x4000,
-	SELFTEST_GYRO_THRESHOLD_20_PERCENT = 0x6000,
-	SELFTEST_GYRO_THRESHOLD_25_PERCENT = 0x8000,
-	SELFTEST_GYRO_THRESHOLD_30_PERCENT = 0xa000,
-	SELFTEST_GYRO_THRESHOLD_40_PERCENT = 0xc000,
-	SELFTEST_GYRO_THRESHOLD_50_PERCENT = 0xe000,
-
-	ST_DIRECT_GYRO_THRESHOLD_5_PERCENT = 5,
-	ST_DIRECT_GYRO_THRESHOLD_10_PERCENT = 10,
-	ST_DIRECT_GYRO_THRESHOLD_15_PERCENT = 15,
-	ST_DIRECT_GYRO_THRESHOLD_20_PERCENT = 20,
-	ST_DIRECT_GYRO_THRESHOLD_25_PERCENT = 25,
-	ST_DIRECT_GYRO_THRESHOLD_30_PERCENT = 30,
-	ST_DIRECT_GYRO_THRESHOLD_40_PERCENT = 40,
-	ST_DIRECT_GYRO_THRESHOLD_50_PERCENT = 50
-} selftest_gyro_threshold_t;
-
-/*
- * EDMP_STC_PATCH_EN
- */
-
-typedef enum {
-	SELFTEST_PATCH_EN_ACCEL_PHASE1 = 0x0001,
-	SELFTEST_PATCH_EN_ACCEL_PHASE2 = 0x0002,
-	SELFTEST_PATCH_EN_GYRO1_PHASE1 = 0x0004,
-	SELFTEST_PATCH_EN_GYRO1_PHASE2 = 0x0008,
-} stc_patch_params_t;
 
 #ifdef __cplusplus
 }

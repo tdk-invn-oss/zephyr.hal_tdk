@@ -7,12 +7,11 @@
 #include "icm566xx/imu/inv_imu_edmp.h"
 #include "icm566xx/imu/inv_imu_edmp_apex.h"
 
-int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_t *p)
+int icm566xx_edmp_get_ped_apex_parameters(inv_imu_device_t *s,
+					  inv_imu_edmp_apex_parameters_ped_t *p)
 {
 	int status = INV_IMU_OK;
-	edmp_apex_en1_t edmp_apex_en1;
 
-	/* Pedometer */
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_PED_AMP_TH, (uint8_t *)&p->ped_amp_th);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_PED_STEP_CNT_TH, (uint8_t *)&p->ped_step_cnt_th);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_PED_STEP_DET_TH, (uint8_t *)&p->ped_step_det_th);
@@ -24,16 +23,37 @@ int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_par
 		INV_IMU_READ_EDMP_SRAM(s, EDMP_PED_LOW_EN_AMP_TH, (uint8_t *)&p->ped_low_en_amp_th);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_ODR_PED, (uint8_t *)&p->ped_odr);
 
-	/* Tilt */
+	return status;
+}
+
+int icm566xx_edmp_get_tilt_apex_parameters(inv_imu_device_t *s,
+					   inv_imu_edmp_apex_parameters_tilt_t *p)
+{
+	int status = INV_IMU_OK;
+
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_TILT_WAIT_TIME, (uint8_t *)&p->tilt_wait_time);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_TILT_ANGLE_TH, (uint8_t *)&p->tilt_angle);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_ODR_TILT, (uint8_t *)&p->tilt_odr);
 
-	/* SMD */
+	return status;
+}
+
+int icm566xx_edmp_get_smd_apex_parameters(inv_imu_device_t *s,
+					  inv_imu_edmp_apex_parameters_smd_t *p)
+{
+	int status = INV_IMU_OK;
+
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_SMD_SENSITIVITY, (uint8_t *)&p->smd_sensitivity);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_ODR_SMD, (uint8_t *)&p->smd_odr);
 
-	/* R2W */
+	return status;
+}
+
+int icm566xx_edmp_get_r2w_apex_parameters(inv_imu_device_t *s,
+					  inv_imu_edmp_apex_parameters_r2w_t *p)
+{
+	int status = INV_IMU_OK;
+
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_R2W_SLEEP_TIME_OUT,
 					 (uint8_t *)&p->r2w_sleep_time_out);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_R2W_SLEEP_GESTURE_DELAY,
@@ -60,7 +80,14 @@ int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_par
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_R2W_SAMPLING_PERIOD,
 					 (uint8_t *)&p->r2w_sampling_period);
 
-	/* Freefall */
+	return status;
+}
+
+int icm566xx_edmp_get_ff_apex_parameters(inv_imu_device_t *s,
+					 inv_imu_edmp_apex_parameters_freefall_t *p)
+{
+	int status = INV_IMU_OK;
+
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_LOWG_PEAK_TH, (uint8_t *)&p->lowg_peak_th);
 	status |=
 		INV_IMU_READ_EDMP_SRAM(s, EDMP_LOWG_PEAK_TH_HYST, (uint8_t *)&p->lowg_peak_th_hyst);
@@ -75,7 +102,14 @@ int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_par
 					 (uint8_t *)&p->ff_debounce_duration);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_ODR_FF, (uint8_t *)&p->ff_odr);
 
-	/* Tap */
+	return status;
+}
+
+int icm566xx_edmp_get_tap_apex_parameters(inv_imu_device_t *s,
+					  inv_imu_edmp_apex_parameters_tap_t *p)
+{
+	int status = INV_IMU_OK;
+
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_TAP_MIN_JERK, (uint8_t *)&p->tap_min_jerk);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_TAP_TMAX, (uint8_t *)&p->tap_tmax);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_TAP_TMIN, (uint8_t *)&p->tap_tmin);
@@ -93,7 +127,14 @@ int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_par
 					 (uint8_t *)&p->tap_axis_select_mask);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_ODR_TAP, (uint8_t *)&p->tap_odr);
 
-	/* B2S */
+	return status;
+}
+
+int icm566xx_edmp_get_b2s_apex_parameters(inv_imu_device_t *s,
+					  inv_imu_edmp_apex_parameters_b2s_t *p)
+{
+	int status = INV_IMU_OK;
+
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_B2S_MOUNTING_MATRIX,
 					 (uint8_t *)&p->b2s_mounting_matrix);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_B2S_DEV_NORM_MAX, (uint8_t *)&p->b2s_DevNormMax);
@@ -109,10 +150,16 @@ int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_par
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_B2S_THR_COS_ANGLE, (uint8_t *)&p->b2s_ThrCosAng);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_B2S_REVB2S_LATENCY_THR,
 					 (uint8_t *)&p->b2s_RevB2sLatencyTh);
-
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_ODR_B2S, (uint8_t *)&p->b2s_odr);
 
-	/* shake */
+	return status;
+}
+
+int icm566xx_edmp_get_shake_apex_parameters(inv_imu_device_t *s,
+					    inv_imu_edmp_apex_parameters_shake_t *p)
+{
+	int status = INV_IMU_OK;
+
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_SHAKE_THR_STATIC,
 					 (uint8_t *)&p->shake_thresh_static);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_SHAKE_MIN_STATIC_DURATION,
@@ -137,7 +184,14 @@ int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_par
 					 (uint8_t *)&p->shake_axis_majority_th);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_ODR_SHAKE, (uint8_t *)&p->shake_odr);
 
-	/* noMotion */
+	return status;
+}
+
+int icm566xx_edmp_get_nomotion_apex_parameters(inv_imu_device_t *s,
+					       inv_imu_edmp_apex_parameters_nomotion_t *p)
+{
+	int status = INV_IMU_OK;
+
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_NOMOTION_THR_STATIC,
 					 (uint8_t *)&p->nomotion_thresh_static);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_NOMOTION_MIN_STATIC_DURATION,
@@ -146,14 +200,21 @@ int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_par
 					 (uint8_t *)&p->nomotion_thresh_motion);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_ODR_NOMOTION, (uint8_t *)&p->nomotion_odr);
 
-	/* Flat */
+	return status;
+}
+
+int icm566xx_edmp_get_flat_apex_parameters(inv_imu_device_t *s,
+					   inv_imu_edmp_apex_parameters_flat_t *p)
+{
+	int status = INV_IMU_OK;
+
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_FLAT_WAIT_TIME, (uint8_t *)&p->flat_wait_time);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_FLAT_COS_FLAT_ANGLE_TH,
 					 (uint8_t *)&p->flat_cos_flat_angle_th);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_FLAT_REF_AXIS_SELECTION,
 					 (uint8_t *)&p->flat_ref_axis_selection);
-	status |=
-		INV_IMU_READ_EDMP_SRAM(s, EDMP_FLAT_ISSYMETRICAL, (uint8_t *)&p->flat_isSymetrical);
+	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_FLAT_ISSYMMETRICAL,
+					 (uint8_t *)&p->flat_is_symetrical);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_FLAT_THREE_AXIS_CONV_TIME,
 					 (uint8_t *)&p->flat_three_axis_conv_time);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_FLAT_REF_AXIS_X, (uint8_t *)&p->flat_ref_axis_x);
@@ -161,12 +222,15 @@ int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_par
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_FLAT_REF_AXIS_Z, (uint8_t *)&p->flat_ref_axis_z);
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_ODR_FLAT, (uint8_t *)&p->flat_odr);
 
-	/* Three Axis */
-	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_ODR_3AXIS, (uint8_t *)&p->three_axis_odr);
-	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_ACCEL_ONLY_GAIN_FAST_CONV,
-					 (uint8_t *)&p->three_axis_accel_only_gain);
+	return status;
+}
 
-	/* Power save */
+int icm566xx_edmp_get_power_save_apex_parameters(inv_imu_device_t *s,
+						 inv_imu_edmp_apex_parameters_power_save_t *p)
+{
+	int status = INV_IMU_OK;
+	edmp_apex_en1_t edmp_apex_en1;
+
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_POWER_SAVE_TIME, (uint8_t *)&p->power_save_time);
 	status |= icm566xx_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
 	p->power_save_en = edmp_apex_en1.power_save_en ? INV_IMU_ENABLE : INV_IMU_DISABLE;
@@ -174,20 +238,73 @@ int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_par
 	return status;
 }
 
-int icm566xx_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_t *p)
+int icm566xx_edmp_get_three_axis_apex_parameters(inv_imu_device_t *s,
+						 inv_imu_edmp_apex_parameters_three_axis_t *p)
 {
 	int status = INV_IMU_OK;
-	edmp_apex_enx_t cfg;
 
-#if 0
-	/* DMP cannot be configured if it is running, hence make sure all APEX algorithms are off */
-	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 2, (uint8_t *)&cfg);
-	if (cfg.edmp_apex_en0.pedo_en || cfg.edmp_apex_en0.tilt_en || cfg.edmp_apex_en0.ff_en ||
-	    cfg.edmp_apex_en0.smd_en || cfg.edmp_apex_en0.tap_en || cfg.edmp_apex_en0.r2w_en || cfg.edmp_apex_en0.shake_en || cfg.edmp_apex_en0.nomotion_en ||
-		cfg.edmp_apex_en1.flat_en)
-		return INV_IMU_ERROR;
-#endif
+	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_ODR_3AXIS, (uint8_t *)&p->three_axis_odr);
+	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_ACCEL_ONLY_GAIN_FAST_CONV,
+					 (uint8_t *)&p->three_axis_accel_only_gain);
+
+	return status;
+}
+
+int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_t *p)
+{
+	int status = INV_IMU_OK;
+
 	/* Pedometer */
+	status |= icm566xx_edmp_get_ped_apex_parameters(s, &p->ped);
+
+	/* Tilt */
+	status |= icm566xx_edmp_get_tilt_apex_parameters(s, &p->tilt);
+
+	/* SMD */
+	status |= icm566xx_edmp_get_smd_apex_parameters(s, &p->smd);
+
+	/* R2W */
+	status |= icm566xx_edmp_get_r2w_apex_parameters(s, &p->r2w);
+
+	/* Freefall */
+	status |= icm566xx_edmp_get_ff_apex_parameters(s, &p->ff);
+
+	/* Tap */
+	status |= icm566xx_edmp_get_tap_apex_parameters(s, &p->tap);
+
+	/* B2S */
+	status |= icm566xx_edmp_get_b2s_apex_parameters(s, &p->b2s);
+
+	/* shake */
+	status |= icm566xx_edmp_get_shake_apex_parameters(s, &p->shake);
+
+	/* noMotion */
+	status |= icm566xx_edmp_get_nomotion_apex_parameters(s, &p->nomotion);
+
+	/* Flat */
+	status |= icm566xx_edmp_get_flat_apex_parameters(s, &p->flat);
+
+	/* Three Axis */
+	status |= icm566xx_edmp_get_three_axis_apex_parameters(s, &p->three_axis);
+
+	/* Power save */
+	status |= icm566xx_edmp_get_power_save_apex_parameters(s, &p->power_save);
+
+	return status;
+}
+
+int icm566xx_edmp_set_ped_apex_parameters(inv_imu_device_t *s,
+					  const inv_imu_edmp_apex_parameters_ped_t *p)
+{
+	int status = INV_IMU_OK;
+	edmp_apex_en0_t edmp_apex_en0;
+
+	/* EDMP pedometer cannot be configured if it is running */
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	if (edmp_apex_en0.pedo_en) {
+		return INV_IMU_ERROR;
+	}
+
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_PED_AMP_TH, (uint8_t *)&p->ped_amp_th);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_PED_STEP_CNT_TH, (uint8_t *)&p->ped_step_cnt_th);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_PED_PREV_STEP_CNT_TH,
@@ -201,16 +318,55 @@ int icm566xx_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_ap
 					  (uint8_t *)&p->ped_low_en_amp_th);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_ODR_PED, (uint8_t *)&p->ped_odr);
 
-	/* Tilt */
+	return status;
+}
+
+int icm566xx_edmp_set_tilt_apex_parameters(inv_imu_device_t *s,
+					   const inv_imu_edmp_apex_parameters_tilt_t *p)
+{
+	int status = INV_IMU_OK;
+	edmp_apex_en0_t edmp_apex_en0;
+
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	if (edmp_apex_en0.tilt_en) {
+		return INV_IMU_ERROR;
+	}
+
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_TILT_WAIT_TIME, (uint8_t *)&p->tilt_wait_time);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_TILT_ANGLE_TH, (uint8_t *)&p->tilt_angle);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_ODR_TILT, (uint8_t *)&p->tilt_odr);
 
-	/* SMD */
+	return status;
+}
+
+int icm566xx_edmp_set_smd_apex_parameters(inv_imu_device_t *s,
+					  const inv_imu_edmp_apex_parameters_smd_t *p)
+{
+	int status = INV_IMU_OK;
+	edmp_apex_en0_t edmp_apex_en0;
+
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	if (edmp_apex_en0.smd_en) {
+		return INV_IMU_ERROR;
+	}
+
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_SMD_SENSITIVITY, (uint8_t *)&p->smd_sensitivity);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_ODR_SMD, (uint8_t *)&p->smd_odr);
 
-	/* R2W */
+	return status;
+}
+
+int icm566xx_edmp_set_r2w_apex_parameters(inv_imu_device_t *s,
+					  const inv_imu_edmp_apex_parameters_r2w_t *p)
+{
+	int status = INV_IMU_OK;
+	edmp_apex_en0_t edmp_apex_en0;
+
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	if (edmp_apex_en0.r2w_en) {
+		return INV_IMU_ERROR;
+	}
+
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_R2W_SLEEP_TIME_OUT,
 					  (uint8_t *)&p->r2w_sleep_time_out);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_R2W_SLEEP_GESTURE_DELAY,
@@ -237,7 +393,20 @@ int icm566xx_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_ap
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_R2W_SAMPLING_PERIOD,
 					  (uint8_t *)&p->r2w_sampling_period);
 
-	/* Free Fall */
+	return status;
+}
+
+int icm566xx_edmp_set_ff_apex_parameters(inv_imu_device_t *s,
+					 const inv_imu_edmp_apex_parameters_freefall_t *p)
+{
+	int status = INV_IMU_OK;
+	edmp_apex_en0_t edmp_apex_en0;
+
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	if (edmp_apex_en0.ff_en) {
+		return INV_IMU_ERROR;
+	}
+
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_LOWG_PEAK_TH, (uint8_t *)&p->lowg_peak_th);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_LOWG_PEAK_TH_HYST,
 					  (uint8_t *)&p->lowg_peak_th_hyst);
@@ -252,7 +421,20 @@ int icm566xx_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_ap
 					  (uint8_t *)&p->ff_debounce_duration);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_ODR_FF, (uint8_t *)&p->ff_odr);
 
-	/* Tap */
+	return status;
+}
+
+int icm566xx_edmp_set_tap_apex_parameters(inv_imu_device_t *s,
+					  const inv_imu_edmp_apex_parameters_tap_t *p)
+{
+	int status = INV_IMU_OK;
+	edmp_apex_en0_t edmp_apex_en0;
+
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	if (edmp_apex_en0.tap_en) {
+		return INV_IMU_ERROR;
+	}
+
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_TAP_MIN_JERK, (uint8_t *)&p->tap_min_jerk);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_TAP_TMAX, (uint8_t *)&p->tap_tmax);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_TAP_TMIN, (uint8_t *)&p->tap_tmin);
@@ -271,7 +453,20 @@ int icm566xx_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_ap
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_TAP_AXIS_SELECT_MASK,
 					  (uint8_t *)&p->tap_axis_select_mask);
 
-	/* B2S */
+	return status;
+}
+
+int icm566xx_edmp_set_b2s_apex_parameters(inv_imu_device_t *s,
+					  const inv_imu_edmp_apex_parameters_b2s_t *p)
+{
+	int status = INV_IMU_OK;
+	edmp_apex_en1_t edmp_apex_en1;
+
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+	if (edmp_apex_en1.b2s_en) {
+		return INV_IMU_ERROR;
+	}
+
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_B2S_MOUNTING_MATRIX,
 					  (uint8_t *)&p->b2s_mounting_matrix);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_B2S_DEV_NORM_MAX, (uint8_t *)&p->b2s_DevNormMax);
@@ -287,10 +482,22 @@ int icm566xx_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_ap
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_B2S_THR_COS_ANGLE, (uint8_t *)&p->b2s_ThrCosAng);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_B2S_REVB2S_LATENCY_THR,
 					  (uint8_t *)&p->b2s_RevB2sLatencyTh);
-
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_ODR_B2S, (uint8_t *)&p->b2s_odr);
 
-	/* shake */
+	return status;
+}
+
+int icm566xx_edmp_set_shake_apex_parameters(inv_imu_device_t *s,
+					    const inv_imu_edmp_apex_parameters_shake_t *p)
+{
+	int status = INV_IMU_OK;
+	edmp_apex_en0_t edmp_apex_en0;
+
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	if (edmp_apex_en0.shake_en) {
+		return INV_IMU_ERROR;
+	}
+
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_SHAKE_THR_STATIC,
 					  (uint8_t *)&p->shake_thresh_static);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_SHAKE_MIN_STATIC_DURATION,
@@ -315,7 +522,20 @@ int icm566xx_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_ap
 					  (uint8_t *)&p->shake_axis_majority_th);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_ODR_SHAKE, (uint8_t *)&p->shake_odr);
 
-	/* noMotion */
+	return status;
+}
+
+int icm566xx_edmp_set_nomotion_apex_parameters(inv_imu_device_t *s,
+					       const inv_imu_edmp_apex_parameters_nomotion_t *p)
+{
+	int status = INV_IMU_OK;
+	edmp_apex_en0_t edmp_apex_en0;
+
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	if (edmp_apex_en0.nomotion_en) {
+		return INV_IMU_ERROR;
+	}
+
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_NOMOTION_THR_STATIC,
 					  (uint8_t *)&p->nomotion_thresh_static);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_NOMOTION_MIN_STATIC_DURATION,
@@ -324,14 +544,27 @@ int icm566xx_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_ap
 					  (uint8_t *)&p->nomotion_thresh_motion);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_ODR_NOMOTION, (uint8_t *)&p->nomotion_odr);
 
-	/* Flat */
+	return status;
+}
+
+int icm566xx_edmp_set_flat_apex_parameters(inv_imu_device_t *s,
+					   const inv_imu_edmp_apex_parameters_flat_t *p)
+{
+	int status = INV_IMU_OK;
+	edmp_apex_en1_t edmp_apex_en1;
+
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+	if (edmp_apex_en1.flat_en) {
+		return INV_IMU_ERROR;
+	}
+
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_FLAT_WAIT_TIME, (uint8_t *)&p->flat_wait_time);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_FLAT_COS_FLAT_ANGLE_TH,
 					  (uint8_t *)&p->flat_cos_flat_angle_th);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_FLAT_REF_AXIS_SELECTION,
 					  (uint8_t *)&p->flat_ref_axis_selection);
-	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_FLAT_ISSYMETRICAL,
-					  (uint8_t *)&p->flat_isSymetrical);
+	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_FLAT_ISSYMMETRICAL,
+					  (uint8_t *)&p->flat_is_symetrical);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_FLAT_THREE_AXIS_CONV_TIME,
 					  (uint8_t *)&p->flat_three_axis_conv_time);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_FLAT_REF_AXIS_X, (uint8_t *)&p->flat_ref_axis_x);
@@ -339,16 +572,80 @@ int icm566xx_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_ap
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_FLAT_REF_AXIS_Z, (uint8_t *)&p->flat_ref_axis_z);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_ODR_FLAT, (uint8_t *)&p->flat_odr);
 
-	/* Three Axis */
+	return status;
+}
+
+int icm566xx_edmp_set_power_save_apex_parameters(inv_imu_device_t *s,
+						 const inv_imu_edmp_apex_parameters_power_save_t *p)
+{
+	int status = INV_IMU_OK;
+	edmp_apex_en1_t edmp_apex_en1;
+
+	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_POWER_SAVE_TIME, (uint8_t *)&p->power_save_time);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+	edmp_apex_en1.power_save_en = p->power_save_en;
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+
+	return status;
+}
+
+int icm566xx_edmp_set_three_axis_apex_parameters(inv_imu_device_t *s,
+						 const inv_imu_edmp_apex_parameters_three_axis_t *p)
+{
+	int status = INV_IMU_OK;
+	edmp_apex_en0_t edmp_apex_en0;
+
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	if (edmp_apex_en0.pedo_en || edmp_apex_en0.tilt_en) {
+		return INV_IMU_ERROR;
+	}
+
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_ODR_3AXIS, (uint8_t *)&p->three_axis_odr);
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_ACCEL_ONLY_GAIN_FAST_CONV,
 					  (uint8_t *)&p->three_axis_accel_only_gain);
 
+	return status;
+}
+
+int icm566xx_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_t *p)
+{
+	int status = INV_IMU_OK;
+
+	/* Pedometer */
+	status |= icm566xx_edmp_set_ped_apex_parameters(s, &p->ped);
+
+	/* Tilt */
+	status |= icm566xx_edmp_set_tilt_apex_parameters(s, &p->tilt);
+
+	/* SMD */
+	status |= icm566xx_edmp_set_smd_apex_parameters(s, &p->smd);
+
+	/* R2W */
+	status |= icm566xx_edmp_set_r2w_apex_parameters(s, &p->r2w);
+
+	/* Free Fall */
+	status |= icm566xx_edmp_set_ff_apex_parameters(s, &p->ff);
+
+	/* Tap */
+	status |= icm566xx_edmp_set_tap_apex_parameters(s, &p->tap);
+
+	/* B2S */
+	status |= icm566xx_edmp_set_b2s_apex_parameters(s, &p->b2s);
+
+	/* shake */
+	status |= icm566xx_edmp_set_shake_apex_parameters(s, &p->shake);
+
+	/* noMotion */
+	status |= icm566xx_edmp_set_nomotion_apex_parameters(s, &p->nomotion);
+
+	/* Flat */
+	status |= icm566xx_edmp_set_flat_apex_parameters(s, &p->flat);
+
+	/* Three Axis */
+	status |= icm566xx_edmp_set_three_axis_apex_parameters(s, &p->three_axis);
+
 	/* Power save */
-	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_POWER_SAVE_TIME, (uint8_t *)&p->power_save_time);
-	status |= icm566xx_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&cfg.edmp_apex_en1);
-	cfg.edmp_apex_en1.power_save_en = p->power_save_en;
-	status |= icm566xx_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&cfg.edmp_apex_en1);
+	status |= icm566xx_edmp_set_power_save_apex_parameters(s, &p->power_save);
 
 	return status;
 }
@@ -738,7 +1035,7 @@ int icm566xx_edmp_set_shake_odr(inv_imu_device_t *s, uint16_t shake_odr)
 	return status;
 }
 
-int icm566xx_edmp_enable_noMotion(inv_imu_device_t *s)
+int icm566xx_edmp_enable_nomotion(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 
@@ -751,7 +1048,7 @@ int icm566xx_edmp_enable_noMotion(inv_imu_device_t *s)
 	return status;
 }
 
-int icm566xx_edmp_disable_noMotion(inv_imu_device_t *s)
+int icm566xx_edmp_disable_nomotion(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
 
@@ -764,11 +1061,11 @@ int icm566xx_edmp_disable_noMotion(inv_imu_device_t *s)
 	return status;
 }
 
-int icm566xx_edmp_set_noMotion_odr(inv_imu_device_t *s, uint16_t noMotion_odr)
+int icm566xx_edmp_set_nomotion_odr(inv_imu_device_t *s, uint16_t nomotion_odr)
 {
 	int status = INV_IMU_OK;
 
-	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_ODR_NOMOTION, (uint8_t *)&noMotion_odr);
+	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_ODR_NOMOTION, (uint8_t *)&nomotion_odr);
 	return status;
 }
 
@@ -803,28 +1100,6 @@ int icm566xx_edmp_set_flat_odr(inv_imu_device_t *s, uint16_t flat_odr)
 	int status = INV_IMU_OK;
 
 	status |= INV_IMU_WRITE_EDMP_SRAM(s, EDMP_ODR_FLAT, (uint8_t *)&flat_odr);
-	return status;
-}
-
-int icm566xx_edmp_set_compass_frequency(inv_imu_device_t *s,
-					const dmp_ext_sen_odr_cfg_ext_odr_t frequency)
-{
-	int status = INV_IMU_OK;
-
-	return status;
-}
-
-int icm566xx_edmp_enable_compass_es(inv_imu_device_t *s)
-{
-	int status = INV_IMU_OK;
-
-	return status;
-}
-
-int icm566xx_edmp_disable_compass_es(inv_imu_device_t *s)
-{
-	int status = INV_IMU_OK;
-
 	return status;
 }
 
@@ -939,20 +1214,21 @@ int icm566xx_edmp_get_ff_data(inv_imu_device_t *s, uint16_t *freefall_duration)
 int icm566xx_edmp_get_tap_data(inv_imu_device_t *s, inv_imu_edmp_tap_data_t *data)
 {
 	int status = INV_IMU_OK;
+	uint8_t tap_timing;
 
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_TAP_NUM, (uint8_t *)&(data->num));
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_TAP_AXIS, (uint8_t *)&(data->axis));
 	status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_TAP_DIR, (uint8_t *)&(data->direction));
 	if (data->num == INV_IMU_EDMP_TAP_DOUBLE) {
-		status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_DOUBLE_TAP_TIMING,
-						 (uint8_t *)&(data->double_tap_timing));
+		status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_DOUBLE_TAP_TIMING, &tap_timing);
+		data->double_tap_timing = tap_timing * 16;
 	} else {
 		data->double_tap_timing = 0;
 	}
 
 	if (data->num == INV_IMU_EDMP_TAP_TRIPLE) {
-		status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_TRIPLE_TAP_TIMING,
-						 (uint8_t *)&(data->triple_tap_timing));
+		status |= INV_IMU_READ_EDMP_SRAM(s, EDMP_TRIPLE_TAP_TIMING, &tap_timing);
+		data->triple_tap_timing = tap_timing * 16;
 	} else {
 		data->triple_tap_timing = 0;
 	}

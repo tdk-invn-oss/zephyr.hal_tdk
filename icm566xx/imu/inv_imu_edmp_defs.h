@@ -14,6 +14,10 @@ extern "C" {
 #define EDMP_ROM_ONLY_SP_START_ADDR         0x600
 #define EDMP_ROM_RAM_SP_START_ADDR          0x900
 #define EDMP_RAM_PRGM_BASE                  0x5AC
+#define EDMP_RAM_BASE                       0x0
+#define EDMP_RAM_SIZE                       0x1000
+#define EDMP_ROM_BASE                       0x4000
+#define EDMP_ROM_DATA_SIZE                  0x5AC
 #define RAM_INSTR_PRGM_BASE                 0x1B0
 #define RAM_INSTR_SP_START_ADDR             0x400
 #define RAM_INSTR_FIFO_SIZE                 0x100
@@ -52,6 +56,8 @@ extern "C" {
 #define EDMP_HOST_INT_SMD_DET_MSK           0x2
 #define EDMP_HOST_INT_SELF_TEST_DONE_POS    0x2
 #define EDMP_HOST_INT_SELF_TEST_DONE_MSK    0x4
+#define EDMP_HOST_INT_SELF_CAL_DONE_POS     0x3
+#define EDMP_HOST_INT_SELF_CAL_DONE_MSK     0x8
 #define EDMP_HOST_INT_SA_DONE_POS           0x4
 #define EDMP_HOST_INT_SA_DONE_MSK           0x10
 #define EDMP_HOST_INT_BUMP_DET_POS          0x4

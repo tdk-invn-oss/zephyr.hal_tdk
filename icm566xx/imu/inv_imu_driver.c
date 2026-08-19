@@ -8,6 +8,10 @@
 #include "icm566xx/imu/inv_imu_driver.h"
 #include "icm566xx/imu/inv_imu_version.h"
 
+#ifndef INV_IMU_POST_RESET_HOOK
+#define INV_IMU_POST_RESET_HOOK(s) INV_IMU_OK
+#endif
+
 void icm566xx_sleep_us(inv_imu_device_t *s, uint32_t us)
 {
 	if (s->transport.sleep_us != NULL) {
@@ -41,6 +45,9 @@ int icm566xx_soft_reset(inv_imu_device_t *s)
 	/* Restore INTF_CONFIG1_OVRD register */
 	status |= icm566xx_write_reg(s, INTF_CONFIG1_OVRD, 1, (uint8_t *)&intf_config1_ovrd);
 
+	/* Reset driver internal states */
+	s->fifo_frame_size = 0; /* Init at 0 by default */
+
 	/* Clear the RESET_DONE interrupt */
 	status |= icm566xx_read_reg(s, INT1_STATUS0, 1, (uint8_t *)&int1_status0);
 	if (int1_status0.int1_status_reset_done != 1) {
@@ -50,8 +57,12 @@ int icm566xx_soft_reset(inv_imu_device_t *s)
 	/* Venice defaults to Big Endian -- Switch it to Little Endian */
 	status |= icm566xx_read_reg(s, SREG_CTRL, 1, (uint8_t *)&sreg_ctrl);
 	sreg_ctrl.sreg_data_endian_sel = SREG_CTRL_SREG_DATA_LITTLE_ENDIAN;
-
 	status |= icm566xx_write_reg(s, SREG_CTRL, 1, (uint8_t *)&sreg_ctrl);
+
+	/* Store endianness for further processing in `endianness_data` variable */
+	s->endianness_data = sreg_ctrl.sreg_data_endian_sel;
+
+	status |= INV_IMU_POST_RESET_HOOK(s);
 
 	return status;
 }
@@ -61,15 +72,6 @@ int icm566xx_get_who_am_i(inv_imu_device_t *s, uint8_t *who_am_i)
 	int status;
 
 	status = icm566xx_read_reg(s, WHO_AM_I, 1, who_am_i);
-
-	/*
-	 * AN-000364
-	 * In I2C mode, after chip power-up, the host should perform one retry
-	 * on the very first I2C transaction if it receives a NACK
-	 */
-	if (s->transport.serif_type == UI_I2C && status) {
-		status = icm566xx_read_reg(s, WHO_AM_I, 1, who_am_i);
-	}
 
 	return status;
 }
@@ -82,7 +84,7 @@ int icm566xx_set_accel_mode(inv_imu_device_t *s, pwr_mgmt0_accel_mode_t accel_mo
 	status |= icm566xx_get_endianness(s);
 
 	status |= icm566xx_read_reg(s, PWR_MGMT0, 1, (uint8_t *)&pwr_mgmt0);
-	pwr_mgmt0.accel_mode = accel_mode;
+	pwr_mgmt0.accel_mode = (uint8_t)accel_mode;
 	status |= icm566xx_write_reg(s, PWR_MGMT0, 1, (uint8_t *)&pwr_mgmt0);
 
 	return status;
@@ -96,7 +98,7 @@ int icm566xx_set_gyro_mode(inv_imu_device_t *s, pwr_mgmt0_gyro_mode_t gyro_mode)
 	status |= icm566xx_get_endianness(s);
 
 	status |= icm566xx_read_reg(s, PWR_MGMT0, 1, (uint8_t *)&pwr_mgmt0);
-	pwr_mgmt0.gyro_mode = gyro_mode;
+	pwr_mgmt0.gyro_mode = (uint8_t)gyro_mode;
 	status |= icm566xx_write_reg(s, PWR_MGMT0, 1, (uint8_t *)&pwr_mgmt0);
 
 	return status;
@@ -108,7 +110,7 @@ int icm566xx_set_accel_frequency(inv_imu_device_t *s, const accel_config0_accel_
 	accel_config0_t accel_config0;
 
 	status |= icm566xx_read_reg(s, ACCEL_CONFIG0, 1, (uint8_t *)&accel_config0);
-	accel_config0.accel_odr = frequency;
+	accel_config0.accel_odr = (uint8_t)frequency;
 	status |= icm566xx_write_reg(s, ACCEL_CONFIG0, 1, (uint8_t *)&accel_config0);
 
 	return status;
@@ -120,7 +122,7 @@ int icm566xx_set_gyro_frequency(inv_imu_device_t *s, const gyro_config0_gyro_odr
 	gyro_config0_t gyro_config0;
 
 	status |= icm566xx_read_reg(s, GYRO_CONFIG0, 1, (uint8_t *)&gyro_config0);
-	gyro_config0.gyro_odr = frequency;
+	gyro_config0.gyro_odr = (uint8_t)frequency;
 	status |= icm566xx_write_reg(s, GYRO_CONFIG0, 1, (uint8_t *)&gyro_config0);
 
 	return status;
@@ -132,7 +134,7 @@ int icm566xx_set_accel_fsr(inv_imu_device_t *s, accel_config0_ap_accel_fs_sel_t 
 	accel_config0_t accel_config0;
 
 	status |= icm566xx_read_reg(s, ACCEL_CONFIG0, 1, (uint8_t *)&accel_config0);
-	accel_config0.ap_accel_fs_sel = accel_fsr;
+	accel_config0.ap_accel_fs_sel = (uint8_t)accel_fsr;
 	status |= icm566xx_write_reg(s, ACCEL_CONFIG0, 1, (uint8_t *)&accel_config0);
 
 	return status;
@@ -144,7 +146,7 @@ int icm566xx_set_gyro_fsr(inv_imu_device_t *s, gyro_config0_ap_gyro_fs_sel_t gyr
 	gyro_config0_t gyro_config0;
 
 	status |= icm566xx_read_reg(s, GYRO_CONFIG0, 1, (uint8_t *)&gyro_config0);
-	gyro_config0.ap_gyro_fs_sel = gyro_fsr;
+	gyro_config0.ap_gyro_fs_sel = (uint8_t)gyro_fsr;
 	status |= icm566xx_write_reg(s, GYRO_CONFIG0, 1, (uint8_t *)&gyro_config0);
 
 	return status;
@@ -156,7 +158,7 @@ int icm566xx_set_gyro_ln_bw(inv_imu_device_t *s, ipreg_sys1_reg_158_gyro_ui_lpfb
 	ipreg_sys1_reg_158_t ipreg_sys1_reg_158;
 
 	status |= icm566xx_read_reg(s, IPREG_SYS1_REG_158, 1, (uint8_t *)&ipreg_sys1_reg_158);
-	ipreg_sys1_reg_158.gyro_ui_lpfbw_sel = gyr_bw;
+	ipreg_sys1_reg_158.gyro_ui_lpfbw_sel = (uint8_t)gyr_bw;
 	status |= icm566xx_write_reg(s, IPREG_SYS1_REG_158, 1, (uint8_t *)&ipreg_sys1_reg_158);
 
 	return status;
@@ -168,7 +170,7 @@ int icm566xx_set_gyro_lp_avg(inv_imu_device_t *s, ipreg_sys1_reg_157_gyro_lp gyr
 	ipreg_sys1_reg_157_t ipreg_sys1_reg_157;
 
 	status |= icm566xx_read_reg(s, IPREG_SYS1_REG_157, 1, (uint8_t *)&ipreg_sys1_reg_157);
-	ipreg_sys1_reg_157.gyro_lp_avg_sel = gyr_avg;
+	ipreg_sys1_reg_157.gyro_lp_avg_sel = (uint8_t)gyr_avg;
 	status |= icm566xx_write_reg(s, IPREG_SYS1_REG_157, 1, (uint8_t *)&ipreg_sys1_reg_157);
 	return status;
 }
@@ -179,7 +181,7 @@ int icm566xx_set_accel_lp_avg(inv_imu_device_t *s, ipreg_sys2_reg_110_accel_lp_a
 	ipreg_sys2_reg_110_t ipreg_sys2_reg_110;
 
 	status |= icm566xx_read_reg(s, IPREG_SYS2_REG_110, 1, (uint8_t *)&ipreg_sys2_reg_110);
-	ipreg_sys2_reg_110.accel_lp_avg_sel = acc_avg;
+	ipreg_sys2_reg_110.accel_lp_avg_sel = (uint8_t)acc_avg;
 	status |= icm566xx_write_reg(s, IPREG_SYS2_REG_110, 1, (uint8_t *)&ipreg_sys2_reg_110);
 
 	return status;
@@ -191,7 +193,7 @@ int icm566xx_set_accel_ln_bw(inv_imu_device_t *s, ipreg_sys2_reg_112_accel_ui_lp
 	ipreg_sys2_reg_112_t ipreg_sys2_reg_112;
 
 	status |= icm566xx_read_reg(s, IPREG_SYS2_REG_112, 1, (uint8_t *)&ipreg_sys2_reg_112);
-	ipreg_sys2_reg_112.accel_ui_lpfbw_sel = acc_bw;
+	ipreg_sys2_reg_112.accel_ui_lpfbw_sel = (uint8_t)acc_bw;
 	status |= icm566xx_write_reg(s, IPREG_SYS2_REG_112, 1, (uint8_t *)&ipreg_sys2_reg_112);
 
 	return status;
@@ -203,7 +205,7 @@ int icm566xx_set_gyro_notch_bypass(inv_imu_device_t *s, uint8_t bypass_gyr_notch
 	ipreg_sys1_reg_157_t ipreg_sys1_reg_157;
 
 	status |= icm566xx_read_reg(s, IPREG_SYS1_REG_157, 1, (uint8_t *)&ipreg_sys1_reg_157);
-	ipreg_sys1_reg_157.gyro_notch_bypass = bypass_gyr_notch;
+	ipreg_sys1_reg_157.gyro_notch_bypass = (uint8_t)bypass_gyr_notch;
 	status |= icm566xx_write_reg(s, IPREG_SYS1_REG_157, 1, (uint8_t *)&ipreg_sys1_reg_157);
 	return status;
 }
@@ -212,11 +214,12 @@ int icm566xx_get_register_data(inv_imu_device_t *s, inv_imu_sensor_data_t *data)
 {
 	int status = INV_IMU_OK;
 	uint8_t high_order_data[ACCEL_DATA_SIZE + GYRO_DATA_SIZE + TEMP_DATA_SIZE];
+#if INV_IMU_HIGH_FSR_SUPPORTED == 1
+	uint8_t low_order_data[EXT_DATA_SIZE] = {0};
+#endif
 
 	status |= icm566xx_read_reg(s, ACCEL_DATA_X_0, sizeof(high_order_data), high_order_data);
-#ifdef EXT_DATA_X
-	uint8_t low_order_data[EXT_DATA_SIZE] = {0};
-
+#if INV_IMU_HIGH_FSR_SUPPORTED == 1
 	status |= icm566xx_read_reg(s, EXT_DATA_X, sizeof(low_order_data), low_order_data);
 #endif
 
@@ -229,19 +232,19 @@ int icm566xx_get_register_data(inv_imu_device_t *s, inv_imu_sensor_data_t *data)
 			   (low_order_data[2] & 0x0F), &data->accel_data[2]);
 	/* Format gyro data from sensor registers. */
 	FORMAT_SENSOR_DATA(s->endianness_data, (uint8_t *)&high_order_data[6],
-			   (low_order_data[0] >> 4), &data->gyro_data[0]);
+			   ((low_order_data[0] >> 4) & 0x0F), &data->gyro_data[0]);
 	FORMAT_SENSOR_DATA(s->endianness_data, (uint8_t *)&high_order_data[8],
-			   (low_order_data[1] >> 4), &data->gyro_data[1]);
+			   ((low_order_data[1] >> 4) & 0x0F), &data->gyro_data[1]);
 	FORMAT_SENSOR_DATA(s->endianness_data, (uint8_t *)&high_order_data[10],
-			   (low_order_data[2] >> 4), &data->gyro_data[2]);
+			   ((low_order_data[2] >> 4) & 0x0F), &data->gyro_data[2]);
 
-#ifdef EXT_DATA_X
+#if INV_IMU_HIGH_FSR_SUPPORTED == 1
 	/* Make sure that 20-bit negative data is negative when it's in an int32_t */
 	for (int ii = 0; ii < 3; ii++) {
-		if (data->accel_data[ii] & 0x8000) {
+		if (data->accel_data[ii] & 0x80000) {
 			data->accel_data[ii] |= 0xFFF00000;
 		}
-		if (data->gyro_data[ii] & 0x8000) {
+		if (data->gyro_data[ii] & 0x80000) {
 			data->gyro_data[ii] |= 0xFFF00000;
 		}
 	}
@@ -274,7 +277,7 @@ int icm566xx_set_fifo_config(inv_imu_device_t *s, const inv_imu_fifo_config_t *f
 	status |= icm566xx_write_reg(s, FIFO_CONFIG0, 1, (uint8_t *)&cfg.fifo_config0);
 
 	/* Set FIFO depth */
-	cfg.fifo_config0.fifo_depth = fifo_config->fifo_depth;
+	cfg.fifo_config0.fifo_depth = (uint8_t)fifo_config->fifo_depth;
 
 	/* Set WM */
 	cfg.fifo_config1_0 = (uint8_t)fifo_config->fifo_wm_th;
@@ -306,7 +309,7 @@ int icm566xx_set_fifo_config(inv_imu_device_t *s, const inv_imu_fifo_config_t *f
 	status |= icm566xx_write_reg(s, FIFO_CONFIG0, 6, (uint8_t *)&cfg);
 
 	/* Set expected fifo_mode */
-	cfg.fifo_config0.fifo_mode = fifo_config->fifo_mode;
+	cfg.fifo_config0.fifo_mode = (uint8_t)fifo_config->fifo_mode;
 
 	if (fifo_config->fifo_mode == FIFO_CONFIG0_FIFO_MODE_BYPASS) {
 		/*
@@ -575,9 +578,9 @@ int icm566xx_set_pin_config_int(inv_imu_device_t *s, const inv_imu_int_num_t num
 	status |= icm566xx_read_reg(s, reg, 1, (uint8_t *)&int1_config2);
 
 	/* Use `int1_config2_t` for both INT1 and INT2 as bit location are the same */
-	int1_config2.int1_polarity = conf->int_polarity;
-	int1_config2.int1_mode = conf->int_mode;
-	int1_config2.int1_drive = conf->int_drive;
+	int1_config2.int1_polarity = (uint8_t)conf->int_polarity;
+	int1_config2.int1_mode = (uint8_t)conf->int_mode;
+	int1_config2.int1_drive = (uint8_t)conf->int_drive;
 
 	status |= icm566xx_write_reg(s, reg, 1, (uint8_t *)&int1_config2);
 
@@ -643,7 +646,7 @@ int icm566xx_select_accel_lp_clk(inv_imu_device_t *s, pwr_mgmt_0_accel_lp_clk_se
 	pwr_mgmt0_t pwr_mgmt0;
 
 	status |= icm566xx_read_reg(s, PWR_MGMT0, 1, (uint8_t *)&pwr_mgmt0);
-	pwr_mgmt0.accel_lp_clk_sel = clk_sel;
+	pwr_mgmt0.accel_lp_clk_sel = (uint8_t)clk_sel;
 	status |= icm566xx_write_reg(s, PWR_MGMT0, 1, (uint8_t *)&pwr_mgmt0);
 
 	return status;

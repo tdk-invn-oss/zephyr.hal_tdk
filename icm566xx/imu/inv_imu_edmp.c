@@ -5,6 +5,11 @@
  */
 
 #include "icm566xx/imu/inv_imu_edmp.h"
+#include "icm566xx/imu/inv_imu_edmp_defs.h"
+
+#define EDMP_ROM_START_ADDR_IRQ0 (EDMP_ROM_BASE + 0x0000)
+#define EDMP_ROM_START_ADDR_IRQ1 (EDMP_ROM_BASE + 0x0004)
+#define EDMP_ROM_START_ADDR_IRQ2 (EDMP_ROM_BASE + 0x0008)
 
 int icm566xx_edmp_clear_apex_sram(inv_imu_device_t *s)
 {
@@ -32,7 +37,7 @@ int icm566xx_edmp_set_frequency(inv_imu_device_t *s, const dmp_ext_sen_odr_cfg_a
 	dmp_ext_sen_odr_cfg_t dmp_ext_sen_odr_cfg;
 
 	status |= icm566xx_read_reg(s, DMP_EXT_SEN_ODR_CFG, 1, (uint8_t *)&dmp_ext_sen_odr_cfg);
-	dmp_ext_sen_odr_cfg.apex_odr = frequency;
+	dmp_ext_sen_odr_cfg.apex_odr = (uint8_t)frequency;
 	status |= icm566xx_write_reg(s, DMP_EXT_SEN_ODR_CFG, 1, (uint8_t *)&dmp_ext_sen_odr_cfg);
 
 	return status;
@@ -49,20 +54,44 @@ int icm566xx_edmp_get_frequency(inv_imu_device_t *s, dmp_ext_sen_odr_cfg_apex_od
 	return status;
 }
 
-int icm566xx_edmp_init_apex_save_sram(inv_imu_device_t *s)
+int icm566xx_edmp_recompute_apex_decimation(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
-	edmp_apex_en1_t edmp_apex_en1;
+	uint8_t value;
 	reg_host_msg_t reg_host_msg;
+	edmp_apex_en0_t save_edmp_apex_en0;
+	edmp_apex_en1_t save_edmp_apex_en1;
+	edmp_apex_en0_t edmp_apex_en0 = {0};
+	edmp_apex_en1_t edmp_apex_en1 = {0};
 
-	/* Request to execute init procedure */
-	status |= icm566xx_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
-	edmp_apex_en1.init_en = INV_IMU_ENABLE;
-	status |= icm566xx_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+	/*
+	 * Check that DMP is turned OFF before requesting init APEX and save DMP enabled bits before
+	 * requesting init procedure
+	 */
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&save_edmp_apex_en0);
+	status |= icm566xx_read_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&save_edmp_apex_en1);
+	if (save_edmp_apex_en1.edmp_enable) {
+		return INV_IMU_ERROR;
+	}
+
+	/*
+	 * Make sure that all DMP interrupts are masked by default, to not trigger unexpected
+	 * algorithm execution when initialization is done if any sensor is running
+	 */
+	value = 0x3F;
+	status |= icm566xx_write_reg(s, STATUS_MASK_PIN_0_7, 1, &value);
+	status |= icm566xx_write_reg(s, STATUS_MASK_PIN_8_15, 1, &value);
+	status |= icm566xx_write_reg(s, STATUS_MASK_PIN_16_23, 1, &value);
 
 	/* Trigger EDMP with on-demand mode */
 	status |= icm566xx_edmp_unmask_int_src(s, INV_IMU_EDMP_INT0, EDMP_INT_SRC_ON_DEMAND_MASK);
-	status |= icm566xx_edmp_enable(s);
+
+	/* Request to execute init procedure */
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&edmp_apex_en0);
+	edmp_apex_en1.init_en = INV_IMU_ENABLE;
+	edmp_apex_en1.edmp_enable = INV_IMU_ENABLE;
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&edmp_apex_en1);
+
 	status |= icm566xx_read_reg(s, REG_HOST_MSG, 1, (uint8_t *)&reg_host_msg);
 	reg_host_msg.edmp_on_demand_en = INV_IMU_ENABLE;
 	status |= icm566xx_write_reg(s, REG_HOST_MSG, 1, (uint8_t *)&reg_host_msg);
@@ -75,7 +104,12 @@ int icm566xx_edmp_init_apex_save_sram(inv_imu_device_t *s)
 
 	/* Reset states */
 	status |= icm566xx_edmp_mask_int_src(s, INV_IMU_EDMP_INT0, EDMP_INT_SRC_ON_DEMAND_MASK);
-	status |= icm566xx_edmp_disable(s);
+
+	/* Restore original DMP state, with DMP necessarily disabled as it was checked at the
+	 * beginning of this function */
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN0, 1, (uint8_t *)&save_edmp_apex_en0);
+	status |= icm566xx_write_reg(s, EDMP_APEX_EN1, 1, (uint8_t *)&save_edmp_apex_en1);
+
 	status |= icm566xx_edmp_unmask_int_src(s, INV_IMU_EDMP_INT0, EDMP_INT_SRC_ACCEL_DRDY_MASK);
 
 	return status;
@@ -84,23 +118,13 @@ int icm566xx_edmp_init_apex_save_sram(inv_imu_device_t *s)
 int icm566xx_edmp_init_apex(inv_imu_device_t *s)
 {
 	int status = INV_IMU_OK;
-	fifo_sram_sleep_t fifo_sram_sleep;
-	uint8_t value;
-
-	/* Same impl as icm566xx_adv_power_up_sram, duplicated here to prevent dependency */
-	status |= icm566xx_read_reg(s, FIFO_SRAM_SLEEP, 1, (uint8_t *)&fifo_sram_sleep);
-	fifo_sram_sleep.fifo_gsleep_shared_sram = 1;
-	status |= icm566xx_write_reg(s, FIFO_SRAM_SLEEP, 1, (uint8_t *)&fifo_sram_sleep);
-
-	/* Clear SRAM */
-	value = 0;
-	for (int i = 0; i < EDMP_RAM_SIZE; i++) {
-		status |= icm566xx_write_sram(s, (uint32_t)EDMP_RAM_BASE + i, 1, &value);
-	}
 
 	/* Configure DMP address registers */
 	status |= icm566xx_edmp_configure(s);
-	status |= icm566xx_edmp_init_apex_save_sram(s);
+
+	status |= icm566xx_edmp_clear_apex_sram(s);
+
+	status |= icm566xx_edmp_recompute_apex_decimation(s);
 	return status;
 }
 
@@ -137,7 +161,7 @@ int icm566xx_edmp_mask_int_src(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_int_
 
 	/*
 	 * Interrupt mask register for EDMP interrupts are located in 3 consecutive
-	 * egisters starting with STATUS_MASK_PIN_0_7 for interrupt0.
+	 * registers starting with STATUS_MASK_PIN_0_7 for interrupt0.
 	 */
 	reg_addr = STATUS_MASK_PIN_0_7 + edmp_int_nb;
 
@@ -164,7 +188,7 @@ int icm566xx_edmp_unmask_int_src(inv_imu_device_t *s, inv_imu_edmp_int_t edmp_in
 
 	/* Clear bits passed in param to unmask corresponding interrupts */
 	status |= icm566xx_read_reg(s, reg_addr, 1, &reg);
-	reg &= ~(int_mask);
+	reg &= ~int_mask;
 	status |= icm566xx_write_reg(s, reg_addr, 1, &reg);
 
 	return status;
@@ -183,8 +207,7 @@ int icm566xx_edmp_configure(inv_imu_device_t *s)
 				     (uint8_t *)&start_addr[0]);
 
 	/* Set Stack pointer start address */
-	status |= icm566xx_write_reg(s, EDMP_SP_START_ADDR, sizeof(stack_addr),
-				     (uint8_t *)&stack_addr);
+	status |= icm566xx_write_reg(s, EDMP_SP_START_ADDR, sizeof(stack_addr), &stack_addr);
 
 	return status;
 }

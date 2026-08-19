@@ -18,24 +18,10 @@
 extern "C" {
 #endif
 
-#include "icm566xx/imu/inv_imu_driver.h"
-#if (INV_IMU_WHOAMI == 0xD3) &&                                                                    \
-	defined(CUSTOMER_EXAMPLE) /* Only use this for the 56622 example apps */
-#include "icm566xx/imu/inv_imu_edmp_memmap_56622.h"
-#else
-#include "icm566xx/imu/inv_imu_edmp_memmap.h"
-#endif
-#include "icm566xx/imu/inv_imu_edmp_defs.h"
-
 #include <stdint.h>
 #include <string.h>
 
-#define EDMP_ROM_START_ADDR_IRQ0 0x4000
-#define EDMP_ROM_START_ADDR_IRQ1 0x4004
-#define EDMP_ROM_START_ADDR_IRQ2 0x4008
-
-#define EDMP_RAM_BASE 0x0000
-#define EDMP_RAM_SIZE 0x05BC /* EDMP Data */
+#include "icm566xx/imu/inv_imu_driver.h"
 
 /** @brief Writes in EDMP SRAM
  *  @param[in] s     Pointer to device.
@@ -101,14 +87,18 @@ int icm566xx_edmp_get_frequency(inv_imu_device_t *s, dmp_ext_sen_odr_cfg_apex_od
  */
 int icm566xx_edmp_init_apex(inv_imu_device_t *s);
 
-/** @brief Initialize EDMP APEX algorithms. This function should be called before
- *         calling any other function (expect for `icm566xx_edmp_set_frequency`).
- *  @warning This function requires the EDMP ODR to be set before being called.
- *           Make sure to call `icm566xx_edmp_set_frequency` before this one.
+/** @brief Recompute EDMP APEX algorithms internal decimator based on new EDMP output Data Rate
+ *         configured with `icm566xx_edmp_set_frequency`.
+ *  @warning It is up to application level to save/restore previously configured APEX parameters,
+ *           if any, with `icm566xx_edmp_set_apex_parameters`.
+ *  @warning EDMP must be disabled before calling this function.
+ *  @warning This function will reset all interrupt masks previously set with
+ *           `icm566xx_edmp_unmask_int_src` and exit with `EDMP_INT_SRC_ACCEL_DRDY_MASK` unmasked on
+ *           `INV_IMU_EDMP_INT0`.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_init_apex_save_sram(inv_imu_device_t *s);
+int icm566xx_edmp_recompute_apex_decimation(inv_imu_device_t *s);
 
 /** @brief  Enable EDMP.
  *  @param[in] s  Pointer to device.

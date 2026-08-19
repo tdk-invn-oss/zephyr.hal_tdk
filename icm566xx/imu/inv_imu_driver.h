@@ -29,16 +29,15 @@ extern "C" {
  */
 
 /** @brief Basic driver configuration structure */
-typedef struct {
+typedef struct inv_imu_device {
 	/** @brief Transport structure */
 	inv_imu_transport_t transport;
 
-	/** @brief The calculated fifo frame size in Bytes. */
+	/** @brief The calculated FIFO frame size in Bytes. */
 	uint8_t fifo_frame_size;
 
-	/** @brief Keeps track of data endianness mode     * 0 : data in Sensor Registers and FIFO
-	 * are in Little Endian format 1 : data in Sensor Registers and FIFO are in Big Endian
-	 * format
+	/** @brief Keeps track of data endianness mode	 * 0 : data in Sensor Registers and FIFO are
+	 * in Little Endian format 1 : data in Sensor Registers and FIFO are in Big Endian format
 	 */
 	uint8_t endianness_data;
 
@@ -122,6 +121,7 @@ typedef struct {
 
 #define FORMAT_16BIT_REG_DATA(is_big_endian, pIn8, pExt, pOut)                                     \
 	FORMAT_16_BITS_DATA(is_big_endian, pIn8, (uint16_t *)pOut)
+
 /*
  * API definitions
  */

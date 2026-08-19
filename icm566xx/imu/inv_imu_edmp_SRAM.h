@@ -13,45 +13,6 @@ extern "C" {
 
 #include "icm566xx/imu/inv_imu_driver.h"
 
-/* Bump specific memory map */
-#define EDMP_RAM_PRGM_BASE 0x5AC
-#define EDMP_RAM_PRGM_SIZE 0x20C
-#define EDMP_RAM_DATA_BASE 0x7B8
-#define EDMP_RAM_DATA_SIZE 0x48
-
-#define EDMP_bump_decim_rate        0x7B8
-#define EDMP_bump_decim_rate_SIZE   0x1
-#define EDMP_bump_decim_count       0x7B9
-#define EDMP_bump_decim_count_SIZE  0x1
-#define EDMP_bump_outInterrupt      0x7BA
-#define EDMP_bump_outInterrupt_SIZE 0x1
-
-#define EDMP_bump_state               0x7BC
-#define EDMP_bump_state_SIZE          0x30
-#define EDMP_bump_state_state_id      0x7DA
-#define EDMP_bump_state_state_id_SIZE 0x1
-
-#define EDMP_bump_config                           0x7EC
-#define EDMP_bump_config_SIZE                      0x12
-#define EDMP_bump_config_odr_bump                  0x7EC
-#define EDMP_bump_config_odr_bump_SIZE             0x2
-#define EDMP_bump_config_change_th_ratio_Q8        0x7EE
-#define EDMP_bump_config_change_th_ratio_Q8_SIZE   0x2
-#define EDMP_bump_config_change_th_offset_Q12      0x7F0
-#define EDMP_bump_config_change_th_offset_Q12_SIZE 0x2
-#define EDMP_bump_config_bump_th_ratio_Q8          0x7F2
-#define EDMP_bump_config_bump_th_ratio_Q8_SIZE     0x2
-#define EDMP_bump_config_bump_th_offset_Q12        0x7F4
-#define EDMP_bump_config_bump_th_offset_Q12_SIZE   0x2
-#define EDMP_bump_config_conf_time                 0x7F6
-#define EDMP_bump_config_conf_time_SIZE            0x2
-#define EDMP_bump_config_bump_time                 0x7F8
-#define EDMP_bump_config_bump_time_SIZE            0x2
-#define EDMP_bump_config_debounce_time             0x7FA
-#define EDMP_bump_config_debounce_time_SIZE        0x2
-#define EDMP_bump_config_min_bump_nb               0x7FC
-#define EDMP_bump_config_min_bump_nb_SIZE          0x2
-
 typedef struct {
 	/* Bump */
 	int8_t bump_decim_rate;

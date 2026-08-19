@@ -1,7 +1,16 @@
 /*
- * Copyright (c) 2017 TDK Invensense
  *
- * SPDX-License-Identifier: BSD 3-Clause
+ * Copyright (c) [2017] by InvenSense, Inc.
+ * * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted.
+ * * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
  */
 
 /** @defgroup EDMP EDMP
@@ -18,12 +27,11 @@
 extern "C" {
 #endif
 
-#include "icm566xx/imu/inv_imu_driver.h"
-#include "icm566xx/imu/inv_imu_edmp.h"
-#include "icm566xx/imu/inv_imu_edmp_defs.h"
-
 #include <stdint.h>
 #include <string.h>
+
+#include "icm566xx/imu/inv_imu_driver.h"
+#include "icm566xx/imu/inv_imu_edmp.h"
 
 /** Registers to retrieve interrupts status for APEX. */
 typedef struct {
@@ -40,75 +48,99 @@ typedef struct {
 	uint8_t INV_LOWG;
 } inv_imu_edmp_int_state_t;
 
+typedef struct {
+	uint16_t lowg_peak_th;
+	uint16_t lowg_peak_th_hyst;
+	uint16_t lowg_time_th;
+} inv_imu_edmp_apex_parameters_lowg_t;
+
+typedef struct {
+	uint32_t power_save_time;
+	uint8_t power_save_en;
+} inv_imu_edmp_apex_parameters_power_save_t;
+
 /** @brief IMU APEX inputs parameters definition
  *  @note Refer to the datasheet for details on how to configure these parameters.
  */
 typedef struct {
-	/* Freefall */
-	uint16_t lowg_peak_th;
-	uint16_t lowg_peak_th_hyst;
-	uint16_t lowg_time_th;
-
+	/* Low-G */
+	inv_imu_edmp_apex_parameters_lowg_t lowg;
 	/* Power save */
-	uint32_t power_save_time;
-	uint8_t power_save_en;
-
+	inv_imu_edmp_apex_parameters_power_save_t power_save;
 } inv_imu_edmp_apex_parameters_t;
 
 /** @brief Returns current EDMP parameters for APEX algorithms.
  *  @param[in] s   Pointer to device.
- *  @param[out] p  The current parameters read from registers.
+ *  @param[out] p  Current low-g parameters read from SRAM.
  *  @return        0 on success, negative value on error.
  */
-int icm566xx_edmp_get_lowg_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_t *p);
+int inv_imu_edmp_get_lowg_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_lowg_t *p);
+
+/** @brief Returns current EDMP parameters for power save APEX algorithm.
+ *  @param[in] s   Pointer to device.
+ *  @param[out] p  Current power save parameters read from SRAM.
+ *  @return        0 on success, negative value on error.
+ */
+int inv_imu_edmp_get_power_save_apex_parameters(inv_imu_device_t *s,
+						inv_imu_edmp_apex_parameters_power_save_t *p);
 
 /** @brief Configures EDMP parameters for APEX algorithms.
  *  @warning This function should be called only when all EDMP algorithms are disabled.
  *  @param[in] s  Pointer to device.
- *  @param[in] p  The requested input parameters.
+ *  @param[in] p  Requested low-g input parameters.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_set_lowg_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_t *p);
+int inv_imu_edmp_set_lowg_parameters(inv_imu_device_t *s,
+				     const inv_imu_edmp_apex_parameters_lowg_t *p);
+
+/** @brief Configures EDMP parameters for power save algorithm.
+ *  @warning This function should be called only when power save is disabled.
+ *  @param[in] s  Pointer to device.
+ *  @param[in] p  Requested input parameters for power save algorithm.
+ *  @return       0 on success, negative value on error.
+ */
+int inv_imu_edmp_set_power_save_apex_parameters(inv_imu_device_t *s,
+						const inv_imu_edmp_apex_parameters_power_save_t *p);
 
 /** @brief Retrieve interrupts configuration.
  *  @param[in] s    Pointer to device.
  *  @param[out] it  Configuration of each APEX interrupt.
  *  @return         0 on success, negative value on error.
  */
-int icm566xx_edmp_get_config_int_lowg(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it);
+int inv_imu_edmp_get_config_int_lowg(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it);
 
 /** @brief Configure APEX interrupt.
  *  @param[in] s   Pointer to device.
  *  @param[in] it  State of each APEX interrupt to configure.
  *  @return        0 on success, negative value on error.
  */
-int icm566xx_edmp_set_config_int_lowg(inv_imu_device_t *s, const inv_imu_edmp_int_state_t *it);
+int inv_imu_edmp_set_config_int_lowg(inv_imu_device_t *s, const inv_imu_edmp_int_state_t *it);
 
 /** @brief  Enable APEX algorithm Free Fall.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_enable_lowg(inv_imu_device_t *s);
+int inv_imu_edmp_enable_lowg(inv_imu_device_t *s);
 
 /** @brief  Disable APEX algorithm Free Fall.
  *  @param[in] s  Pointer to device.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_disable_lowg(inv_imu_device_t *s);
+int inv_imu_edmp_disable_lowg(inv_imu_device_t *s);
 
 /** @brief  Set ODR for APEX algorithm Freefall.
  *  @param[in] s  Pointer to device.
  *  @param[in] ff_odr  New value for freefall ODR
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_set_lowg_odr(inv_imu_device_t *s, uint16_t ff_odr);
+int inv_imu_edmp_set_lowg_odr(inv_imu_device_t *s, uint16_t ff_odr);
 
 /** @brief Read APEX interrupt status.
  *  @param[in] s    Pointer to device.
  *  @param[out] it  Status of each APEX interrupt.
  *  @return         0 on success, negative value on error.
  */
-int icm566xx_edmp_get_int_lowg_status(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it);
+int inv_imu_edmp_get_int_lowg_status(inv_imu_device_t *s, inv_imu_edmp_int_state_t *it);
 
 #ifdef __cplusplus
 }

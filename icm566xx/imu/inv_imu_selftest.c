@@ -6,7 +6,10 @@
 
 #include "imu/icm566xx_selftest.h"
 #include "icm566xx/imu/inv_imu_edmp.h"
-#include "Invn/EmbUtils/Message.h" /* Andrew - Just for debug */
+#include "icm566xx/imu/inv_imu_edmp_selftest_memmap.h"
+
+/* This define is used for hosted self-test procedure */
+#define ODR_INTERVAL 1250 /* The ODR time interval at 800 Hz is 1250 us */
 
 /* Static functions definition */
 static int set_selftest_parameters(inv_imu_device_t *s,
@@ -20,6 +23,7 @@ static int get_selftest_output(inv_imu_device_t *s, const inv_imu_selftest_param
 int icm566xx_selftest_init_params(inv_imu_device_t *s, inv_imu_selftest_parameters_t *st_params)
 {
 	int rc = INV_IMU_OK;
+	(void)s;
 
 	st_params->accel_en = INV_IMU_ENABLE;
 	st_params->gyro_en = INV_IMU_ENABLE;
@@ -64,18 +68,18 @@ static int set_selftest_parameters(inv_imu_device_t *s,
 				   const inv_imu_selftest_parameters_t *st_params)
 {
 	int rc = INV_IMU_OK;
-	uint32_t tmp_stc_params;
+	uint32_t tmp_stc_params = 0;
 	int init_en;
 
 	rc |= icm566xx_adv_power_up_sram(s);
 
 	rc |= INV_IMU_READ_EDMP_SRAM(s, EDMP_STC_CONFIGPARAMS, (uint8_t *)&tmp_stc_params);
-	tmp_stc_params &= ~(SELFTESTCAL_INIT_EN_MASK | SELFTEST_ACCEL_EN_MASK |
-			    SELFTEST_GYRO_EN_MASK | SELFTEST_UNUSED | SELFTEST_AVERAGE_TIME_MASK |
-			    SELFTEST_ACCEL_THRESH_MASK | SELFTEST_GYRO_THRESH_MASK);
+	tmp_stc_params &= ~(SELFTEST_INIT_EN_MASK | SELFTEST_ACCEL_EN_MASK | SELFTEST_GYRO_EN_MASK |
+			    SELFTEST_AVERAGE_TIME_MASK | SELFTEST_ACCEL_THRESH_MASK |
+			    SELFTEST_GYRO_THRESH_MASK);
 
 	init_en = (st_params->accel_en || st_params->gyro_en);
-	tmp_stc_params |= (init_en ? SELFTESTCAL_INIT_EN : SELFTESTCAL_INIT_DIS);
+	tmp_stc_params |= (init_en ? SELFTEST_INIT_EN : SELFTEST_INIT_DIS);
 	tmp_stc_params |= (st_params->accel_en ? SELFTEST_ACCEL_EN : SELFTEST_ACCEL_DIS);
 	tmp_stc_params |= (st_params->gyro_en ? SELFTEST_GYRO_EN : SELFTEST_GYRO_DIS);
 	tmp_stc_params |= (uint32_t)(st_params->accel_limit & SELFTEST_ACCEL_THRESH_MASK);
@@ -231,68 +235,60 @@ static int set_st_direct_config(inv_imu_device_t *s, const inv_imu_selftest_para
 	uint16_t sys1_reg0 = 0x0030;
 	dmp_ext_sen_odr_cfg_t dmp_cfg;
 
-	icm566xx_write_reg(s, IPREG_SYS1_REG_0, 2, (uint8_t *)&sys1_reg0);
+	rc |= icm566xx_write_reg(s, IPREG_SYS1_REG_0, 2, (uint8_t *)&sys1_reg0);
 
-	icm566xx_read_reg(s, IPREG_SYS2_REG_117, 1, (uint8_t *)&sys2_reg117);
+	rc |= icm566xx_read_reg(s, IPREG_SYS2_REG_117, 1, (uint8_t *)&sys2_reg117);
 	sys2_reg117.tmp_inj_en_gos = 1;
-	icm566xx_write_reg(s, IPREG_SYS2_REG_117, 1, (uint8_t *)&sys2_reg117);
+	rc |= icm566xx_write_reg(s, IPREG_SYS2_REG_117, 1, (uint8_t *)&sys2_reg117);
 
-	icm566xx_read_reg(s, DMP_EXT_SEN_ODR_CFG, 1, (uint8_t *)&dmp_cfg);
+	rc |= icm566xx_read_reg(s, DMP_EXT_SEN_ODR_CFG, 1, (uint8_t *)&dmp_cfg);
 	dmp_cfg.apex_odr = DMP_EXT_SEN_ODR_CFG_APEX_ODR_800_HZ;
-	icm566xx_write_reg(s, DMP_EXT_SEN_ODR_CFG, 1, (uint8_t *)&dmp_cfg);
+	rc |= icm566xx_write_reg(s, DMP_EXT_SEN_ODR_CFG, 1, (uint8_t *)&dmp_cfg);
 
 	if (st_params->gyro_en) {
-		icm566xx_set_gyro_frequency(s, GYRO_CONFIG0_GYRO_ODR_800_HZ);
-#if INV_IMU_HIGH_FSR_SUPPORTED
-		icm566xx_set_gyro_fsr(s, GYRO_CONFIG0_AP_GYRO_FS_SEL_4000_DPS);
-#else
-		icm566xx_set_gyro_fsr(s, GYRO_CONFIG0_AP_GYRO_FS_SEL_2000_DPS);
-#endif
+		rc |= icm566xx_set_gyro_frequency(s, GYRO_CONFIG0_GYRO_ODR_800_HZ);
+		rc |= icm566xx_set_gyro_fsr(s, GYRO_FSR_SETTING);
 
-		icm566xx_read_reg(s, IPREG_SYS1_REG_155, 1, (uint8_t *)&sys1_reg155);
+		rc |= icm566xx_read_reg(s, IPREG_SYS1_REG_155, 1, (uint8_t *)&sys1_reg155);
 		sys1_reg155.gyro_lpf_bypass = 0;
-		icm566xx_write_reg(s, IPREG_SYS1_REG_155, 1, (uint8_t *)&sys1_reg155);
+		rc |= icm566xx_write_reg(s, IPREG_SYS1_REG_155, 1, (uint8_t *)&sys1_reg155);
 
-		icm566xx_read_reg(s, IPREG_SYS1_REG_158, 1, (uint8_t *)&sys1_reg158);
+		rc |= icm566xx_read_reg(s, IPREG_SYS1_REG_158, 1, (uint8_t *)&sys1_reg158);
 		sys1_reg158.gyro_ois_3rd_ord_sel = 0;
 		sys1_reg158.gyro_ui_lpfbw_sel = 2;
-		icm566xx_write_reg(s, IPREG_SYS1_REG_158, 1, (uint8_t *)&sys1_reg158);
+		rc |= icm566xx_write_reg(s, IPREG_SYS1_REG_158, 1, (uint8_t *)&sys1_reg158);
 
 		sys1_reg146.gyro_x_tmid_gain = sys1_reg146.gyro_x_tmid_off = 7;
-		icm566xx_write_reg(s, IPREG_SYS1_REG_146, 1, (uint8_t *)&sys1_reg146);
+		rc |= icm566xx_write_reg(s, IPREG_SYS1_REG_146, 1, (uint8_t *)&sys1_reg146);
 
 		sys1_reg148.gyro_y_tmid_gain = sys1_reg148.gyro_y_tmid_off = 7;
-		icm566xx_write_reg(s, IPREG_SYS1_REG_148, 1, (uint8_t *)&sys1_reg148);
+		rc |= icm566xx_write_reg(s, IPREG_SYS1_REG_148, 1, (uint8_t *)&sys1_reg148);
 
 		sys1_reg150.gyro_z_tmid_gain = sys1_reg150.gyro_z_tmid_off = 7;
-		icm566xx_write_reg(s, IPREG_SYS1_REG_150, 1, (uint8_t *)&sys1_reg150);
+		rc |= icm566xx_write_reg(s, IPREG_SYS1_REG_150, 1, (uint8_t *)&sys1_reg150);
 
-		icm566xx_set_gyro_mode(s, PWR_MGMT0_GYRO_MODE_LN);
+		rc |= icm566xx_set_gyro_mode(s, PWR_MGMT0_GYRO_MODE_LN);
 	}
 	if (st_params->accel_en) {
-		icm566xx_set_accel_frequency(s, ACCEL_CONFIG0_ACCEL_ODR_800_HZ);
-#if INV_IMU_HIGH_FSR_SUPPORTED
-		icm566xx_set_accel_fsr(s, ACCEL_CONFIG0_AP_ACCEL_FS_SEL_32_G);
-#else
-		icm566xx_set_accel_fsr(s, ACCEL_CONFIG0_AP_ACCEL_FS_SEL_16_G);
-#endif
+		rc |= icm566xx_set_accel_frequency(s, ACCEL_CONFIG0_ACCEL_ODR_800_HZ);
+		rc |= icm566xx_set_accel_fsr(s, ACCEL_FSR_SETTING);
 
-		icm566xx_read_reg(s, IPREG_SYS2_REG_112, 1, (uint8_t *)&sys2_reg112);
+		rc |= icm566xx_read_reg(s, IPREG_SYS2_REG_112, 1, (uint8_t *)&sys2_reg112);
 		sys2_reg112.accel_ui_3rd_ord_sel = 0;
 		sys2_reg112.accel_lpf_bypass = 0;
 		sys2_reg112.accel_ui_lpfbw_sel = 2;
-		icm566xx_write_reg(s, IPREG_SYS2_REG_112, 1, (uint8_t *)&sys2_reg112);
+		rc |= icm566xx_write_reg(s, IPREG_SYS2_REG_112, 1, (uint8_t *)&sys2_reg112);
 
 		sys2_reg105.accel_x_tmid_gain = sys2_reg105.accel_x_tmid_off = 7;
-		icm566xx_write_reg(s, IPREG_SYS2_REG_105, 1, (uint8_t *)&sys2_reg105);
+		rc |= icm566xx_write_reg(s, IPREG_SYS2_REG_105, 1, (uint8_t *)&sys2_reg105);
 
 		sys2_reg106.accel_y_tmid_gain = sys2_reg106.accel_y_tmid_off = 7;
-		icm566xx_write_reg(s, IPREG_SYS2_REG_106, 1, (uint8_t *)&sys2_reg106);
+		rc |= icm566xx_write_reg(s, IPREG_SYS2_REG_106, 1, (uint8_t *)&sys2_reg106);
 
 		sys2_reg107.accel_z_tmid_gain = sys2_reg107.accel_z_tmid_off = 7;
-		icm566xx_write_reg(s, IPREG_SYS2_REG_107, 1, (uint8_t *)&sys2_reg107);
+		rc |= icm566xx_write_reg(s, IPREG_SYS2_REG_107, 1, (uint8_t *)&sys2_reg107);
 
-		icm566xx_set_accel_mode(s, PWR_MGMT0_ACCEL_MODE_LN);
+		rc |= icm566xx_set_accel_mode(s, PWR_MGMT0_ACCEL_MODE_LN);
 	}
 
 	icm566xx_sleep_us(s, GYR_STARTUP_TIME_US);
@@ -306,7 +302,6 @@ static int set_st_direct_config(inv_imu_device_t *s, const inv_imu_selftest_para
 static int st_direct_phase1(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
 			    float phase1_out[])
 {
-#define ODR_INTERVAL 1250 /* The ODR time interval at 800 Hz is 1250 us */
 	int rc = INV_IMU_OK;
 	int64_t phase1_total[6] = {0, 0, 0, 0, 0, 0};
 	int timeout;
@@ -344,7 +339,6 @@ static int st_direct_phase1(inv_imu_device_t *s, const inv_imu_selftest_paramete
 static int st_direct_phase2(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
 			    float phase2_out[])
 {
-#define ODR_INTERVAL 1250 /* The ODR time interval at 800 Hz is 1250 us */
 	int rc = INV_IMU_OK;
 	int32_t phase2_total[6] = {0, 0, 0, 0, 0, 0};
 	int timeout;
@@ -356,18 +350,18 @@ static int st_direct_phase2(inv_imu_device_t *s, const inv_imu_selftest_paramete
 	inv_imu_sensor_data_t sensor_data;
 
 	/* Analog configuration */
-	icm566xx_read_reg(s, IPREG_ANA_REG_8, 1, (uint8_t *)&ana_reg_8);
+	rc |= icm566xx_read_reg(s, IPREG_ANA_REG_8, 1, (uint8_t *)&ana_reg_8);
 	ana_reg_8.pd_accel_cp45_st_b_d2a = 1;
-	icm566xx_write_reg(s, IPREG_ANA_REG_8, 1, (uint8_t *)&ana_reg_8);
+	rc |= icm566xx_write_reg(s, IPREG_ANA_REG_8, 1, (uint8_t *)&ana_reg_8);
 	icm566xx_sleep_us(s, 1000);
 	ana_reg_8.pd_accel_st_b_d2a = 1;
-	icm566xx_write_reg(s, IPREG_ANA_REG_8, 1, (uint8_t *)&ana_reg_8);
+	rc |= icm566xx_write_reg(s, IPREG_ANA_REG_8, 1, (uint8_t *)&ana_reg_8);
 	icm566xx_sleep_us(s, 1000);
 	if (st_params->accel_en) { /* Run the accel axes one at a time */
 		for (int i = 0; i < 3; i++) {
 			timeout = st_params->avg_time * 1000; /* Convert to us. */
 			selftest_byte = (1 << i);             /* Cycle through the accel axes */
-			icm566xx_write_reg(s, SELFTEST, 1, &selftest_byte);
+			rc |= icm566xx_write_reg(s, SELFTEST, 1, &selftest_byte);
 			icm566xx_sleep_us(s, 10000);
 			while (timeout > 0) { /* Collect the data for the active accel axis */
 				rc |= icm566xx_get_register_data(s, &sensor_data);
@@ -383,7 +377,7 @@ static int st_direct_phase2(inv_imu_device_t *s, const inv_imu_selftest_paramete
 		icm566xx_sleep_us(s, 2000);
 		selftest.en_ax_st = selftest.en_ay_st = selftest.en_az_st = 0;
 		selftest.en_gx_st = selftest.en_gy_st = selftest.en_gz_st = 1;
-		icm566xx_write_reg(s, SELFTEST, 1, (uint8_t *)&selftest);
+		rc |= icm566xx_write_reg(s, SELFTEST, 1, (uint8_t *)&selftest);
 		icm566xx_sleep_us(s, GYR_STARTUP_TIME_US);
 		timeout = st_params->avg_time * 1000; /* Convert to us. */
 		while (timeout > 0) {
@@ -407,25 +401,27 @@ static int st_direct_phase2(inv_imu_device_t *s, const inv_imu_selftest_paramete
 }
 
 /*
- * get_eDMP_params: Load the OTP trim values that are required for self-test.
+ * Load the OTP trim values that are required for self-test.
  */
-static int get_eDMP_params(inv_imu_device_t *s, int16_t str_ft[])
+static int get_edmp_params(inv_imu_device_t *s, int16_t str_ft[])
 {
 	int rc = INV_IMU_OK;
 	inv_imu_selftest_parameters_t st_params;
 
-	rc |= icm566xx_edmp_configure(s); /* Configure start addresses as we reset the device */
+	/* Configure start addresses as we reset the device */
+	rc |= icm566xx_edmp_configure(s);
 
 	rc |= icm566xx_selftest_init_params(s, &st_params);
 	st_params.gyro_en = 0;
 	st_params.avg_time = SELFTEST_AVG_TIME_10_MS;
 	rc |= set_selftest_parameters(s, &st_params);
 
-	rc |= run_internal_selftest(s); /* Run internal selftest to load SRAM */
-	icm566xx_read_sram(s, IMEM_SRAM_REG_12, 6,
-			   (uint8_t *)&str_ft[0]); /* Read accel_{x/y/z}_str_ft */
-	icm566xx_read_sram(s, IMEM_SRAM_REG_0, 6,
-			   (uint8_t *)&str_ft[3]); /* Read agyro_{x/y/z}_str_ft */
+	/* Run internal selftest to load SRAM */
+	rc |= run_internal_selftest(s);
+	/* Read accel_{x/y/z}_str_ft */
+	rc |= icm566xx_read_sram(s, IMEM_SRAM_REG_12, 6, (uint8_t *)&str_ft[0]);
+	/* Read gyro_{x/y/z}_str_ft */
+	rc |= icm566xx_read_sram(s, IMEM_SRAM_REG_0, 6, (uint8_t *)&str_ft[3]);
 
 	return rc;
 }
@@ -436,15 +432,6 @@ static int get_eDMP_params(inv_imu_device_t *s, int16_t str_ft[])
 int icm566xx_st_direct(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
 		       inv_imu_selftest_output_t *st_output)
 {
-#if INV_IMU_20BIT_REG_DATA_SUPPORTED == 1
-#define ACCEL_FSR      32      /* The accel FSR is 32g */
-#define GYRO_FSR       4000    /* The gyro FSR is 4000 dps */
-#define MAX_SATURATION 0x80000 /* The saturation value for 20-bit data */
-#else
-#define ACCEL_FSR      16     /* The accel FSR is 16g */
-#define GYRO_FSR       2000   /* The gyro FSR is 2000 dps */
-#define MAX_SATURATION 0x8000 /* The saturation value for 16-bit data */
-#endif
 	int rc = INV_IMU_OK;
 	float phase1_out[6];
 	float phase2_out[6];
@@ -467,7 +454,7 @@ int icm566xx_st_direct(inv_imu_device_t *s, const inv_imu_selftest_parameters_t 
 
 	icm566xx_sleep_us(s, 10000);
 
-	rc |= get_eDMP_params(s, str_ft); /* Load and read str_ft values from SRAM */
+	rc |= get_edmp_params(s, str_ft); /* Load and read str_ft values from SRAM */
 
 	/* Convert str_ft values to floating point */
 	for (int i = 0; i < 3; i++) {
@@ -493,11 +480,11 @@ int icm566xx_st_direct(inv_imu_device_t *s, const inv_imu_selftest_parameters_t 
 	for (int i = 0; i < 3; i++) {
 		/* Convert delta of the accel data from the two phases into SI units */
 		st_response_float[i] =
-			((phase2_out[i] - phase1_out[i]) * ACCEL_FSR) / MAX_SATURATION;
+			((phase2_out[i] - phase1_out[i]) * ACCEL_FS_VALUE) / REG_SAT_VALUE;
 
 		/* Convert delta of the gyro data from the two phases into SI units */
 		st_response_float[i + 3] =
-			((phase2_out[i + 3] - phase1_out[i + 3]) * GYRO_FSR) / MAX_SATURATION;
+			((phase2_out[i + 3] - phase1_out[i + 3]) * GYRO_FS_VALUE) / REG_SAT_VALUE;
 	}
 
 	/* Calculate the min and max threshold values for accel and gyro */
@@ -508,7 +495,7 @@ int icm566xx_st_direct(inv_imu_device_t *s, const inv_imu_selftest_parameters_t 
 		gyr_str_max[i] = (1.0 + gyr_threshold) * str_ft_float[i + 3];
 	}
 
-	memset(st_output, 0, sizeof(inv_imu_selftest_output_t));
+	memset(st_output, 0, sizeof(*st_output));
 
 	if (st_params->accel_en) {
 		st_output->ax_status = ((st_response_float[0] < acc_str_min[0]) ||

@@ -56,7 +56,7 @@ int icm566xx_set_aux1_accel_fsr(inv_imu_transport_t *t, fs_sel_aux_accel_fs_sel_
 	fs_sel_aux1_t fs_sel_aux1;
 
 	status |= icm566xx_read_reg(t, FS_SEL_AUX1, 1, (uint8_t *)&fs_sel_aux1);
-	fs_sel_aux1.aux1_accel_fs_sel = fsr;
+	fs_sel_aux1.aux1_accel_fs_sel = (uint8_t)fsr;
 	status |= icm566xx_write_reg(t, FS_SEL_AUX1, 1, (uint8_t *)&fs_sel_aux1);
 
 	return status;
@@ -91,7 +91,7 @@ int icm566xx_set_aux1_gyro_fsr(inv_imu_transport_t *t, fs_sel_aux_gyro_fs_sel_t 
 	fs_sel_aux1_t fs_sel_aux1;
 
 	status |= icm566xx_read_reg(t, FS_SEL_AUX1, 1, (uint8_t *)&fs_sel_aux1);
-	fs_sel_aux1.aux1_gyro_fs_sel = fsr;
+	fs_sel_aux1.aux1_gyro_fs_sel = (uint8_t)fsr;
 	status |= icm566xx_write_reg(t, FS_SEL_AUX1, 1, (uint8_t *)&fs_sel_aux1);
 
 	return status;
@@ -136,9 +136,9 @@ int icm566xx_set_aux1_pin_config_int(inv_imu_transport_t *t, const inv_imu_int_p
 	status |= icm566xx_read_reg(t, INT2_CONFIG2, 1, (uint8_t *)&int2_config2);
 
 	/* Use `int1_config2_t` for both INT1 and INT2 as bit location are the same */
-	int2_config2.int1_polarity = conf->int_polarity;
-	int2_config2.int1_mode = conf->int_mode;
-	int2_config2.int1_drive = conf->int_drive;
+	int2_config2.int1_polarity = (uint8_t)conf->int_polarity;
+	int2_config2.int1_mode = (uint8_t)conf->int_mode;
+	int2_config2.int1_drive = (uint8_t)conf->int_drive;
 
 	status |= icm566xx_write_reg(t, INT2_CONFIG2, 1, (uint8_t *)&int2_config2);
 
