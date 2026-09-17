@@ -97,4 +97,14 @@ if(CONFIG_TDK_HAL)
     zephyr_library_sources_ifdef(CONFIG_USE_EMD_ICM56686 icm566xx/imu/inv_imu_driver_advanced.c)
   endif()
 
+  if(CONFIG_USE_EMD_ICT1531X)
+    zephyr_include_directories(
+      common
+      ict1531x 
+    )
+
+    zephyr_library_sources(
+      ict1531x/Ict1531x.c
+    )
+  endif()
 endif()
