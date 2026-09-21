@@ -76,7 +76,7 @@ typedef struct {
 	uint16_t ped_step_det_th;
 	uint16_t ped_sb_timer_th;
 	uint32_t ped_hi_en_th;
-	uint8_t ped_sensitivity_mode;
+	uint8_t  ped_sensitivity_mode;
 	uint32_t ped_low_en_amp_th;
 	uint16_t ped_odr;
 } inv_imu_edmp_apex_parameters_ped_t;
@@ -137,17 +137,17 @@ typedef struct {
  *  @note Refer to the datasheet for details on how to configure these parameters.
  */
 typedef struct {
-	uint8_t tap_min_jerk;
+	uint8_t  tap_min_jerk;
 	uint16_t tap_tmax;
-	uint8_t tap_tmin;
-	uint8_t tap_max_peak_tol;
-	uint8_t tap_smudge_reject_th;
-	uint8_t tap_tavg;
-	uint8_t tap_max_tap;
-	uint8_t tap_min_tap;
+	uint8_t  tap_tmin;
+	uint8_t  tap_max_peak_tol;
+	uint8_t  tap_smudge_reject_th;
+	uint8_t  tap_tavg;
+	uint8_t  tap_max_tap;
+	uint8_t  tap_min_tap;
 	uint16_t tap_max_energy_primary;
 	uint16_t tap_max_energy_secondary;
-	uint8_t tap_axis_select_mask;
+	uint8_t  tap_axis_select_mask;
 	uint16_t tap_odr;
 } inv_imu_edmp_apex_parameters_tap_t;
 
@@ -155,7 +155,7 @@ typedef struct {
  *  @note Refer to the datasheet for details on how to configure these parameters.
  */
 typedef struct {
-	uint8_t b2s_mounting_matrix;
+	uint8_t  b2s_mounting_matrix;
 	uint32_t b2s_DevNormMax;
 	uint32_t b2s_SinLimit;
 	uint32_t b2s_FastMotionAgeLimit;
@@ -216,11 +216,10 @@ typedef struct {
  */
 typedef struct {
 	uint32_t power_save_time;
-	uint8_t power_save_en;
+	uint8_t  power_save_en;
 } inv_imu_edmp_apex_parameters_power_save_t;
 
-/** @brief IMU APEX inputs parameters definition for three-axis feature (linked to tilt and
- * pedometer features)
+/** @brief IMU APEX inputs parameters definition for three-axis feature (linked to tilt and pedometer features)
  *  @note Refer to the datasheet for details on how to configure these parameters.
  */
 typedef struct {
@@ -250,7 +249,7 @@ typedef struct {
 	inv_imu_edmp_apex_parameters_shake_t shake;
 	/* noMotion */
 	inv_imu_edmp_apex_parameters_nomotion_t nomotion;
-	/* Flat */
+    /* Flat */
 	inv_imu_edmp_apex_parameters_flat_t flat;
 	/* Power save */
 	inv_imu_edmp_apex_parameters_power_save_t power_save;
@@ -261,16 +260,16 @@ typedef struct {
 /** @brief Pedometer activity class */
 typedef enum {
 	INV_IMU_EDMP_UNKNOWN = 0,
-	INV_IMU_EDMP_WALK = 1,
-	INV_IMU_EDMP_RUN = 2,
+	INV_IMU_EDMP_WALK    = 1,
+	INV_IMU_EDMP_RUN     = 2,
 } inv_imu_edmp_activity_class_t;
 
 typedef enum {
-	X_AXIS_SELECTION = 0,
-	Y_AXIS_SELECTION = 1,
-	Z_AXIS_SELECTION = 2,
-	ADV_AXIS_SELECTION = 3
-} inv_imu_flat_ref_axis_selection_e;
+   X_AXIS_SELECTION   = 0,
+   Y_AXIS_SELECTION   = 1,
+   Z_AXIS_SELECTION   = 2,
+   ADV_AXIS_SELECTION = 3	
+}inv_imu_flat_ref_axis_selection_e;
 
 /** @brief Pedometer outputs */
 typedef struct {
@@ -309,11 +308,11 @@ typedef enum {
 
 /** @brief Tap outputs */
 typedef struct {
-	inv_imu_edmp_tap_num_t num;
+	inv_imu_edmp_tap_num_t  num;
 	inv_imu_edmp_tap_axis_t axis;
-	inv_imu_edmp_tap_dir_t direction;
-	uint16_t double_tap_timing;
-	uint16_t triple_tap_timing;
+	inv_imu_edmp_tap_dir_t  direction;
+	uint16_t                double_tap_timing;
+	uint16_t                triple_tap_timing;
 } inv_imu_edmp_tap_data_t;
 
 /*Flat Outputs*/
@@ -322,24 +321,24 @@ typedef enum {
 	INIT_STATE = 0,
 	FLAT_STATE = 1,
 	NON_FLAT_STATE = 3
-} inv_imu_edmp_flat_state_e;
+}inv_imu_edmp_flat_state_e;
 
 /*No Motion Outputs*/
 typedef enum {
 	AXIS_X_MINUS = 0,
 	AXIS_Y_MINUS = 1,
 	AXIS_Z_MINUS = 2,
-	AXIS_X_PLUS = 4,
-	AXIS_Y_PLUS = 5,
-	AXIS_Z_PLUS = 6
-} inv_imu_edmp_nomtion_majoraxis_e;
+	AXIS_X_PLUS  = 4,
+	AXIS_Y_PLUS  = 5,
+	AXIS_Z_PLUS  = 6
+}inv_imu_edmp_nomtion_majoraxis_e;
 
 typedef struct {
 	inv_imu_edmp_nomtion_majoraxis_e majority_axis;
 	/*will need to convert raw tilt angle its value in degree*/
-	int16_t tilt_angle_raw_format;
-	int8_t sign_angle;
-} inv_imu_edmp_nomtion_data_t;
+	int16_t                          tilt_angle_raw_format;
+	int8_t                           sign_angle;
+}inv_imu_edmp_nomtion_data_t;
 
 /** @brief Returns current EDMP parameters for all APEX algorithms.
  *  @param[in] s   Pointer to device.
@@ -353,96 +352,84 @@ int icm566xx_edmp_get_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_par
  *  @param[out] p  Current pedometer parameters read from SRAM.
  *  @return        0 on success, negative value on error.
  */
-int icm566xx_edmp_get_ped_apex_parameters(inv_imu_device_t *s,
-					  inv_imu_edmp_apex_parameters_ped_t *p);
+int icm566xx_edmp_get_ped_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_ped_t *p);
 
 /** @brief Returns current EDMP parameters for tilt APEX algorithm.
  *  @param[in] s   Pointer to device.
  *  @param[out] p  Current tilt parameters read from SRAM.
  *  @return        0 on success, negative value on error.
  */
-int icm566xx_edmp_get_tilt_apex_parameters(inv_imu_device_t *s,
-					   inv_imu_edmp_apex_parameters_tilt_t *p);
+int icm566xx_edmp_get_tilt_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_tilt_t *p);
 
 /** @brief Returns current EDMP parameters for significant motion detection APEX algorithm.
  *  @param[in] s   Pointer to device.
  *  @param[out] p  Current significant motion detection parameters read from SRAM.
  *  @return        0 on success, negative value on error.
  */
-int icm566xx_edmp_get_smd_apex_parameters(inv_imu_device_t *s,
-					  inv_imu_edmp_apex_parameters_smd_t *p);
+int icm566xx_edmp_get_smd_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_smd_t *p);
 
 /** @brief Returns current EDMP parameters for raise-to-wake APEX algorithm.
  *  @param[in] s   Pointer to device.
  *  @param[out] p  Current raise-to-wake parameters read from SRAM.
  *  @return        0 on success, negative value on error.
  */
-int icm566xx_edmp_get_r2w_apex_parameters(inv_imu_device_t *s,
-					  inv_imu_edmp_apex_parameters_r2w_t *p);
+int icm566xx_edmp_get_r2w_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_r2w_t *p);
 
 /** @brief Returns current EDMP parameters for freefall APEX algorithm.
  *  @param[in] s   Pointer to device.
  *  @param[out] p  Current freefall parameters read from SRAM.
  *  @return        0 on success, negative value on error.
  */
-int icm566xx_edmp_get_ff_apex_parameters(inv_imu_device_t *s,
-					 inv_imu_edmp_apex_parameters_freefall_t *p);
+int icm566xx_edmp_get_ff_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_freefall_t *p);
 
 /** @brief Returns current EDMP parameters for tap APEX algorithm.
  *  @param[in] s   Pointer to device.
  *  @param[out] p  Current tap parameters read from SRAM.
  *  @return        0 on success, negative value on error.
  */
-int icm566xx_edmp_get_tap_apex_parameters(inv_imu_device_t *s,
-					  inv_imu_edmp_apex_parameters_tap_t *p);
+int icm566xx_edmp_get_tap_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_tap_t *p);
 
 /** @brief Returns current EDMP parameters for bring-to-see APEX algorithm.
  *  @param[in] s   Pointer to device.
  *  @param[out] p  Current bring-to-see parameters read from SRAM.
  *  @return        0 on success, negative value on error.
  */
-int icm566xx_edmp_get_b2s_apex_parameters(inv_imu_device_t *s,
-					  inv_imu_edmp_apex_parameters_b2s_t *p);
+int icm566xx_edmp_get_b2s_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_b2s_t *p);
 
 /** @brief Returns current EDMP parameters for shake APEX algorithm.
  *  @param[in] s   Pointer to device.
  *  @param[out] p  Current shake parameters read from SRAM.
  *  @return        0 on success, negative value on error.
  */
-int icm566xx_edmp_get_shake_apex_parameters(inv_imu_device_t *s,
-					    inv_imu_edmp_apex_parameters_shake_t *p);
+int icm566xx_edmp_get_shake_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_shake_t *p);
 
 /** @brief Returns current EDMP parameters for no motion APEX algorithm.
  *  @param[in] s   Pointer to device.
  *  @param[out] p  Current no motion parameters read from SRAM.
  *  @return        0 on success, negative value on error.
  */
-int icm566xx_edmp_get_nomotion_apex_parameters(inv_imu_device_t *s,
-					       inv_imu_edmp_apex_parameters_nomotion_t *p);
+int icm566xx_edmp_get_nomotion_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_nomotion_t *p);
 
 /** @brief Returns current EDMP parameters for flat APEX algorithm.
  *  @param[in] s   Pointer to device.
  *  @param[out] p  Current flat parameters read from SRAM.
  *  @return        0 on success, negative value on error.
  */
-int icm566xx_edmp_get_flat_apex_parameters(inv_imu_device_t *s,
-					   inv_imu_edmp_apex_parameters_flat_t *p);
+int icm566xx_edmp_get_flat_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_flat_t *p);
 
 /** @brief Returns current EDMP parameters for power save APEX algorithm.
  *  @param[in] s   Pointer to device.
  *  @param[out] p  Current power save parameters read from SRAM.
  *  @return        0 on success, negative value on error.
  */
-int icm566xx_edmp_get_power_save_apex_parameters(inv_imu_device_t *s,
-						 inv_imu_edmp_apex_parameters_power_save_t *p);
+int icm566xx_edmp_get_power_save_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_power_save_t *p);
 
 /** @brief Returns current EDMP parameters for three-axis APEX algorithm.
  *  @param[in] s   Pointer to device.
  *  @param[out] p  Current three-axis parameters read from SRAM.
  *  @return        0 on success, negative value on error.
  */
-int icm566xx_edmp_get_three_axis_apex_parameters(inv_imu_device_t *s,
-						 inv_imu_edmp_apex_parameters_three_axis_t *p);
+int icm566xx_edmp_get_three_axis_apex_parameters(inv_imu_device_t *s, inv_imu_edmp_apex_parameters_three_axis_t *p);
 
 /** @brief Configures EDMP parameters for all APEX algorithms.
  *  @warning This function should be called only when all EDMP algorithms are disabled.
@@ -458,8 +445,7 @@ int icm566xx_edmp_set_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_ap
  *  @param[in] p  Requested input parameters for pedometer algorithm.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_set_ped_apex_parameters(inv_imu_device_t *s,
-					  const inv_imu_edmp_apex_parameters_ped_t *p);
+int icm566xx_edmp_set_ped_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_ped_t *p);
 
 /** @brief Configures EDMP parameters for tilt algorithm.
  *  @warning This function should be called only when tilt algorithm is disabled.
@@ -467,18 +453,15 @@ int icm566xx_edmp_set_ped_apex_parameters(inv_imu_device_t *s,
  *  @param[in] p  Requested input parameters for tilt algorithm.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_set_tilt_apex_parameters(inv_imu_device_t *s,
-					   const inv_imu_edmp_apex_parameters_tilt_t *p);
+int icm566xx_edmp_set_tilt_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_tilt_t *p);
 
 /** @brief Configures EDMP parameters for significant motion detection algorithm.
- *  @warning This function should be called only when significant motion detection algorithm is
- * disabled.
+ *  @warning This function should be called only when significant motion detection algorithm is disabled.
  *  @param[in] s  Pointer to device.
  *  @param[in] p  Requested input parameters for significant motion detection algorithm.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_set_smd_apex_parameters(inv_imu_device_t *s,
-					  const inv_imu_edmp_apex_parameters_smd_t *p);
+int icm566xx_edmp_set_smd_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_smd_t *p);
 
 /** @brief Configures EDMP parameters for raise-to-wake algorithm.
  *  @warning This function should be called only when raise-to-wake algorithm is disabled.
@@ -486,8 +469,7 @@ int icm566xx_edmp_set_smd_apex_parameters(inv_imu_device_t *s,
  *  @param[in] p  Requested input parameters for raise-to-wake algorithm.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_set_r2w_apex_parameters(inv_imu_device_t *s,
-					  const inv_imu_edmp_apex_parameters_r2w_t *p);
+int icm566xx_edmp_set_r2w_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_r2w_t *p);
 
 /** @brief Configures EDMP parameters for freefall algorithm.
  *  @warning This function should be called only when freefall algorithm is disabled.
@@ -495,8 +477,7 @@ int icm566xx_edmp_set_r2w_apex_parameters(inv_imu_device_t *s,
  *  @param[in] p  Requested input parameters for freefall algorithm.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_set_ff_apex_parameters(inv_imu_device_t *s,
-					 const inv_imu_edmp_apex_parameters_freefall_t *p);
+int icm566xx_edmp_set_ff_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_freefall_t *p);
 
 /** @brief Configures EDMP parameters for tap algorithm.
  *  @warning This function should be called only when tap algorithm is disabled.
@@ -504,8 +485,7 @@ int icm566xx_edmp_set_ff_apex_parameters(inv_imu_device_t *s,
  *  @param[in] p  Requested input parameters for tap algorithm.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_set_tap_apex_parameters(inv_imu_device_t *s,
-					  const inv_imu_edmp_apex_parameters_tap_t *p);
+int icm566xx_edmp_set_tap_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_tap_t *p);
 
 /** @brief Configures EDMP parameters for bring-to-see algorithm.
  *  @warning This function should be called only when bring-to-see algorithm is disabled.
@@ -513,8 +493,7 @@ int icm566xx_edmp_set_tap_apex_parameters(inv_imu_device_t *s,
  *  @param[in] p  Requested input parameters for bring-to-see algorithm.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_set_b2s_apex_parameters(inv_imu_device_t *s,
-					  const inv_imu_edmp_apex_parameters_b2s_t *p);
+int icm566xx_edmp_set_b2s_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_b2s_t *p);
 
 /** @brief Configures EDMP parameters for shake algorithm.
  *  @warning This function should be called only when shake algorithm is disabled.
@@ -522,8 +501,7 @@ int icm566xx_edmp_set_b2s_apex_parameters(inv_imu_device_t *s,
  *  @param[in] p  Requested input parameters for shake algorithm.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_set_shake_apex_parameters(inv_imu_device_t *s,
-					    const inv_imu_edmp_apex_parameters_shake_t *p);
+int icm566xx_edmp_set_shake_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_shake_t *p);
 
 /** @brief Configures EDMP parameters for no motion algorithm.
  *  @warning This function should be called only when no motion algorithm is disabled.
@@ -531,8 +509,7 @@ int icm566xx_edmp_set_shake_apex_parameters(inv_imu_device_t *s,
  *  @param[in] p  Requested input parameters for no motion algorithm.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_set_nomotion_apex_parameters(inv_imu_device_t *s,
-					       const inv_imu_edmp_apex_parameters_nomotion_t *p);
+int icm566xx_edmp_set_nomotion_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_nomotion_t *p);
 
 /** @brief Configures EDMP parameters for flat algorithm.
  *  @warning This function should be called only when flat algorithm is disabled.
@@ -540,8 +517,7 @@ int icm566xx_edmp_set_nomotion_apex_parameters(inv_imu_device_t *s,
  *  @param[in] p  Requested input parameters for flat algorithm.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_set_flat_apex_parameters(inv_imu_device_t *s,
-					   const inv_imu_edmp_apex_parameters_flat_t *p);
+int icm566xx_edmp_set_flat_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_flat_t *p);
 
 /** @brief Configures EDMP parameters for power save algorithm.
  *  @warning This function should be called only when power save is disabled.
@@ -549,8 +525,7 @@ int icm566xx_edmp_set_flat_apex_parameters(inv_imu_device_t *s,
  *  @param[in] p  Requested input parameters for power save algorithm.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_set_power_save_apex_parameters(
-	inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_power_save_t *p);
+int icm566xx_edmp_set_power_save_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_power_save_t *p);
 
 /** @brief Configures EDMP parameters for three-axis algorithm.
  *  @warning This function should be called only when tilt and pedometer algorithms are disabled.
@@ -558,8 +533,7 @@ int icm566xx_edmp_set_power_save_apex_parameters(
  *  @param[in] p  Requested input parameters for three-axis  algorithm.
  *  @return       0 on success, negative value on error.
  */
-int icm566xx_edmp_set_three_axis_apex_parameters(
-	inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_three_axis_t *p);
+int icm566xx_edmp_set_three_axis_apex_parameters(inv_imu_device_t *s, const inv_imu_edmp_apex_parameters_three_axis_t *p);
 
 /** @brief Retrieve interrupts configuration.
  *  @param[in] s    Pointer to device.
@@ -650,6 +624,7 @@ int icm566xx_edmp_disable_r2w(inv_imu_device_t *s);
  *  @return       0 on success, negative value on error.
  */
 int icm566xx_edmp_set_r2w_odr(inv_imu_device_t *s, uint16_t r2w_odr);
+
 
 /** @brief  Enable APEX algorithm B2S.
  *  @param[in] s  Pointer to device.

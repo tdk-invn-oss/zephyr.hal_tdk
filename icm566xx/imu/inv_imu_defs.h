@@ -28,10 +28,10 @@ extern "C" {
 /* #include "icm566xx/imu/inv_imu_regmap_be.h" */
 
 /* Error/Success codes */
-#define INV_IMU_OK                   0   /**< Success */
-#define INV_IMU_ERROR                -1  /**< Unspecified error */
-#define INV_IMU_ERROR_TRANSPORT      -3  /**< Error occurred at transport level */
-#define INV_IMU_ERROR_TIMEOUT        -4  /**< Action did not complete in the expected time window */
+#define INV_IMU_OK                   0 /**< Success */
+#define INV_IMU_ERROR                -1 /**< Unspecified error */
+#define INV_IMU_ERROR_TRANSPORT      -3 /**< Error occurred at transport level */
+#define INV_IMU_ERROR_TIMEOUT        -4 /**< Action did not complete in the expected time window */
 #define INV_IMU_ERROR_BAD_ARG        -11 /**< Invalid argument provided */
 #define INV_IMU_ERROR_EDMP_BUF_EMPTY -127 /**< EDMP buffer is empty */
 
@@ -72,7 +72,7 @@ extern "C" {
 #define FIFO_COMP_4_SAMPLES_IN_FRAME 3
 
 /* Size of extra sensor data */
-#define EXT_DATA_SIZE 3
+#define EXT_DATA_SIZE                3
 
 /** Converts an integer from a 5-bits signed to a 8-bits signed */
 #define INT5_TO_INT8(in) (((in) < 16) ? ((int8_t)(in)) : ((int8_t)(in)-32))
@@ -103,14 +103,14 @@ typedef enum {
 typedef union {
 	uint8_t Byte;
 	struct {
-		uint8_t gyro_odr_different: 1;
-		uint8_t accel_odr_different: 1;
-		uint8_t fsync_bit: 1;
-		uint8_t timestamp_bit: 1;
-		uint8_t twentybits_bit: 1;
-		uint8_t gyro_bit: 1;
-		uint8_t accel_bit: 1;
-		uint8_t ext_header: 1;
+		uint8_t gyro_odr_different : 1;
+		uint8_t accel_odr_different : 1;
+		uint8_t fsync_bit : 1;
+		uint8_t timestamp_bit : 1;
+		uint8_t twentybits_bit : 1;
+		uint8_t gyro_bit : 1;
+		uint8_t accel_bit : 1;
+		uint8_t ext_header : 1;
 	} bits;
 } fifo_header_t;
 
@@ -118,12 +118,12 @@ typedef union {
 typedef union {
 	uint8_t Byte;
 	struct {
-		uint8_t tot_sample: 2;
-		uint8_t comp_ratio: 2;
-		uint8_t comp_frame: 1;
-		uint8_t gyro_bit: 1;
-		uint8_t accel_bit: 1;
-		uint8_t ext_header: 1;
+		uint8_t tot_sample : 2;
+		uint8_t comp_ratio : 2;
+		uint8_t comp_frame : 1;
+		uint8_t gyro_bit : 1;
+		uint8_t accel_bit : 1;
+		uint8_t ext_header : 1;
 	} bits;
 } fifo_comp_header_t;
 
@@ -131,16 +131,16 @@ typedef union {
 typedef union {
 	uint8_t Byte;
 	struct {
-		uint8_t valid_samples_a: 4;
-		uint8_t valid_samples_g: 4;
+		uint8_t valid_samples_a : 4;
+		uint8_t valid_samples_g : 4;
 	} bits;
 } fifo_comp_decode_t;
 
 /** Required registers to configure FIFO */
 typedef struct {
 	fifo_config0_t fifo_config0;
-	uint8_t fifo_config1_0;
-	uint8_t fifo_config1_1;
+	uint8_t        fifo_config1_0;
+	uint8_t        fifo_config1_1;
 	fifo_config2_t fifo_config2;
 	fifo_config3_t fifo_config3;
 	fifo_config4_t fifo_config4;
@@ -163,14 +163,12 @@ typedef struct {
 } intx_statusx_t;
 
 /*
- * Registers description
+ * Registers description 
  */
 
-/*
- * ---------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------
  * Bank DREG_BANK1
- * ---------------------------------------------------------------------------
- */
+ * ---------------------------------------------------------------------------*/
 
 /*
  * PWR_MGMT0
@@ -178,23 +176,23 @@ typedef struct {
 
 /* gyro_mode */
 typedef enum {
-	PWR_MGMT0_GYRO_MODE_LN = 0x03,
-	PWR_MGMT0_GYRO_MODE_LP = 0x02,
+	PWR_MGMT0_GYRO_MODE_LN      = 0x03,
+	PWR_MGMT0_GYRO_MODE_LP      = 0x02,
 	PWR_MGMT0_GYRO_MODE_STANDBY = 0x01,
-	PWR_MGMT0_GYRO_MODE_OFF = 0x00,
+	PWR_MGMT0_GYRO_MODE_OFF     = 0x00,
 } pwr_mgmt0_gyro_mode_t;
 
 /* accel_mode */
 typedef enum {
-	PWR_MGMT0_ACCEL_MODE_LN = 0x03,
-	PWR_MGMT0_ACCEL_MODE_LP = 0x02,
+	PWR_MGMT0_ACCEL_MODE_LN  = 0x03,
+	PWR_MGMT0_ACCEL_MODE_LP  = 0x02,
 	PWR_MGMT0_ACCEL_MODE_OFF = 0x00,
 } pwr_mgmt0_accel_mode_t;
 
 /*
  * INTX_CONFIG2
- * Applies to both INT1_CONFIG2 and INT2_CONFIG2 (bits are located at the * same position on two
- * different registers)
+ * Applies to both INT1_CONFIG2 and INT2_CONFIG2 (bits are located at the 
+ * same position on two different registers)
  */
 
 /* intX_drive */
@@ -211,15 +209,15 @@ typedef enum {
 
 /* intX_polarity */
 typedef enum {
-	INTX_CONFIG2_INTX_POLARITY_LOW = 0x00,
+	INTX_CONFIG2_INTX_POLARITY_LOW  = 0x00,
 	INTX_CONFIG2_INTX_POLARITY_HIGH = 0x01,
 } intx_config2_intx_polarity_t;
 
 /** @brief Interrupts pin configuration */
 typedef struct {
 	intx_config2_intx_polarity_t int_polarity;
-	intx_config2_intx_mode_t int_mode;
-	intx_config2_intx_drive_t int_drive;
+	intx_config2_intx_mode_t     int_mode;
+	intx_config2_intx_drive_t    int_drive;
 } inv_imu_int_pin_config_t;
 
 /*
@@ -228,9 +226,9 @@ typedef struct {
 
 /* ap_accel_fs_sel */
 typedef enum {
-	ACCEL_CONFIG0_AP_ACCEL_FS_SEL_2_G = 0x4,
-	ACCEL_CONFIG0_AP_ACCEL_FS_SEL_4_G = 0x3,
-	ACCEL_CONFIG0_AP_ACCEL_FS_SEL_8_G = 0x2,
+	ACCEL_CONFIG0_AP_ACCEL_FS_SEL_2_G  = 0x4,
+	ACCEL_CONFIG0_AP_ACCEL_FS_SEL_4_G  = 0x3,
+	ACCEL_CONFIG0_AP_ACCEL_FS_SEL_8_G  = 0x2,
 	ACCEL_CONFIG0_AP_ACCEL_FS_SEL_16_G = 0x1,
 #if INV_IMU_HIGH_FSR_SUPPORTED
 	ACCEL_CONFIG0_AP_ACCEL_FS_SEL_32_G = 0x0,
@@ -240,18 +238,18 @@ typedef enum {
 /* accel_odr */
 typedef enum {
 	ACCEL_CONFIG0_ACCEL_ODR_1_5625_HZ = 0xF,
-	ACCEL_CONFIG0_ACCEL_ODR_3_125_HZ = 0xE,
-	ACCEL_CONFIG0_ACCEL_ODR_6_25_HZ = 0xD,
-	ACCEL_CONFIG0_ACCEL_ODR_12_5_HZ = 0xC,
-	ACCEL_CONFIG0_ACCEL_ODR_25_HZ = 0xB,
-	ACCEL_CONFIG0_ACCEL_ODR_50_HZ = 0xA,
-	ACCEL_CONFIG0_ACCEL_ODR_100_HZ = 0x9,
-	ACCEL_CONFIG0_ACCEL_ODR_200_HZ = 0x8,
-	ACCEL_CONFIG0_ACCEL_ODR_400_HZ = 0x7,
-	ACCEL_CONFIG0_ACCEL_ODR_800_HZ = 0x6,
-	ACCEL_CONFIG0_ACCEL_ODR_1600_HZ = 0x5,
-	ACCEL_CONFIG0_ACCEL_ODR_3200_HZ = 0x4,
-	ACCEL_CONFIG0_ACCEL_ODR_6400_HZ = 0x3,
+	ACCEL_CONFIG0_ACCEL_ODR_3_125_HZ  = 0xE,
+	ACCEL_CONFIG0_ACCEL_ODR_6_25_HZ   = 0xD,
+	ACCEL_CONFIG0_ACCEL_ODR_12_5_HZ   = 0xC,
+	ACCEL_CONFIG0_ACCEL_ODR_25_HZ     = 0xB,
+	ACCEL_CONFIG0_ACCEL_ODR_50_HZ     = 0xA,
+	ACCEL_CONFIG0_ACCEL_ODR_100_HZ    = 0x9,
+	ACCEL_CONFIG0_ACCEL_ODR_200_HZ    = 0x8,
+	ACCEL_CONFIG0_ACCEL_ODR_400_HZ    = 0x7,
+	ACCEL_CONFIG0_ACCEL_ODR_800_HZ    = 0x6,
+	ACCEL_CONFIG0_ACCEL_ODR_1600_HZ   = 0x5,
+	ACCEL_CONFIG0_ACCEL_ODR_3200_HZ   = 0x4,
+	ACCEL_CONFIG0_ACCEL_ODR_6400_HZ   = 0x3,
 } accel_config0_accel_odr_t;
 
 /*
@@ -261,13 +259,13 @@ typedef enum {
 /* ap_gyro_fs_sel */
 typedef enum {
 	GYRO_CONFIG0_AP_GYRO_FS_SEL_15_625_DPS = 8,
-	GYRO_CONFIG0_AP_GYRO_FS_SEL_31_25_DPS = 7,
-	GYRO_CONFIG0_AP_GYRO_FS_SEL_62_5_DPS = 6,
-	GYRO_CONFIG0_AP_GYRO_FS_SEL_125_DPS = 5,
-	GYRO_CONFIG0_AP_GYRO_FS_SEL_250_DPS = 4,
-	GYRO_CONFIG0_AP_GYRO_FS_SEL_500_DPS = 3,
-	GYRO_CONFIG0_AP_GYRO_FS_SEL_1000_DPS = 2,
-	GYRO_CONFIG0_AP_GYRO_FS_SEL_2000_DPS = 1,
+	GYRO_CONFIG0_AP_GYRO_FS_SEL_31_25_DPS  = 7,
+	GYRO_CONFIG0_AP_GYRO_FS_SEL_62_5_DPS   = 6,
+	GYRO_CONFIG0_AP_GYRO_FS_SEL_125_DPS    = 5,
+	GYRO_CONFIG0_AP_GYRO_FS_SEL_250_DPS    = 4,
+	GYRO_CONFIG0_AP_GYRO_FS_SEL_500_DPS    = 3,
+	GYRO_CONFIG0_AP_GYRO_FS_SEL_1000_DPS   = 2,
+	GYRO_CONFIG0_AP_GYRO_FS_SEL_2000_DPS   = 1,
 #if INV_IMU_HIGH_FSR_SUPPORTED
 	GYRO_CONFIG0_AP_GYRO_FS_SEL_4000_DPS = 0,
 #endif
@@ -276,18 +274,18 @@ typedef enum {
 /* gyro_odr */
 typedef enum {
 	GYRO_CONFIG0_GYRO_ODR_1_5625_HZ = 0xF,
-	GYRO_CONFIG0_GYRO_ODR_3_125_HZ = 0xE,
-	GYRO_CONFIG0_GYRO_ODR_6_25_HZ = 0xD,
-	GYRO_CONFIG0_GYRO_ODR_12_5_HZ = 0xC,
-	GYRO_CONFIG0_GYRO_ODR_25_HZ = 0xB,
-	GYRO_CONFIG0_GYRO_ODR_50_HZ = 0xA,
-	GYRO_CONFIG0_GYRO_ODR_100_HZ = 0x9,
-	GYRO_CONFIG0_GYRO_ODR_200_HZ = 0x8,
-	GYRO_CONFIG0_GYRO_ODR_400_HZ = 0x7,
-	GYRO_CONFIG0_GYRO_ODR_800_HZ = 0x6,
-	GYRO_CONFIG0_GYRO_ODR_1600_HZ = 0x5,
-	GYRO_CONFIG0_GYRO_ODR_3200_HZ = 0x4,
-	GYRO_CONFIG0_GYRO_ODR_6400_HZ = 0x3,
+	GYRO_CONFIG0_GYRO_ODR_3_125_HZ  = 0xE,
+	GYRO_CONFIG0_GYRO_ODR_6_25_HZ   = 0xD,
+	GYRO_CONFIG0_GYRO_ODR_12_5_HZ   = 0xC,
+	GYRO_CONFIG0_GYRO_ODR_25_HZ     = 0xB,
+	GYRO_CONFIG0_GYRO_ODR_50_HZ     = 0xA,
+	GYRO_CONFIG0_GYRO_ODR_100_HZ    = 0x9,
+	GYRO_CONFIG0_GYRO_ODR_200_HZ    = 0x8,
+	GYRO_CONFIG0_GYRO_ODR_400_HZ    = 0x7,
+	GYRO_CONFIG0_GYRO_ODR_800_HZ    = 0x6,
+	GYRO_CONFIG0_GYRO_ODR_1600_HZ   = 0x5,
+	GYRO_CONFIG0_GYRO_ODR_3200_HZ   = 0x4,
+	GYRO_CONFIG0_GYRO_ODR_6400_HZ   = 0x3,
 } gyro_config0_gyro_odr_t;
 
 /*
@@ -297,8 +295,8 @@ typedef enum {
 /* fifo_mode */
 typedef enum {
 	FIFO_CONFIG0_FIFO_MODE_SNAPSHOT = 0x02,
-	FIFO_CONFIG0_FIFO_MODE_STREAM = 0x01,
-	FIFO_CONFIG0_FIFO_MODE_BYPASS = 0x00,
+	FIFO_CONFIG0_FIFO_MODE_STREAM   = 0x01,
+	FIFO_CONFIG0_FIFO_MODE_BYPASS   = 0x00,
 } fifo_config0_fifo_mode_t;
 
 /* fifo_depth */
@@ -318,12 +316,12 @@ typedef enum {
 /* fifo_wr_wm_gt_th */
 typedef enum {
 	FIFO_CONFIG2_FIFO_WR_WM_EQ_OR_GT_TH = 0x1,
-	FIFO_CONFIG2_FIFO_WR_WM_EQ_TH = 0x0,
+	FIFO_CONFIG2_FIFO_WR_WM_EQ_TH       = 0x0,
 } fifo_config2_fifo_wr_wm_gt_th_t;
 
 /* fifo_frame_size */
 typedef enum {
-	FIFO_CONFIG2_FIFO_FRAME_SIZE_8 = 0x0,
+	FIFO_CONFIG2_FIFO_FRAME_SIZE_8  = 0x0,
 	FIFO_CONFIG2_FIFO_FRAME_SIZE_16 = 0x1,
 	FIFO_CONFIG2_FIFO_FRAME_SIZE_20 = 0x2,
 } fifo_config2_fifo_frame_size_t;
@@ -335,12 +333,13 @@ typedef enum {
 /* fifo_comp_nc_flow_cfg */
 typedef enum {
 	FIFO_CONFIG4_FIFO_COMP_NC_FLOW_CFG_EVERY_128_FR = 0x5,
-	FIFO_CONFIG4_FIFO_COMP_NC_FLOW_CFG_EVERY_64_FR = 0x4,
-	FIFO_CONFIG4_FIFO_COMP_NC_FLOW_CFG_EVERY_32_FR = 0x3,
-	FIFO_CONFIG4_FIFO_COMP_NC_FLOW_CFG_EVERY_16_FR = 0x2,
-	FIFO_CONFIG4_FIFO_COMP_NC_FLOW_CFG_EVERY_8_FR = 0x1,
-	FIFO_CONFIG4_FIFO_COMP_NC_FLOW_CFG_DIS = 0x0,
+	FIFO_CONFIG4_FIFO_COMP_NC_FLOW_CFG_EVERY_64_FR  = 0x4,
+	FIFO_CONFIG4_FIFO_COMP_NC_FLOW_CFG_EVERY_32_FR  = 0x3,
+	FIFO_CONFIG4_FIFO_COMP_NC_FLOW_CFG_EVERY_16_FR  = 0x2,
+	FIFO_CONFIG4_FIFO_COMP_NC_FLOW_CFG_EVERY_8_FR   = 0x1,
+	FIFO_CONFIG4_FIFO_COMP_NC_FLOW_CFG_DIS          = 0x0,
 } fifo_config4_fifo_comp_nc_flow_cfg_t;
+
 
 /*
  * TMST_WOM_CONFIG
@@ -349,7 +348,7 @@ typedef enum {
 /* tmst_resol */
 typedef enum {
 	TMST_WOM_CONFIG_TMST_RESOL_16_US = 0x01,
-	TMST_WOM_CONFIG_TMST_RESOL_1_US = 0x00,
+	TMST_WOM_CONFIG_TMST_RESOL_1_US  = 0x00,
 } tmst_wom_config_tmst_resol_t;
 
 /* wom_mode */
@@ -361,7 +360,7 @@ typedef enum {
 /* wom_int_mode*/
 typedef enum {
 	TMST_WOM_CONFIG_WOM_INT_MODE_ANDED = 0x01,
-	TMST_WOM_CONFIG_WOM_INT_MODE_ORED = 0x00,
+	TMST_WOM_CONFIG_WOM_INT_MODE_ORED  = 0x00,
 } tmst_wom_config_wom_int_mode_t;
 
 /* wom_int_dur */
@@ -378,11 +377,11 @@ typedef enum {
 
 /* ap_fsync_sel */
 typedef enum {
-	FSYNC_CONFIG0_AP_FSYNC_NO = 0x0,
-	FSYNC_CONFIG0_AP_FSYNC_TEMP = 0x1,
-	FSYNC_CONFIG0_AP_FSYNC_GYRO_X = 0x2,
-	FSYNC_CONFIG0_AP_FSYNC_GYRO_Y = 0x3,
-	FSYNC_CONFIG0_AP_FSYNC_GYRO_Z = 0x4,
+	FSYNC_CONFIG0_AP_FSYNC_NO      = 0x0,
+	FSYNC_CONFIG0_AP_FSYNC_TEMP    = 0x1,
+	FSYNC_CONFIG0_AP_FSYNC_GYRO_X  = 0x2,
+	FSYNC_CONFIG0_AP_FSYNC_GYRO_Y  = 0x3,
+	FSYNC_CONFIG0_AP_FSYNC_GYRO_Z  = 0x4,
 	FSYNC_CONFIG0_AP_FSYNC_ACCEL_X = 0x5,
 	FSYNC_CONFIG0_AP_FSYNC_ACCEL_Y = 0x6,
 	FSYNC_CONFIG0_AP_FSYNC_ACCEL_Z = 0x7,
@@ -397,17 +396,17 @@ typedef enum {
 	DMP_EXT_SEN_ODR_CFG_EXT_ODR_3_25_HZ = 0x00,
 	DMP_EXT_SEN_ODR_CFG_EXT_ODR_6_25_HZ = 0x01,
 	DMP_EXT_SEN_ODR_CFG_EXT_ODR_12_5_HZ = 0x02,
-	DMP_EXT_SEN_ODR_CFG_EXT_ODR_25_HZ = 0x03,
-	DMP_EXT_SEN_ODR_CFG_EXT_ODR_50_HZ = 0x04,
-	DMP_EXT_SEN_ODR_CFG_EXT_ODR_100_HZ = 0x05,
-	DMP_EXT_SEN_ODR_CFG_EXT_ODR_200_HZ = 0x06,
-	DMP_EXT_SEN_ODR_CFG_EXT_ODR_400_HZ = 0x07,
+	DMP_EXT_SEN_ODR_CFG_EXT_ODR_25_HZ   = 0x03,
+	DMP_EXT_SEN_ODR_CFG_EXT_ODR_50_HZ   = 0x04,
+	DMP_EXT_SEN_ODR_CFG_EXT_ODR_100_HZ  = 0x05,
+	DMP_EXT_SEN_ODR_CFG_EXT_ODR_200_HZ  = 0x06,
+	DMP_EXT_SEN_ODR_CFG_EXT_ODR_400_HZ  = 0x07,
 } dmp_ext_sen_odr_cfg_ext_odr_t;
 
 /* apex_odr */
 typedef enum {
-	DMP_EXT_SEN_ODR_CFG_APEX_ODR_25_HZ = 0x00,
-	DMP_EXT_SEN_ODR_CFG_APEX_ODR_50_HZ = 0x01,
+	DMP_EXT_SEN_ODR_CFG_APEX_ODR_25_HZ  = 0x00,
+	DMP_EXT_SEN_ODR_CFG_APEX_ODR_50_HZ  = 0x01,
 	DMP_EXT_SEN_ODR_CFG_APEX_ODR_100_HZ = 0x02,
 	DMP_EXT_SEN_ODR_CFG_APEX_ODR_200_HZ = 0x03,
 	DMP_EXT_SEN_ODR_CFG_APEX_ODR_400_HZ = 0x04,
@@ -420,16 +419,16 @@ typedef enum {
 
 /* gyro_fifo_odr_dec */
 typedef enum {
-	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_1 = 0x0,
-	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_2 = 0x1,
-	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_4 = 0x2,
-	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_8 = 0x3,
-	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_16 = 0x4,
-	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_32 = 0x5,
-	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_64 = 0x6,
-	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_128 = 0x7,
-	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_256 = 0x8,
-	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_512 = 0x9,
+	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_1    = 0x0,
+	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_2    = 0x1,
+	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_4    = 0x2,
+	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_8    = 0x3,
+	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_16   = 0x4,
+	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_32   = 0x5,
+	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_64   = 0x6,
+	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_128  = 0x7,
+	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_256  = 0x8,
+	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_512  = 0x9,
 	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_1024 = 0xA,
 	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_2048 = 0xB,
 	ODR_DECIMATE_CONFIG_GYRO_FIFO_ODR_DEC_4096 = 0xC,
@@ -437,16 +436,16 @@ typedef enum {
 
 /* accel_fifo_odr_dec */
 typedef enum {
-	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_1 = 0x0,
-	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_2 = 0x1,
-	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_4 = 0x2,
-	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_8 = 0x3,
-	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_16 = 0x4,
-	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_32 = 0x5,
-	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_64 = 0x6,
-	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_128 = 0x7,
-	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_256 = 0x8,
-	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_512 = 0x9,
+	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_1    = 0x0,
+	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_2    = 0x1,
+	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_4    = 0x2,
+	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_8    = 0x3,
+	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_16   = 0x4,
+	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_32   = 0x5,
+	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_64   = 0x6,
+	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_128  = 0x7,
+	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_256  = 0x8,
+	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_512  = 0x9,
 	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_1024 = 0xA,
 	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_2048 = 0xB,
 	ODR_DECIMATE_CONFIG_ACCEL_FIFO_ODR_DEC_4096 = 0xC,
@@ -475,17 +474,17 @@ typedef enum {
 /* pads_i2c_slew */
 typedef enum {
 	DRIVE_CONFIG0_PADS_I2C_SLEW_TYP_20NS = 0x0,
-	DRIVE_CONFIG0_PADS_I2C_SLEW_TYP_7NS = 0x2,
+	DRIVE_CONFIG0_PADS_I2C_SLEW_TYP_7NS  = 0x2,
 } drive_config0_pads_i2c_slew_t;
 
 /* pads_spi_slew */
 typedef enum {
-	DRIVE_CONFIG0_PADS_SPI_SLEW_TYP_38NS = 0x0,
-	DRIVE_CONFIG0_PADS_SPI_SLEW_TYP_14NS = 0x1,
-	DRIVE_CONFIG0_PADS_SPI_SLEW_TYP_10NS = 0x2,
-	DRIVE_CONFIG0_PADS_SPI_SLEW_TYP_7NS = 0x3,
-	DRIVE_CONFIG0_PADS_SPI_SLEW_TYP_5NS = 0x4,
-	DRIVE_CONFIG0_PADS_SPI_SLEW_TYP_4NS = 0x5,
+	DRIVE_CONFIG0_PADS_SPI_SLEW_TYP_38NS  = 0x0,
+	DRIVE_CONFIG0_PADS_SPI_SLEW_TYP_14NS  = 0x1,
+	DRIVE_CONFIG0_PADS_SPI_SLEW_TYP_10NS  = 0x2,
+	DRIVE_CONFIG0_PADS_SPI_SLEW_TYP_7NS   = 0x3,
+	DRIVE_CONFIG0_PADS_SPI_SLEW_TYP_5NS   = 0x4,
+	DRIVE_CONFIG0_PADS_SPI_SLEW_TYP_4NS   = 0x5,
 	DRIVE_CONFIG0_PADS_SPI_SLEW_TYP_0_5NS = 0x6,
 } drive_config0_pads_spi_slew_t;
 
@@ -510,10 +509,10 @@ typedef enum {
 
 /* osc_id_ovrd */
 typedef enum {
-	REG_MISC1_OSC_ID_OVRD_OFF = 0x0,
-	REG_MISC1_OSC_ID_OVRD_EDOSC = 0x1,
-	REG_MISC1_OSC_ID_OVRD_RCOSC = 0x2,
-	REG_MISC1_OSC_ID_OVRD_PLL = 0x4,
+	REG_MISC1_OSC_ID_OVRD_OFF     = 0x0,
+	REG_MISC1_OSC_ID_OVRD_EDOSC   = 0x1,
+	REG_MISC1_OSC_ID_OVRD_RCOSC   = 0x2,
+	REG_MISC1_OSC_ID_OVRD_PLL     = 0x4,
 	REG_MISC1_OSC_ID_OVRD_EXT_CLK = 0x8,
 } reg_misc1_osc_id_ovrd_t;
 
@@ -524,13 +523,13 @@ typedef enum {
 /* aux_gyro_fs_sel */
 typedef enum {
 	FS_SEL_AUX_GYRO_FS_SEL_15_625_DPS = 8,
-	FS_SEL_AUX_GYRO_FS_SEL_31_25_DPS = 7,
-	FS_SEL_AUX_GYRO_FS_SEL_62_5_DPS = 6,
-	FS_SEL_AUX_GYRO_FS_SEL_125_DPS = 5,
-	FS_SEL_AUX_GYRO_FS_SEL_250_DPS = 4,
-	FS_SEL_AUX_GYRO_FS_SEL_500_DPS = 3,
-	FS_SEL_AUX_GYRO_FS_SEL_1000_DPS = 2,
-	FS_SEL_AUX_GYRO_FS_SEL_2000_DPS = 1,
+	FS_SEL_AUX_GYRO_FS_SEL_31_25_DPS  = 7,
+	FS_SEL_AUX_GYRO_FS_SEL_62_5_DPS   = 6,
+	FS_SEL_AUX_GYRO_FS_SEL_125_DPS    = 5,
+	FS_SEL_AUX_GYRO_FS_SEL_250_DPS    = 4,
+	FS_SEL_AUX_GYRO_FS_SEL_500_DPS    = 3,
+	FS_SEL_AUX_GYRO_FS_SEL_1000_DPS   = 2,
+	FS_SEL_AUX_GYRO_FS_SEL_2000_DPS   = 1,
 #if INV_IMU_HIGH_FSR_SUPPORTED
 	FS_SEL_AUX_GYRO_FS_SEL_4000_DPS = 0,
 #endif
@@ -538,20 +537,18 @@ typedef enum {
 
 /* aux_accel_fs_sel */
 typedef enum {
-	FS_SEL_AUX_ACCEL_FS_SEL_2_G = 0x4,
-	FS_SEL_AUX_ACCEL_FS_SEL_4_G = 0x3,
-	FS_SEL_AUX_ACCEL_FS_SEL_8_G = 0x2,
+	FS_SEL_AUX_ACCEL_FS_SEL_2_G  = 0x4,
+	FS_SEL_AUX_ACCEL_FS_SEL_4_G  = 0x3,
+	FS_SEL_AUX_ACCEL_FS_SEL_8_G  = 0x2,
 	FS_SEL_AUX_ACCEL_FS_SEL_16_G = 0x1,
 #if INV_IMU_HIGH_FSR_SUPPORTED
 	FS_SEL_AUX_ACCEL_FS_SEL_32_G = 0x0,
 #endif
 } fs_sel_aux_accel_fs_sel_t;
 
-/*
- * ---------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------
  * Bank IPREG_TOP1
- * ---------------------------------------------------------------------------
- */
+ * ---------------------------------------------------------------------------*/
 
 /*
  * SMC_CONTROL_0
@@ -569,13 +566,13 @@ typedef enum {
 
 /* sreg_data_endian_sel */
 typedef enum {
-	SREG_CTRL_SREG_DATA_BIG_ENDIAN = 0x01,
+	SREG_CTRL_SREG_DATA_BIG_ENDIAN    = 0x01,
 	SREG_CTRL_SREG_DATA_LITTLE_ENDIAN = 0x00,
 } sreg_ctrl_sreg_data_endian_sel_t;
 
 /*
  * STATUS_MASK_PIN_X_Y
- * Applies to STATUS_MASK_PIN_0_7_IPREG_TOP1, STATUS_MASK_PIN_8_15_IPREG_TOP1 and *
+ * Applies to STATUS_MASK_PIN_0_7_IPREG_TOP1, STATUS_MASK_PIN_8_15_IPREG_TOP1 and 
  * STATUS_MASK_PIN_16_23_IPREG_TOP1.
  */
 #define EDMP_INT_SRC_ACCEL_DRDY_MASK   0x01
@@ -585,11 +582,9 @@ typedef enum {
 #define EDMP_INT_SRC_WOM_DRDY_MASK     0x10
 #define EDMP_INT_SRC_ON_DEMAND_MASK    0x20
 
-/*
- * ---------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------
  * Bank IPREG_SYS1
- * ---------------------------------------------------------------------------
- */
+ * ---------------------------------------------------------------------------*/
 
 /*
  * IPREG_SYS1_REG_154
@@ -597,8 +592,8 @@ typedef enum {
 
 /* gyro_src_ctrl */
 typedef enum {
-	IPREG_SYS1_REG_154_GYRO_SRC_CTRL_SRC_ON_PREFILTER_ON = 0x2,
-	IPREG_SYS1_REG_154_GYRO_SRC_CTRL_SRC_OFF_PREFILTER_ON = 0x1,
+	IPREG_SYS1_REG_154_GYRO_SRC_CTRL_SRC_ON_PREFILTER_ON   = 0x2,
+	IPREG_SYS1_REG_154_GYRO_SRC_CTRL_SRC_OFF_PREFILTER_ON  = 0x1,
 	IPREG_SYS1_REG_154_GYRO_SRC_CTRL_SRC_OFF_PREFILTER_OFF = 0x0,
 } ipreg_sys1_reg_154_gyro_src_ctrl_sel_t;
 
@@ -615,12 +610,12 @@ typedef enum {
 	IPREG_SYS1_REG_157_GYRO_LP_AVG_16 = 0x8,
 	IPREG_SYS1_REG_157_GYRO_LP_AVG_11 = 0x7,
 	IPREG_SYS1_REG_157_GYRO_LP_AVG_10 = 0x6,
-	IPREG_SYS1_REG_157_GYRO_LP_AVG_8 = 0x5,
-	IPREG_SYS1_REG_157_GYRO_LP_AVG_7 = 0x4,
-	IPREG_SYS1_REG_157_GYRO_LP_AVG_5 = 0x3,
-	IPREG_SYS1_REG_157_GYRO_LP_AVG_4 = 0x2,
-	IPREG_SYS1_REG_157_GYRO_LP_AVG_2 = 0x1,
-	IPREG_SYS1_REG_157_GYRO_LP_AVG_1 = 0x0,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_8  = 0x5,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_7  = 0x4,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_5  = 0x3,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_4  = 0x2,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_2  = 0x1,
+	IPREG_SYS1_REG_157_GYRO_LP_AVG_1  = 0x0,
 } ipreg_sys1_reg_157_gyro_lp;
 
 /*
@@ -629,20 +624,18 @@ typedef enum {
 
 /* gyro_ui_lpfbw_sel */
 typedef enum {
-	IPREG_SYS1_REG_158_GYRO_UI_LPFBW_DIV_128 = 0x06,
-	IPREG_SYS1_REG_158_GYRO_UI_LPFBW_DIV_64 = 0x05,
-	IPREG_SYS1_REG_158_GYRO_UI_LPFBW_DIV_32 = 0x04,
-	IPREG_SYS1_REG_158_GYRO_UI_LPFBW_DIV_16 = 0x03,
-	IPREG_SYS1_REG_158_GYRO_UI_LPFBW_DIV_8 = 0x02,
-	IPREG_SYS1_REG_158_GYRO_UI_LPFBW_DIV_4 = 0x01,
+	IPREG_SYS1_REG_158_GYRO_UI_LPFBW_DIV_128   = 0x06,
+	IPREG_SYS1_REG_158_GYRO_UI_LPFBW_DIV_64    = 0x05,
+	IPREG_SYS1_REG_158_GYRO_UI_LPFBW_DIV_32    = 0x04,
+	IPREG_SYS1_REG_158_GYRO_UI_LPFBW_DIV_16    = 0x03,
+	IPREG_SYS1_REG_158_GYRO_UI_LPFBW_DIV_8     = 0x02,
+	IPREG_SYS1_REG_158_GYRO_UI_LPFBW_DIV_4     = 0x01,
 	IPREG_SYS1_REG_158_GYRO_UI_LPFBW_NO_FILTER = 0x00,
 } ipreg_sys1_reg_158_gyro_ui_lpfbw_sel_t;
 
-/*
- * ---------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------
  * Bank IPREG_SYS2
- * ---------------------------------------------------------------------------
- */
+ * ---------------------------------------------------------------------------*/
 
 /*
  * IPREG_SYS2_REG_109
@@ -650,8 +643,8 @@ typedef enum {
 
 /* accel_src_ctrl */
 typedef enum {
-	IPREG_SYS2_REG_109_ACCEL_SRC_CTRL_SRC_ON_PREFILTER_ON = 0x2,
-	IPREG_SYS2_REG_109_ACCEL_SRC_CTRL_SRC_OFF_PREFILTER_ON = 0x1,
+	IPREG_SYS2_REG_109_ACCEL_SRC_CTRL_SRC_ON_PREFILTER_ON   = 0x2,
+	IPREG_SYS2_REG_109_ACCEL_SRC_CTRL_SRC_OFF_PREFILTER_ON  = 0x1,
 	IPREG_SYS2_REG_109_ACCEL_SRC_CTRL_SRC_OFF_PREFILTER_OFF = 0x0,
 } ipreg_sys2_reg_109_accel_src_ctrl_sel_t;
 
@@ -668,12 +661,12 @@ typedef enum {
 	IPREG_SYS2_REG_110_ACCEL_LP_AVG_16 = 0x8,
 	IPREG_SYS2_REG_110_ACCEL_LP_AVG_11 = 0x7,
 	IPREG_SYS2_REG_110_ACCEL_LP_AVG_10 = 0x6,
-	IPREG_SYS2_REG_110_ACCEL_LP_AVG_8 = 0x5,
-	IPREG_SYS2_REG_110_ACCEL_LP_AVG_7 = 0x4,
-	IPREG_SYS2_REG_110_ACCEL_LP_AVG_5 = 0x3,
-	IPREG_SYS2_REG_110_ACCEL_LP_AVG_4 = 0x2,
-	IPREG_SYS2_REG_110_ACCEL_LP_AVG_2 = 0x1,
-	IPREG_SYS2_REG_110_ACCEL_LP_AVG_1 = 0x0,
+	IPREG_SYS2_REG_110_ACCEL_LP_AVG_8  = 0x5,
+	IPREG_SYS2_REG_110_ACCEL_LP_AVG_7  = 0x4,
+	IPREG_SYS2_REG_110_ACCEL_LP_AVG_5  = 0x3,
+	IPREG_SYS2_REG_110_ACCEL_LP_AVG_4  = 0x2,
+	IPREG_SYS2_REG_110_ACCEL_LP_AVG_2  = 0x1,
+	IPREG_SYS2_REG_110_ACCEL_LP_AVG_1  = 0x0,
 } ipreg_sys2_reg_110_accel_lp_avg_sel_t;
 
 /*
@@ -682,20 +675,19 @@ typedef enum {
 
 /* accel_ui_lpfbw_sel */
 typedef enum {
-	IPREG_SYS2_REG_112_ACCEL_UI_LPFBW_DIV_128 = 0x06,
-	IPREG_SYS2_REG_112_ACCEL_UI_LPFBW_DIV_64 = 0x05,
-	IPREG_SYS2_REG_112_ACCEL_UI_LPFBW_DIV_32 = 0x04,
-	IPREG_SYS2_REG_112_ACCEL_UI_LPFBW_DIV_16 = 0x03,
-	IPREG_SYS2_REG_112_ACCEL_UI_LPFBW_DIV_8 = 0x02,
-	IPREG_SYS2_REG_112_ACCEL_UI_LPFBW_DIV_4 = 0x01,
+	IPREG_SYS2_REG_112_ACCEL_UI_LPFBW_DIV_128   = 0x06,
+	IPREG_SYS2_REG_112_ACCEL_UI_LPFBW_DIV_64    = 0x05,
+	IPREG_SYS2_REG_112_ACCEL_UI_LPFBW_DIV_32    = 0x04,
+	IPREG_SYS2_REG_112_ACCEL_UI_LPFBW_DIV_16    = 0x03,
+	IPREG_SYS2_REG_112_ACCEL_UI_LPFBW_DIV_8     = 0x02,
+	IPREG_SYS2_REG_112_ACCEL_UI_LPFBW_DIV_4     = 0x01,
 	IPREG_SYS2_REG_112_ACCEL_UI_LPFBW_NO_FILTER = 0x00,
 } ipreg_sys2_reg_112_accel_ui_lpfbw_t;
 
-/*
- * ---------------------------------------------------------------------------
+/* ---------------------------------------------------------------------------
  * Bank IMEM_SRAM
- * ---------------------------------------------------------------------------
- */
+ * ---------------------------------------------------------------------------*/
+
 
 #ifdef __cplusplus
 }
