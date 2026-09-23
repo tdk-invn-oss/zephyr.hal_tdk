@@ -6,13 +6,13 @@
 #include "icm566xx/imu/inv_imu_driver.h"
 #include "icm566xx/imu/inv_imu_driver_aux1.h"
 
-#define AUX_ENDIANNESS SREG_CTRL_SREG_DATA_BIG_ENDIAN
+#define AUX_ENDIANNESS	SREG_CTRL_SREG_DATA_BIG_ENDIAN
 
 #if INV_IMU_AUX1_SUPPORTED
 
 int icm566xx_set_aux1_accel_mode(inv_imu_transport_t *t, uint8_t en)
 {
-	int status = INV_IMU_OK;
+	int             status = INV_IMU_OK;
 	pwr_mgmt_aux1_t pwr_mgmt_aux1;
 
 	status |= icm566xx_read_reg(t, PWR_MGMT_AUX1, 1, (uint8_t *)&pwr_mgmt_aux1);
@@ -24,9 +24,9 @@ int icm566xx_set_aux1_accel_mode(inv_imu_transport_t *t, uint8_t en)
 
 int icm566xx_set_aux1_drdy(inv_imu_transport_t *t, uint8_t en, inv_imu_int_num_t it)
 {
-	int status = INV_IMU_OK;
+	int            status = INV_IMU_OK;
 	int1_config0_t int1_config0;
-	uint32_t reg = (it == INV_IMU_INT1) ? INT1_CONFIG0 : INT2_CONFIG0;
+	uint32_t       reg = (it == INV_IMU_INT1) ? INT1_CONFIG0 : INT2_CONFIG0;
 
 	/* Use `int1_config0_t` for both INT1 and INT2 as bit location are the same */
 	status |= icm566xx_read_reg(t, reg, 1, (uint8_t *)&int1_config0);
@@ -38,13 +38,13 @@ int icm566xx_set_aux1_drdy(inv_imu_transport_t *t, uint8_t en, inv_imu_int_num_t
 
 int icm566xx_get_aux1_int_status(inv_imu_transport_t *t, inv_imu_aux1_int_state_t *it)
 {
-	int status = INV_IMU_OK;
+	int            status = INV_IMU_OK;
 	intx_statusx_t int_status;
 
 	/* Read AUX1 interrupt status */
 	status |= icm566xx_read_reg(t, INT2_STATUS0, 2, (uint8_t *)&int_status);
 
-	it->INV_OIS1 = int_status.int1_status0.int1_status_aux1_drdy;
+	it->INV_OIS1         = int_status.int1_status0.int1_status_aux1_drdy;
 	it->INV_OIS1_AGC_RDY = int_status.int1_status0.int1_status_aux1_agc_rdy;
 
 	return status;
@@ -52,7 +52,7 @@ int icm566xx_get_aux1_int_status(inv_imu_transport_t *t, inv_imu_aux1_int_state_
 
 int icm566xx_set_aux1_accel_fsr(inv_imu_transport_t *t, fs_sel_aux_accel_fs_sel_t fsr)
 {
-	int status = INV_IMU_OK;
+	int           status = INV_IMU_OK;
 	fs_sel_aux1_t fs_sel_aux1;
 
 	status |= icm566xx_read_reg(t, FS_SEL_AUX1, 1, (uint8_t *)&fs_sel_aux1);
@@ -64,7 +64,7 @@ int icm566xx_set_aux1_accel_fsr(inv_imu_transport_t *t, fs_sel_aux_accel_fs_sel_
 
 int icm566xx_get_aux1_accel_fsr(inv_imu_transport_t *t, fs_sel_aux_accel_fs_sel_t *fsr)
 {
-	int status = INV_IMU_OK;
+	int           status = INV_IMU_OK;
 	fs_sel_aux1_t fs_sel_aux1;
 
 	status |= icm566xx_read_reg(t, FS_SEL_AUX1, 1, (uint8_t *)&fs_sel_aux1);
@@ -75,7 +75,7 @@ int icm566xx_get_aux1_accel_fsr(inv_imu_transport_t *t, fs_sel_aux_accel_fs_sel_
 
 int icm566xx_set_aux1_gyro_mode(inv_imu_transport_t *t, uint8_t en)
 {
-	int status = INV_IMU_OK;
+	int             status = INV_IMU_OK;
 	pwr_mgmt_aux1_t pwr_mgmt_aux1;
 
 	status |= icm566xx_read_reg(t, PWR_MGMT_AUX1, 1, (uint8_t *)&pwr_mgmt_aux1);
@@ -87,7 +87,7 @@ int icm566xx_set_aux1_gyro_mode(inv_imu_transport_t *t, uint8_t en)
 
 int icm566xx_set_aux1_gyro_fsr(inv_imu_transport_t *t, fs_sel_aux_gyro_fs_sel_t fsr)
 {
-	int status = INV_IMU_OK;
+	int           status = INV_IMU_OK;
 	fs_sel_aux1_t fs_sel_aux1;
 
 	status |= icm566xx_read_reg(t, FS_SEL_AUX1, 1, (uint8_t *)&fs_sel_aux1);
@@ -99,7 +99,7 @@ int icm566xx_set_aux1_gyro_fsr(inv_imu_transport_t *t, fs_sel_aux_gyro_fs_sel_t 
 
 int icm566xx_get_aux1_gyro_fsr(inv_imu_transport_t *t, fs_sel_aux_gyro_fs_sel_t *fsr)
 {
-	int status = INV_IMU_OK;
+	int           status = INV_IMU_OK;
 	fs_sel_aux1_t fs_sel_aux1;
 
 	status |= icm566xx_read_reg(t, FS_SEL_AUX1, 1, (uint8_t *)&fs_sel_aux1);
@@ -113,9 +113,9 @@ int icm566xx_get_aux1_register_data(inv_imu_transport_t *t, inv_imu_aux_sensor_d
 	int status = INV_IMU_OK;
 	uint8_t raw_sensor_data[14];
 
-	status |=
-		icm566xx_read_reg(t, ACCEL_DATA_X_AUX1_0, sizeof(raw_sensor_data), raw_sensor_data);
-
+	status |= icm566xx_read_reg(t, ACCEL_DATA_X_AUX1_0, sizeof(raw_sensor_data),
+	                           raw_sensor_data);
+					   
 	FORMAT_16_BITS_DATA(AUX_ENDIANNESS, &raw_sensor_data[0], &sensor_data->accel_data[0]);
 	FORMAT_16_BITS_DATA(AUX_ENDIANNESS, &raw_sensor_data[2], &sensor_data->accel_data[1]);
 	FORMAT_16_BITS_DATA(AUX_ENDIANNESS, &raw_sensor_data[4], &sensor_data->accel_data[2]);
@@ -123,22 +123,22 @@ int icm566xx_get_aux1_register_data(inv_imu_transport_t *t, inv_imu_aux_sensor_d
 	FORMAT_16_BITS_DATA(AUX_ENDIANNESS, &raw_sensor_data[8], &sensor_data->gyro_data[1]);
 	FORMAT_16_BITS_DATA(AUX_ENDIANNESS, &raw_sensor_data[10], &sensor_data->gyro_data[2]);
 	FORMAT_16_BITS_DATA(AUX_ENDIANNESS, &raw_sensor_data[12], &sensor_data->temp_data);
-
+	
 	return status;
 }
 
 #if INV_IMU_INT2_PIN_SUPPORTED
 int icm566xx_set_aux1_pin_config_int(inv_imu_transport_t *t, const inv_imu_int_pin_config_t *conf)
 {
-	int status = INV_IMU_OK;
+	int            status = INV_IMU_OK;
 	int1_config2_t int2_config2;
 
 	status |= icm566xx_read_reg(t, INT2_CONFIG2, 1, (uint8_t *)&int2_config2);
 
 	/* Use `int1_config2_t` for both INT1 and INT2 as bit location are the same */
 	int2_config2.int1_polarity = (uint8_t)conf->int_polarity;
-	int2_config2.int1_mode = (uint8_t)conf->int_mode;
-	int2_config2.int1_drive = (uint8_t)conf->int_drive;
+	int2_config2.int1_mode     = (uint8_t)conf->int_mode;
+	int2_config2.int1_drive    = (uint8_t)conf->int_drive;
 
 	status |= icm566xx_write_reg(t, INT2_CONFIG2, 1, (uint8_t *)&int2_config2);
 

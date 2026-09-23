@@ -23,9 +23,9 @@ extern "C" {
 #endif
 
 /* STC status codes */
-#define INV_IMU_ST_STATUS_SUCCESS 1  /**< Indicates test is successful */
+#define INV_IMU_ST_STATUS_SUCCESS 1 /**< Indicates test is successful */
 #define INV_IMU_ST_STATUS_FAIL    -1 /**< Indicates test is failing */
-#define INV_IMU_ST_STATUS_NOT_RUN 0  /**< Indicates test has not run */
+#define INV_IMU_ST_STATUS_NOT_RUN 0 /**< Indicates test has not run */
 
 /*
  * EDMP_STC_CONFIGPARAMS
@@ -56,24 +56,24 @@ extern "C" {
 
 /* Averaging time used to perform self-test */
 typedef enum {
-	SELFTEST_AVG_TIME_10_MS = 0x0000,
-	SELFTEST_AVG_TIME_20_MS = 0x0080,
-	SELFTEST_AVG_TIME_40_MS = 0x0100,
-	SELFTEST_AVG_TIME_80_MS = 0x0180,
+	SELFTEST_AVG_TIME_10_MS  = 0x0000,
+	SELFTEST_AVG_TIME_20_MS  = 0x0080,
+	SELFTEST_AVG_TIME_40_MS  = 0x0100,
+	SELFTEST_AVG_TIME_80_MS  = 0x0180,
 	SELFTEST_AVG_TIME_160_MS = 0x0200,
 	SELFTEST_AVG_TIME_320_MS = 0x0280,
-
-	ST_DIRECT_AVG_TIME_10_MS = 10,
-	ST_DIRECT_AVG_TIME_20_MS = 20,
-	ST_DIRECT_AVG_TIME_40_MS = 40,
-	ST_DIRECT_AVG_TIME_80_MS = 80,
+	
+	ST_DIRECT_AVG_TIME_10_MS  = 10,
+	ST_DIRECT_AVG_TIME_20_MS  = 20,
+	ST_DIRECT_AVG_TIME_40_MS  = 40,
+	ST_DIRECT_AVG_TIME_80_MS  = 80,
 	ST_DIRECT_AVG_TIME_160_MS = 160,
 	ST_DIRECT_AVG_TIME_320_MS = 320
 } selftest_average_time_t;
 
 /* Tolerance between factory trim and accel self-test response */
 typedef enum {
-	SELFTEST_ACCEL_THRESHOLD_5_PERCENT = 0x0000,
+	SELFTEST_ACCEL_THRESHOLD_5_PERCENT  = 0x0000,
 	SELFTEST_ACCEL_THRESHOLD_10_PERCENT = 0x0400,
 	SELFTEST_ACCEL_THRESHOLD_15_PERCENT = 0x0800,
 	SELFTEST_ACCEL_THRESHOLD_20_PERCENT = 0x0c00,
@@ -81,8 +81,8 @@ typedef enum {
 	SELFTEST_ACCEL_THRESHOLD_30_PERCENT = 0x1400,
 	SELFTEST_ACCEL_THRESHOLD_40_PERCENT = 0x1800,
 	SELFTEST_ACCEL_THRESHOLD_50_PERCENT = 0x1c00,
-
-	ST_DIRECT_ACCEL_THRESHOLD_5_PERCENT = 5,
+	
+	ST_DIRECT_ACCEL_THRESHOLD_5_PERCENT  = 5,
 	ST_DIRECT_ACCEL_THRESHOLD_10_PERCENT = 10,
 	ST_DIRECT_ACCEL_THRESHOLD_15_PERCENT = 15,
 	ST_DIRECT_ACCEL_THRESHOLD_20_PERCENT = 20,
@@ -94,7 +94,7 @@ typedef enum {
 
 /* Tolerance between factory trim and gyro self-test response */
 typedef enum {
-	SELFTEST_GYRO_THRESHOLD_5_PERCENT = 0x0000,
+	SELFTEST_GYRO_THRESHOLD_5_PERCENT  = 0x0000,
 	SELFTEST_GYRO_THRESHOLD_10_PERCENT = 0x2000,
 	SELFTEST_GYRO_THRESHOLD_15_PERCENT = 0x4000,
 	SELFTEST_GYRO_THRESHOLD_20_PERCENT = 0x6000,
@@ -102,8 +102,8 @@ typedef enum {
 	SELFTEST_GYRO_THRESHOLD_30_PERCENT = 0xa000,
 	SELFTEST_GYRO_THRESHOLD_40_PERCENT = 0xc000,
 	SELFTEST_GYRO_THRESHOLD_50_PERCENT = 0xe000,
-
-	ST_DIRECT_GYRO_THRESHOLD_5_PERCENT = 5,
+	
+	ST_DIRECT_GYRO_THRESHOLD_5_PERCENT  = 5,
 	ST_DIRECT_GYRO_THRESHOLD_10_PERCENT = 10,
 	ST_DIRECT_GYRO_THRESHOLD_15_PERCENT = 15,
 	ST_DIRECT_GYRO_THRESHOLD_20_PERCENT = 20,
@@ -182,16 +182,16 @@ int icm566xx_st_direct_init_params(inv_imu_device_t *s, inv_imu_selftest_paramet
  *  @return                 0 on success, negative value on error.
  */
 int icm566xx_selftest(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
-		      inv_imu_selftest_output_t *st_output);
+                     inv_imu_selftest_output_t *st_output);
 
 /** @brief Perform host-based self-test for Accel and/or Gyro.
  *  @param[in] s            Pointer to device.
  *  @param[in] st_params    Self-test parameters to be used.
  *  @param[out] st_output   Output from Self-test operation.
  *  @return                 0 on success, negative value on error.
- */
+ */					 
 int icm566xx_st_direct(inv_imu_device_t *s, const inv_imu_selftest_parameters_t *st_params,
-		       inv_imu_selftest_output_t *st_output);
+                            inv_imu_selftest_output_t *st_output);
 
 #ifdef __cplusplus
 }

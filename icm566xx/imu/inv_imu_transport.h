@@ -39,10 +39,10 @@ typedef int (*inv_imu_read_reg_t)(void *context, uint8_t reg, uint8_t *buf, uint
 typedef int (*inv_imu_write_reg_t)(void *context, uint8_t reg, const uint8_t *buf, uint32_t len);
 
 /* Available serial interface type. */
-#define UI_I2C    0 /**< identifies I2C interface. */
-#define UI_SPI4   1 /**< identifies 4-wire SPI interface. */
-#define UI_SPI3   2 /**< identifies 3-wire SPI interface. */
-#define UI_I3C    3 /**< identifies I3C interface. */
+#define UI_I2C  0 /**< identifies I2C interface. */
+#define UI_SPI4 1 /**< identifies 4-wire SPI interface. */
+#define UI_SPI3 2 /**< identifies 3-wire SPI interface. */
+#define UI_I3C  3   /**< identifies I3C interface. */
 #define AUX1_I3C  4 /**< identifies AUX1 I3C interface. */
 #define AUX1_SPI3 5 /**< identifies AUX1 3-wire SPI interface. */
 #define AUX1_SPI4 6 /**< identifies AUX1 4-wire SPI interface. */
@@ -56,8 +56,8 @@ typedef uint32_t inv_imu_serif_type_t;
 /** @brief Structure dedicated to transport layer transport interface. */
 typedef struct {
 	/* Serial interface variables (should be initialized by application) */
-	void *context;
-	inv_imu_read_reg_t read_reg;   /**< Function pointer to read register(s). */
+	void *              context;
+	inv_imu_read_reg_t  read_reg; /**< Function pointer to read register(s). */
 	inv_imu_write_reg_t write_reg; /**< Function pointer to write register(s). */
 
 	/** @brief Callback to sleep function.
@@ -87,8 +87,8 @@ int icm566xx_read_reg(void *t, uint32_t reg, uint32_t len, uint8_t *buf);
 int icm566xx_write_reg(void *t, uint32_t reg, uint32_t len, const uint8_t *buf);
 
 /** @brief Reads data from SRAM on IMU.
- *  @param[in] t     Pointer to transport (as void * so it can be called from any module). *
- * @param[in] addr  Address to be read.
+ *  @param[in] t     Pointer to transport (as void * so it can be called from any module). 
+ *  @param[in] addr  Address to be read.
  *  @param[in] len   Number of byte to be read.
  *  @param[out] buf  Output data from the register.
  *  @return          0 on success, negative value on error.
