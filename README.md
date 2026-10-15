@@ -27,6 +27,8 @@ https://invensense.tdk.com/products/motion-tracking/3-axis/
 And MEMs Barometric Pressure sensor drivers for:
 
 * ICP-20100
+* ICP-10101
+* ICP-10125
 * ICP-10111
 
 Find more information and product details here: 
